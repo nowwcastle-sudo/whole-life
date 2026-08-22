@@ -72,7 +72,7 @@ def launch_plan(**overrides) -> LaunchPlan:
         "args": ("-p", "--safe-mode", "--output-format", "stream-json"),
         "child_env": {"SYSTEMROOT": r"C:\Windows", "LANG": "en-US.UTF-8"},
         "version_conformance": VersionConformance(
-            cli_version="2.1.239",
+            cli_version="2.1.240",
             allowlisted=True,
             bare_default=False,
         ),

@@ -89,6 +89,31 @@ class ChildEnvironmentReuseTests(unittest.IsolatedAsyncioTestCase):
                 with self.subTest(command=args, variable=name):
                     self.assertNotIn(name, env)
 
+    async def test_the_five_named_variables_reach_neither_status_command(self):
+        """SP-N1. Spelled out literally, because the test above cannot be.
+
+        The test above iterates `FORBIDDEN_VARIABLES`, so a mutation that both
+        removes a name from that constant *and* bypasses the builder leaves it
+        checking a set that no longer contains the name it should have caught —
+        and passes. Naming the five here is what closes that composite mutation
+        at the adapter level, where the child environment actually reaches a
+        command.
+        """
+        for runner, args in (
+            (claude_runner(), CLAUDE_AUTH_ARGS),
+            (codex_runner(), CODEX_AUTH_ARGS),
+        ):
+            built = claude(runner) if args == CLAUDE_AUTH_ARGS else codex(runner)
+            await built.preflight()
+            env = {name.upper() for name in runner.env_for(args)}
+
+            with self.subTest(command=args):
+                self.assertNotIn("ANTHROPIC_API_KEY", env)
+                self.assertNotIn("ANTHROPIC_AUTH_TOKEN", env)
+                self.assertNotIn("CLAUDE_CODE_OAUTH_TOKEN", env)
+                self.assertNotIn("OPENAI_API_KEY", env)
+                self.assertNotIn("CLAUDE_CODE_SIMPLE", env)
+
     async def test_codex_home_is_explicit_and_identical_for_status_and_version(self):
         runner = codex_runner()
         adapter = codex(runner)
@@ -110,14 +135,20 @@ class VersionAllowlistTests(unittest.IsolatedAsyncioTestCase):
         return caught.exception
 
     async def test_a_version_outside_the_allowlist_is_refused(self):
-        adapter = claude(claude_runner(version="2.1.240 (Claude Code)"))
+        """2.1.239 was the pinned version until #13 and is now refused.
+
+        Being previously supported earns a version nothing: the allowlist holds
+        the versions with local conformance evidence, and 2.1.239's evidence was
+        removed when the installed CLI moved to 2.1.240.
+        """
+        adapter = claude(claude_runner(version="2.1.239 (Claude Code)"))
 
         refusal = await self._refused(adapter)
 
         self.assertEqual(RefusalCode.UNSUPPORTED_CLI_VERSION, refusal.code)
 
     async def test_a_changed_version_output_format_is_refused(self):
-        adapter = claude(claude_runner(version="Claude Code v2.1.239"))
+        adapter = claude(claude_runner(version="Claude Code v2.1.240"))
 
         refusal = await self._refused(adapter)
 
@@ -139,6 +170,41 @@ class VersionAllowlistTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual([("--version",)], [args for _e, args, _v in runner.calls])
 
 
+class ConformanceInvalidationTests(unittest.IsolatedAsyncioTestCase):
+    """A plan may only carry the record of the *latest* successful preflight.
+
+    `_conformance` is written on success only. Without clearing it first, a
+    caller that catches a later preflight failure can still assemble a plan
+    carrying the previous canonical record — and the launch gate accepts it,
+    because the record is genuine. It is simply no longer true.
+    """
+
+    async def test_a_failed_later_preflight_discards_the_earlier_record(self):
+        adapter = claude(claude_runner())
+        await adapter.preflight()
+        self.assertIsNotNone(adapter.conformance)
+
+        adapter._runner = claude_runner(version="9.9.9 (Claude Code)")
+        with self.assertRaises(PreStartRefusal):
+            await adapter.preflight()
+
+        self.assertIsNone(adapter.conformance)
+
+    async def test_assembly_after_a_failed_preflight_is_refused(self):
+        from tests.support.launch_fixtures import turn_request
+
+        adapter = claude(claude_runner())
+        await adapter.preflight()
+        adapter._runner = claude_runner(version="9.9.9 (Claude Code)")
+        with self.assertRaises(PreStartRefusal):
+            await adapter.preflight()
+
+        with self.assertRaises(PreStartRefusal) as caught:
+            adapter.assemble_launch_plan(turn_request())
+
+        self.assertEqual(RefusalCode.UNSUPPORTED_CLI_VERSION, caught.exception.code)
+
+
 class ClaudeAuthTests(unittest.IsolatedAsyncioTestCase):
     async def _refused(self, payload=None, **kwargs) -> PreStartRefusal:
         runner = claude_runner(auth=claude_auth_result(payload, **kwargs))
@@ -150,7 +216,7 @@ class ClaudeAuthTests(unittest.IsolatedAsyncioTestCase):
         status = await claude().preflight()
 
         self.assertEqual(Provider.CLAUDE, status.provider)
-        self.assertEqual("2.1.239", status.cli_version)
+        self.assertEqual("2.1.240", status.cli_version)
         self.assertEqual(EnforcementLevel.HARD, status.delegation_depth_enforcement)
 
     async def test_a_signed_out_account_is_refused(self):

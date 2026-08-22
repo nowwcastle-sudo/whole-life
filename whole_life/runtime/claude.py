@@ -14,7 +14,12 @@ from whole_life.runtime.contract import (
     RuntimeStatus,
     TurnRequest,
 )
-from whole_life.runtime.launch import VersionConformance
+from whole_life.runtime.launch import (
+    LaunchPlan,
+    PreStartRefusal,
+    RefusalCode,
+    VersionConformance,
+)
 from whole_life.runtime.preflight import (
     CommandRunner,
     conformance_for,
@@ -22,6 +27,30 @@ from whole_life.runtime.preflight import (
 )
 
 _LATER_SLICE = "arrives with a later ticket; this slice ends at preflight"
+
+#: The final arguments for one Claude turn, as spec section 4 lists them
+#: (lines 128 and 139). `--safe-mode`, never `--bare`: `--bare` replaces the
+#: authentication path and would break the subscription premise.
+#:
+#: `--safe-mode` alone is *not* the read-only boundary. The spec says plainly
+#: that it leaves authentication, model selection, built-in tools and
+#: permissions working — so the tool allowlist, the permission mode and a strict
+#: empty MCP configuration are what actually keep `Write`, `Edit`, `Bash` and
+#: network side-effect tools off the turn.
+CLAUDE_TURN_ARGS = (
+    "-p",
+    "--safe-mode",
+    "--output-format",
+    "stream-json",
+    "--verbose",
+    "--strict-mcp-config",
+    "--mcp-config",
+    '{"mcpServers": {}}',
+    "--tools",
+    "Agent,Read,Glob,Grep",
+    "--permission-mode",
+    "dontAsk",
+)
 
 
 class ClaudeRuntime:
@@ -54,6 +83,11 @@ class ClaudeRuntime:
         return self._conformance
 
     async def preflight(self) -> RuntimeStatus:
+        # Cleared first, not merely overwritten on success. A caller that
+        # catches a failure here must not be left holding an adapter that can
+        # still assemble a plan from the previous run's record.
+        self._conformance = None
+
         version = await self._runner.run(
             self._executable, ("--version",), self.child_env
         )
@@ -73,6 +107,29 @@ class ClaudeRuntime:
             worker_concurrency_enforcement=EnforcementLevel.COOPERATIVE,
             worker_total_start_enforcement=EnforcementLevel.COOPERATIVE,
             delegation_depth_enforcement=EnforcementLevel.HARD,
+        )
+
+    def assemble_launch_plan(self, request: TurnRequest) -> LaunchPlan:
+        """Everything one turn is about to be started with, as one value.
+
+        Separated from `start_turn` so that the safety boundary can be exercised
+        against the plan this adapter really builds. `start_turn` arrives with
+        #14 and starts by calling this.
+
+        `--bare` is never placed here. `--safe-mode` is what disables
+        customization; the two are not interchangeable, because `--bare` also
+        replaces the authentication path (spec section 5).
+        """
+        if self._conformance is None:
+            raise PreStartRefusal(RefusalCode.UNSUPPORTED_CLI_VERSION)
+
+        return LaunchPlan(
+            provider=Provider.CLAUDE,
+            executable=self._executable,
+            args=CLAUDE_TURN_ARGS,
+            child_env=self.child_env,
+            version_conformance=self._conformance,
+            turn_request=request,
         )
 
     async def start_turn(self, request: TurnRequest) -> RunHandle:

@@ -46,6 +46,18 @@ class ForbiddenVariableTests(unittest.TestCase):
             set(FORBIDDEN_VARIABLES),
         )
 
+    def test_every_forbidden_name_is_upper_case(self):
+        """Otherwise the upper-cased membership test silently stops matching.
+
+        `build_child_env` compares `FORBIDDEN_VARIABLES` against upper-cased
+        environment names. A mixed-case entry added later would match nothing and
+        be carried into the child — a fail-open direction. The module asserts this
+        at import too, but `python -O` strips assertions and this must hold there.
+        """
+        for name in FORBIDDEN_VARIABLES:
+            with self.subTest(name=name):
+                self.assertEqual(name.upper(), name)
+
     def test_an_extra_that_sets_a_forbidden_variable_is_refused(self):
         with self.assertRaises(PreStartRefusal) as caught:
             build_child_env(PARENT, extra={"OPENAI_API_KEY": "sk-injected"})
