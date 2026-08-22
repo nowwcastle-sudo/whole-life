@@ -1,0 +1,16 @@
+name: docs-ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  docs-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify approved baseline hashes
+        run: bash scripts/check-approved-baseline.sh
+      - name: Check relative Markdown links
+        run: bash scripts/check-markdown-links.sh
