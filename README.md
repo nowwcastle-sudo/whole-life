@@ -4,13 +4,19 @@
 
 Whole Life specifies a Windows-first, local orchestration layer for collaboration between multiple Claude Code and Codex CLI participants, driven by the operator's own single official CLI sign-in on the operator's own machine. It is a single-user tool: it never relays, pools, or shares a sign-in between people.
 
-> **Status:** architecture approved; documentation only. There is no runnable broker yet.
+> **Status:** architecture approved; the first runtime safety seam is implemented. There is no runnable broker yet.
 
 The v0 design keeps the provider set deliberately small—Claude and Codex—while allowing a collaboration session to contain 2–8 first-class participants. Each active participant may delegate bounded, read-only work to provider-native subagents. A single local broker owns scheduling, state, and artifact writes.
 
 ## Getting started
 
-There is nothing to install yet. This repository holds the approved design, not an implementation.
+There is no installable application yet. The repository now contains the approved design and the first Python runtime seam, but not a runnable broker.
+
+**For repository development,** use Python 3.14 as declared in [`.python-version`](.python-version), then run the complete current suite from the repository root:
+
+```powershell
+python -B -m unittest discover -t . -s tests
+```
 
 **To read the design,** start with the [v0 specification](docs/spec/whole-life-v0.md), then [ADR 0001](docs/adr/0001-local-subscription-v0.md) for the reasoning behind it. [`docs/project-context.md`](docs/project-context.md) records the approved baseline, the SHA-256 hash of each pinned document, and the current status of every public-release gate. [`CONTEXT.md`](CONTEXT.md) is the domain glossary — the vocabulary the specification uses normatively.
 
