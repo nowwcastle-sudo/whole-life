@@ -12,7 +12,7 @@ v0 설계는 공급자 집합을 의도적으로 작게 — Claude와 Codex 둘�
 
 **아직 설치할 것이 없다.** 이 저장소는 승인된 설계를 담고 있을 뿐, 구현체가 아니다.
 
-**설계를 읽으려면** [v0 명세](docs/spec/whole-life-v0.md)부터 보고, 그 결정의 근거인 [ADR 0001](docs/adr/0001-local-subscription-v0.md)을 이어서 본다. [CONTEXT.md](CONTEXT.md)에 승인된 베이스라인, 고정 문서별 SHA-256 해시, 그리고 공개 배포 관문의 항목별 현황이 적혀 있다.
+**설계를 읽으려면** [v0 명세](docs/spec/whole-life-v0.md)부터 보고, 그 결정의 근거인 [ADR 0001](docs/adr/0001-local-subscription-v0.md)을 이어서 본다. 승인된 베이스라인·고정 문서별 SHA-256 해시·공개 배포 관문의 항목별 현황은 [`docs/project-context.md`](docs/project-context.md)에 있다. [`CONTEXT.md`](CONTEXT.md)는 **도메인 용어집**으로, 명세가 규범적으로 쓰는 어휘를 담는다.
 
 **v0가 나오면** 의도하는 모습은 이렇다 — **로컬 명령 하나**로 자기 PC에서 broker를 띄운다. Claude Code와 Codex CLI 로그인은 **지금 하시던 그대로 본인이** 한다. broker는 이미 설치돼 있는 CLI를 실행하고 그 출력 스트림을 읽는다. **구독 자격증명을 실행 경로 밖에 두는 것은 매 기동마다 검사하는 설계 요구사항이지, CLI가 영구히 보장하는 성질이 아니다** — [v0 경계](#v0-경계)를 볼 것.
 
@@ -62,14 +62,16 @@ Whole Life는 **실제로 통제할 수 있는 것만** 제한한다 — 참여�
 
 Whole Life는 Claude나 ChatGPT의 **자격증명을 읽거나, 복사하거나, 내보내거나, 중계해서는 안 된다.** 인증은 공식 CLI 프로세스가 스스로 한다. 알 수 없는 인증, 알 수 없는 CLI 버전, 워커 관측 불가, 프로세스 결과 불명 — 이런 경우는 전부 **실패로 닫는다**(fail closed).
 
-**기술적으로 가능하다는 것과 공급자 정책상 허용된다는 것은 다른 문제다.** 공개 배포 관문과 항목별 현황 — 이 저장소의 **공개 이력**을 포함해 — 은 [CONTEXT.md](CONTEXT.md)에서 추적한다. **구독 사용량 귀속은 아직 측정된 바 없으므로**, 이 저장소의 어떤 내용도 공급자가 이 사용을 어떻게 계량하거나 과금할지에 대한 진술로 읽어서는 안 된다.
+**기술적으로 가능하다는 것과 공급자 정책상 허용된다는 것은 다른 문제다.** 공개 배포 관문과 항목별 현황 — 이 저장소의 **공개 이력**을 포함해 — 은 [`docs/project-context.md`](docs/project-context.md)에서 추적한다. **구독 사용량 귀속은 아직 측정된 바 없으므로**, 이 저장소의 어떤 내용도 공급자가 이 사용을 어떻게 계량하거나 과금할지에 대한 진술로 읽어서는 안 된다.
 
 ## 정본 문서
 
 - [Whole Life v0 규범 명세](docs/spec/whole-life-v0.md)
 - [ADR 0001: 로컬 구독 v0](docs/adr/0001-local-subscription-v0.md)
 - [게이트 2 사용량 귀속 스모크 테스트 설계](docs/smoke/gate-2-usage-attribution.md)
-- [구현 컨텍스트](CONTEXT.md)
+- [도메인 용어집](CONTEXT.ko.md)
+- [프로젝트 컨텍스트 — 베이스라인·불변식·배포 관문](docs/project-context.md)
+- [에이전트 설정](AGENTS.md)
 - [보안 정책](SECURITY.md)
 - [기여 안내](CONTRIBUTING.md)
 
@@ -77,7 +79,7 @@ Whole Life는 Claude나 ChatGPT의 **자격증명을 읽거나, 복사하거나,
 
 작업은 **8명으로 고정된 AI 에이전트 팀**이 전용 프로젝트 채널에서 수행한다. **11단계 흐름**을 따르며 단계마다 통과 게이트가 있다. 이미 있는 파일은 **확장하되 교체하지 않고**, `git push`는 **사람을 한 번 거친다.**
 
-무엇이 이미 확립됐고, 무엇이 일부러 없으며, 에이전트가 이 저장소에서 어떻게 행동해야 하는지 — 전체 규약은 [CONTRIBUTING.ko.md](CONTRIBUTING.ko.md)에 있다.
+[`AGENTS.md`](AGENTS.md)는 이 저장소의 이슈트래커와 도메인 문서가 어디 있는지를 에이전트에게 알려주고, 상세는 [`docs/agents/`](docs/agents/)에 있다. 무엇이 이미 확립됐고, 무엇이 일부러 없으며, 에이전트가 이 저장소에서 어떻게 행동해야 하는지 — 전체 규약은 [CONTRIBUTING.ko.md](CONTRIBUTING.ko.md)에 있다.
 
 ## 개발 순서
 

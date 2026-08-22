@@ -10,7 +10,7 @@
 
 > **상태:** 설계만 확정됐다. 실행은 실제로 돌릴 수 있는 testbed를 만든 뒤로 미룬다(2026-08-22 소유자 결정). 이 문서는 그때 그대로 따라 하기 위한 절차서이며, 실행 결과는 여기에 적지 않는다.
 
-CONTEXT.md의 public-release gate 2 — “두 CLI의 실제 usage 귀속 smoke test 통과” — 를 무엇으로 통과 처리할지 정한다. 사양 [§5 과금 귀속 한계](../spec/whole-life-v0.md)가 “auth preflight는 청구 원장의 증거가 아니다”라고 선을 그어 둔 그 빈자리를 이 test가 채운다.
+`docs/project-context.md`의 public-release gate 2 — “두 CLI의 실제 usage 귀속 smoke test 통과” — 를 무엇으로 통과 처리할지 정한다. 사양 [§5 과금 귀속 한계](../spec/whole-life-v0.md)가 “auth preflight는 청구 원장의 증거가 아니다”라고 선을 그어 둔 그 빈자리를 이 test가 채운다.
 
 ## 1. 무엇을 증명하려는가
 

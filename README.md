@@ -12,7 +12,7 @@ The v0 design keeps the provider set deliberately small—Claude and Codex—whi
 
 There is nothing to install yet. This repository holds the approved design, not an implementation.
 
-**To read the design,** start with the [v0 specification](docs/spec/whole-life-v0.md), then [ADR 0001](docs/adr/0001-local-subscription-v0.md) for the reasoning behind it. [CONTEXT.md](CONTEXT.md) records the approved baseline, the SHA-256 hash of each pinned document, and the current status of every public-release gate.
+**To read the design,** start with the [v0 specification](docs/spec/whole-life-v0.md), then [ADR 0001](docs/adr/0001-local-subscription-v0.md) for the reasoning behind it. [`docs/project-context.md`](docs/project-context.md) records the approved baseline, the SHA-256 hash of each pinned document, and the current status of every public-release gate. [`CONTEXT.md`](CONTEXT.md) is the domain glossary — the vocabulary the specification uses normatively.
 
 **When v0 ships,** the intended shape is a single local command that starts the broker on your own machine. You sign in to Claude Code and Codex CLI yourself, exactly as you already do. The broker launches the CLIs already installed on the machine and reads their output streams; keeping subscription credentials out of its execution path is a design requirement checked at every launch, not a permanent property of the CLIs — see [v0 boundaries](#v0-boundaries).
 
@@ -62,14 +62,16 @@ Full answers remain in the dossier and are never injected into another participa
 
 Whole Life must not read, copy, export, or broker Claude or ChatGPT credentials. Official CLI processes authenticate themselves. Unknown authentication, CLI versions, worker observability, or process outcomes fail closed.
 
-Technical feasibility is not the same as provider-policy approval. The public-release gate and its current per-item status — including this repository's visibility history — are tracked in [CONTEXT.md](CONTEXT.md). Subscription usage attribution has not been measured yet, so nothing here should be read as a statement about how a provider will meter or bill this usage.
+Technical feasibility is not the same as provider-policy approval. The public-release gate and its current per-item status — including this repository's visibility history — are tracked in [`docs/project-context.md`](docs/project-context.md). Subscription usage attribution has not been measured yet, so nothing here should be read as a statement about how a provider will meter or bill this usage.
 
 ## Canonical documents
 
 - [Whole Life v0 normative specification](docs/spec/whole-life-v0.md)
 - [ADR 0001: local subscription v0](docs/adr/0001-local-subscription-v0.md)
 - [Gate 2 usage-attribution smoke test design](docs/smoke/gate-2-usage-attribution.md)
-- [Implementation context](CONTEXT.md)
+- [Domain glossary](CONTEXT.md)
+- [Project context — baseline, invariants, release gate](docs/project-context.md)
+- [Agent configuration](AGENTS.md)
 - [Security policy](SECURITY.md)
 - [Contributing](CONTRIBUTING.md)
 
@@ -77,7 +79,7 @@ Technical feasibility is not the same as provider-policy approval. The public-re
 
 Work is carried out by a fixed team of eight AI agents in a dedicated project channel, following an eleven-stage flow with an explicit gate at each stage. Pre-existing files are extended, never replaced, and `git push` is gated behind a human.
 
-The full working agreement — what is already established, what is deliberately absent, and how agents are expected to behave in this repository — lives in [CONTRIBUTING.md](CONTRIBUTING.md).
+[`AGENTS.md`](AGENTS.md) tells an agent where this repository keeps its issue tracker and domain docs; the details sit in [`docs/agents/`](docs/agents/). The working agreement — what is already established, what is deliberately absent, and how agents are expected to behave here — is in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Development sequence
 
