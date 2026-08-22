@@ -1,10 +1,35 @@
 # Whole Life
 
+*English · [한국어](README.ko.md)*
+
 Whole Life specifies a Windows-first, local orchestration layer for collaboration between multiple Claude Code and Codex CLI participants, driven by the operator's own single official CLI sign-in on the operator's own machine. It is a single-user tool: it never relays, pools, or shares a sign-in between people.
 
 > **Status:** architecture approved; documentation only. There is no runnable broker yet.
 
 The v0 design keeps the provider set deliberately small—Claude and Codex—while allowing a collaboration session to contain 2–8 first-class participants. Each active participant may delegate bounded, read-only work to provider-native subagents. A single local broker owns scheduling, state, and artifact writes.
+
+## Getting started
+
+There is nothing to install yet. This repository holds the approved design, not an implementation.
+
+**To read the design,** start with the [v0 specification](docs/spec/whole-life-v0.md), then [ADR 0001](docs/adr/0001-local-subscription-v0.md) for the reasoning behind it. [CONTEXT.md](CONTEXT.md) records the approved baseline, the SHA-256 hash of each pinned document, and the current status of every public-release gate.
+
+**When v0 ships,** the intended shape is a single local command that starts the broker on your own machine. You sign in to Claude Code and Codex CLI yourself, exactly as you already do. The broker launches the CLIs already installed on the machine and reads their output streams; keeping subscription credentials out of its execution path is a design requirement checked at every launch, not a permanent property of the CLIs — see [v0 boundaries](#v0-boundaries).
+
+The **broker** makes no network calls of its own: it does not use a provider API, expose a service, or reach another machine. The CLIs it launches are cloud-backed and do talk to their own providers — exactly as they do when you run them by hand. The boundary is that the broker adds no remote surface, not that the session is offline.
+
+## Technology
+
+| Layer | Choice |
+|---|---|
+| Runtime | One local Python process (`whole_life` package), Windows-first; macOS and Linux come after v0 |
+| Concurrency | `asyncio`; subprocesses are spawned with `shell=False` and a split argv |
+| State | SQLite with a single writer connection, replayed from an append-only event journal |
+| Providers | Claude Code CLI (`stream-json`) and Codex CLI (`JSONL`), each behind a runtime adapter |
+| Prompt transport | UTF-8 on stdin, never a command-line argument |
+| Dependencies | Python standard library by default; anything beyond it needs a measured requirement and an ADR |
+
+Supported CLI versions are pinned to a compiled-in allowlist. An unrecognised version refuses to start with `UnsupportedCliVersion` rather than assuming the flags and stream format still mean the same thing.
 
 ## Why this project exists
 
@@ -47,6 +72,12 @@ Technical feasibility is not the same as provider-policy approval. The public-re
 - [Implementation context](CONTEXT.md)
 - [Security policy](SECURITY.md)
 - [Contributing](CONTRIBUTING.md)
+
+## How this repository is developed
+
+Work is carried out by a fixed team of eight AI agents in a dedicated project channel, following an eleven-stage flow with an explicit gate at each stage. Pre-existing files are extended, never replaced, and `git push` is gated behind a human.
+
+The full working agreement — what is already established, what is deliberately absent, and how agents are expected to behave in this repository — lives in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Development sequence
 

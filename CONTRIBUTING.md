@@ -1,5 +1,7 @@
 # Contributing to Whole Life
 
+*English · [한국어](CONTRIBUTING.ko.md)*
+
 Whole Life is in a documentation-first architecture phase. Contributions should preserve the approved v0 boundary and make one verifiable change at a time.
 
 ## Before contributing
@@ -8,6 +10,30 @@ Whole Life is in a documentation-first architecture phase. Contributions should 
 2. Distinguish verified provider behavior from a proposal or inference.
 3. Do not add a dependency, abstraction, provider, remote service, or write capability without a concrete current requirement and an ADR.
 4. Never include credentials, session material, real user prompts, runtime databases, or machine-specific logs.
+
+## Working with the agent team
+
+Work on this repository is carried out by a fixed team of eight AI agents in a dedicated project channel, following an eleven-stage flow: bootstrap, discovery, mapping, specification, ticket breakdown, implementation, review, a safety gate, verification and merge, release and documentation, then operation. Each stage has an explicit gate, and a stage that has not passed its gate does not advance.
+
+Two rules make the team safe rather than merely busy. Handoff happens through artifacts — an issue, a branch, a file — never through one agent calling another, so the trail of who passed what remains readable afterwards. And the fence is the ordering, not a list of prohibitions: the implementer's work ends at the commit, which is why nothing reaches the remote before the safety gate has run.
+
+Treat the following as **established, not as gaps to fill**:
+
+| Artifact | Status |
+|---|---|
+| `LICENSE`, `README.md`, `CONTRIBUTING.md`, `SECURITY.md`, `.gitignore` | Established. Extend; do not replace. |
+| `docs/spec/whole-life-v0.md`, `docs/adr/0001-*.md` | Approved baseline, pinned by SHA-256 in `CONTEXT.md`. Changing either requires a new ADR and a matching baseline update in the same commit. |
+| `CONTEXT.md` | Holds the approved baseline and current status — **not** a domain glossary. See the reconciliation note below. |
+| CI workflow | Deliberately absent. No code and no dependency manifest exist yet. |
+| Commit hooks | Deliberately absent, for the same reason. |
+
+Everything the table does not list is filled in progressively, as the flow reaches it. The team does not front-load scaffolding for work that has not started.
+
+**`CONTEXT.md` reconciliation.** Several agent skills assume `CONTEXT.md` is a glossary and nothing else. This repository uses it for the approved baseline instead. Until that conflict is resolved, leave `CONTEXT.md` as it is: propose moving the baseline into its own document, then wait for a decision.
+
+**Contribution surface.** This file and `SECURITY.md` exist, but the repository stays private until the gates in the README's *Security and policy boundary* clear. No external triage process is in place, and none is created until distribution is unblocked.
+
+**Push is gated.** A project-scoped guardrail blocks `git push` and destructive git operations — force push, `reset --hard`, history rewriting, remote branch deletion. Agents prepare the exact command and a human runs it.
 
 ## Change standards
 
