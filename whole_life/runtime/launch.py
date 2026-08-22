@@ -23,6 +23,10 @@ class RefusalCode(StrEnum):
     RESUME_WITHOUT_NATIVE_SESSION = "ResumeWithoutNativeSession"
     NEW_TURN_WITH_NATIVE_SESSION = "NewTurnWithNativeSession"
     TURN_REQUEST_INVALID = "TurnRequestInvalid"
+    CHILD_ENV_FORBIDDEN_VARIABLE = "ChildEnvForbiddenVariable"
+    UNSUPPORTED_CLI_VERSION = "UnsupportedCliVersion"
+    AUTH_STATUS_UNSUPPORTED = "AuthStatusUnsupported"
+    SUBSCRIPTION_AUTH_REQUIRED = "SubscriptionAuthRequired"
 
 
 class PreStartRefusal(Exception):
@@ -102,6 +106,9 @@ def enforce_launch_safety(plan: LaunchPlan) -> None:
     Each control is a separate statement on purpose: removing one must make
     exactly one test fail.
     """
+    if not plan.version_conformance.allowlisted:
+        raise PreStartRefusal(RefusalCode.UNSUPPORTED_CLI_VERSION)
+
     request = plan.turn_request
 
     if request.mode is TurnMode.RESUME and not (request.native_session_id or "").strip():

@@ -12,7 +12,12 @@ from whole_life.runtime.contract import (
     ResultLimits,
     TurnMode,
 )
-from whole_life.runtime.launch import PreStartRefusal, RefusalCode, launch
+from whole_life.runtime.launch import (
+    PreStartRefusal,
+    RefusalCode,
+    VersionConformance,
+    launch,
+)
 
 
 class AcceptedLaunchTests(unittest.IsolatedAsyncioTestCase):
@@ -44,6 +49,17 @@ class PreStartRefusalTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual([], spawner.calls)
         self.assertEqual("pre_start", caught.exception.phase)
         return caught.exception
+
+    async def test_a_plan_whose_version_is_not_allowlisted_is_refused(self):
+        plan = launch_plan(
+            version_conformance=VersionConformance(
+                cli_version="9.9.9", allowlisted=False, bare_default=False
+            )
+        )
+
+        refusal = await self._refuse(plan)
+
+        self.assertEqual(RefusalCode.UNSUPPORTED_CLI_VERSION, refusal.code)
 
     async def test_resume_without_a_native_session_is_refused(self):
         plan = launch_plan(
