@@ -2,6 +2,7 @@
 
 from collections.abc import AsyncIterator, Mapping
 from pathlib import Path
+from uuid import uuid4
 
 from whole_life.runtime.childenv import build_child_env
 from whole_life.runtime.contract import (
@@ -12,9 +13,16 @@ from whole_life.runtime.contract import (
     RunOutcome,
     RuntimeEvent,
     RuntimeStatus,
+    TurnMode,
     TurnRequest,
 )
-from whole_life.runtime.launch import VersionConformance
+from whole_life.runtime.launch import (
+    LaunchPlan,
+    PreStartRefusal,
+    RefusalCode,
+    VersionConformance,
+    launch,
+)
 from whole_life.runtime.preflight import (
     CommandRunner,
     conformance_for,
@@ -22,6 +30,27 @@ from whole_life.runtime.preflight import (
 )
 
 _LATER_SLICE = "arrives with a later ticket; this slice ends at preflight"
+
+#: Spec section 4: the machine-readable output, the read-only sandbox, and the
+#: refusal to load the operator's own configuration or rules.
+#:
+#: Every one of these sits at the `exec` level, ahead of any subcommand, and
+#: that placement is measured rather than stylistic: `codex exec resume
+#: --sandbox read-only` is a parse error (exit 2), while the same flag before
+#: `resume` parses for both forms. Putting the sandbox after the verb would
+#: mean a resumed turn silently ran without one.
+CODEX_TURN_ARGS = (
+    "exec",
+    "--json",
+    "--sandbox",
+    "read-only",
+    "--ignore-user-config",
+    "--ignore-rules",
+    "-c",
+    "agents.enabled=true",
+    "-c",
+    "agents.max_concurrent_threads_per_session=3",
+)
 
 
 class CodexRuntime:
@@ -47,6 +76,9 @@ class CodexRuntime:
         runner: CommandRunner,
         parent_env: Mapping[str, str],
         codex_home: Path,
+        spawner=None,
+        sessions=None,
+        journal=None,
     ) -> None:
         self._executable = executable
         self._runner = runner
@@ -54,6 +86,11 @@ class CodexRuntime:
             parent_env, extra={"CODEX_HOME": str(codex_home)}
         )
         self._conformance: VersionConformance | None = None
+        #: Injected so a turn can be started without a real process, and so the
+        #: registry and journal are owned by the caller rather than this module.
+        self._spawner = spawner
+        self._sessions = sessions
+        self._journal = journal
 
     @property
     def conformance(self) -> VersionConformance | None:
@@ -82,8 +119,54 @@ class CodexRuntime:
             delegation_depth_enforcement=EnforcementLevel.COOPERATIVE,
         )
 
+    def assemble_launch_plan(self, request: TurnRequest) -> LaunchPlan:
+        """Everything one turn is about to be started with, as one value.
+
+        The prompt is not here. It reaches the process as UTF-8 stdin bytes,
+        because `codex exec` reads instructions from stdin when no prompt
+        argument is given — and a command line is readable by anything that can
+        list processes.
+        """
+        if self._conformance is None:
+            raise PreStartRefusal(RefusalCode.UNSUPPORTED_CLI_VERSION)
+
+        args = CODEX_TURN_ARGS
+        if request.mode is TurnMode.RESUME:
+            args += ("resume", request.native_session_id)
+
+        return LaunchPlan(
+            provider=Provider.CODEX,
+            executable=self._executable,
+            args=args,
+            child_env=self.child_env,
+            version_conformance=self._conformance,
+            turn_request=request,
+        )
+
     async def start_turn(self, request: TurnRequest) -> RunHandle:
-        raise NotImplementedError(f"start_turn {_LATER_SLICE}")
+        """Assemble, check, and start — one path, no way around the gate.
+
+        The Broker calls this. Everything the gate verifies is verified about
+        the plan that is actually handed to the spawner, because it is the same
+        value: assembled once here and passed straight through.
+
+        The run's lifecycle — events, wait, cancel, close — arrives with the
+        later tickets. What this method owns is that a turn cannot begin except
+        through the pre-spawn boundary.
+        """
+        plan = self.assemble_launch_plan(request)
+        await launch(
+            plan,
+            self._spawner,
+            sessions=self._sessions,
+            journal=self._journal,
+        )
+        return RunHandle(
+            run_id=str(uuid4()),
+            participant_id=request.participant_id,
+            provider=self.provider,
+            native_session_id=request.native_session_id,
+        )
 
     def events(self, run: RunHandle) -> AsyncIterator[RuntimeEvent]:
         raise NotImplementedError(f"events {_LATER_SLICE}")

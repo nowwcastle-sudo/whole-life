@@ -14,7 +14,14 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import Protocol
 
+import re
+
 from whole_life.runtime.contract import Provider, TurnMode, TurnRequest
+
+#: What a provider-issued session identifier may contain. Deliberately narrow:
+#: the identifiers both CLIs issue are UUIDs, and nothing wider has a reason to
+#: reach an argument vector.
+NATIVE_SESSION_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}")
 
 
 class RefusalCode(StrEnum):
@@ -27,6 +34,8 @@ class RefusalCode(StrEnum):
     UNSUPPORTED_CLI_VERSION = "UnsupportedCliVersion"
     BARE_MODE_ARGV = "BareModeArgv"
     BARE_MODE_DEFAULT = "BareModeDefault"
+    CONCURRENT_RESUME_REJECTED = "ConcurrentResumeRejected"
+    EXECUTABLE_UNRESOLVED = "ExecutableUnresolved"
     AUTH_STATUS_UNSUPPORTED = "AuthStatusUnsupported"
     SUBSCRIPTION_AUTH_REQUIRED = "SubscriptionAuthRequired"
 
@@ -155,6 +164,16 @@ def enforce_launch_safety(plan: LaunchPlan) -> None:
     if request.mode is TurnMode.RESUME and not (request.native_session_id or "").strip():
         raise PreStartRefusal(RefusalCode.RESUME_WITHOUT_NATIVE_SESSION)
 
+    # The only caller-supplied value that reaches argv. Everything else there is
+    # a fixed literal. On Windows an argument carrying quotes or `%` can survive
+    # into a command processor's parse, so the payload is removed by construction
+    # rather than by trusting whatever the target turns out to be.
+    native_session_id = request.native_session_id
+    if native_session_id is not None and not NATIVE_SESSION_ID.fullmatch(
+        native_session_id
+    ):
+        raise PreStartRefusal(RefusalCode.TURN_REQUEST_INVALID)
+
     if request.mode is TurnMode.NEW and request.native_session_id is not None:
         raise PreStartRefusal(RefusalCode.NEW_TURN_WITH_NATIVE_SESSION)
 
@@ -174,11 +193,133 @@ def enforce_launch_safety(plan: LaunchPlan) -> None:
         raise PreStartRefusal(RefusalCode.TURN_REQUEST_INVALID)
 
 
-async def launch(plan: LaunchPlan, spawner: ProcessSpawner) -> SpawnedProcess:
+@dataclass(frozen=True, slots=True)
+class LaunchDecision:
+    """Exactly what was started, derived from the plan that started it.
+
+    Recorded so that "what the gate checked" and "what ran" are one statement
+    rather than two that might drift. Nothing here is scheduling or storage —
+    the value is handed to the caller's journal and this module keeps none of it.
+    """
+
+    provider: Provider
+    executable: Path
+    args: tuple[str, ...]
+    mode: TurnMode
+    native_session_id: str | None
+    cli_version: str
+    #: Whether the CLI was asked to constrain its own output. False until a
+    #: preflight measures that the installed build supports it.
+    provider_schema_requested: bool
+    #: Always true. Broker-side validation is a property of the broker, not of
+    #: whichever CLI happens to be installed, so it is never conditional on the
+    #: field above.
+    broker_validates_results: bool
+
+
+def decide_launch(plan: LaunchPlan) -> LaunchDecision:
+    """Describe the plan that is about to be spawned."""
+    request = plan.turn_request
+    return LaunchDecision(
+        provider=plan.provider,
+        executable=plan.executable,
+        args=plan.args,
+        mode=request.mode,
+        native_session_id=request.native_session_id,
+        cli_version=plan.version_conformance.cli_version,
+        provider_schema_requested=PROVIDER_SCHEMA_FLAGS.intersection(plan.args) != set(),
+        broker_validates_results=True,
+    )
+
+
+#: The provider-side "constrain your own output" options. Absent until a
+#: preflight measures support; their absence changes nothing about validation.
+PROVIDER_SCHEMA_FLAGS = frozenset({"--output-schema", "--json-schema"})
+
+
+class RecordingJournal:
+    """A journal that keeps decisions in memory. The caller owns it."""
+
+    def __init__(self) -> None:
+        self.decisions: list[LaunchDecision] = []
+
+    def record(self, decision: LaunchDecision) -> None:
+        self.decisions.append(decision)
+
+
+class ActiveNativeSessions:
+    """Which provider/native-session pairs currently have a run in flight.
+
+    A native session is conversation state the provider owns. Two turns
+    resuming it at once interleave writes into that state, and afterwards
+    neither transcript is a faithful record of what the model saw — and the
+    damage is in the provider's store, not somewhere we can repair. So the
+    second start is refused before spawn.
+
+    Ownership is the caller's on purpose: nothing here is global, so tests and
+    separate brokers do not share a registry by accident.
+    """
+
+    def __init__(self) -> None:
+        self._active: set[tuple[Provider, str]] = set()
+
+    @staticmethod
+    def _key(plan: LaunchPlan) -> tuple[Provider, str] | None:
+        """The pair, or None when this turn resumes nothing.
+
+        Scoped by provider: the same identifier under two providers names two
+        unrelated sessions.
+        """
+        native_session_id = plan.turn_request.native_session_id
+        if not (native_session_id or "").strip():
+            return None
+        return (plan.provider, native_session_id)
+
+    def reserve(self, plan: LaunchPlan) -> None:
+        key = self._key(plan)
+        if key is None:
+            return
+        if key in self._active:
+            raise PreStartRefusal(RefusalCode.CONCURRENT_RESUME_REJECTED)
+        self._active.add(key)
+
+    def release(self, plan: LaunchPlan) -> None:
+        key = self._key(plan)
+        if key is not None:
+            self._active.discard(key)
+
+
+async def launch(
+    plan: LaunchPlan,
+    spawner: ProcessSpawner,
+    *,
+    sessions: ActiveNativeSessions | None = None,
+    journal: "RecordingJournal | None" = None,
+) -> SpawnedProcess:
     """Start the planned process. The production path for both adapters.
 
     The safety boundary runs here, immediately before the spawner, so that
     checking and invoking cannot drift apart.
+
+    The reservation is taken *after* the safety gate, so a plan the gate refuses
+    never holds a session it was never going to run. If the spawner itself
+    fails, the reservation is handed back — a process that did not start is not
+    a run in flight.
     """
     enforce_launch_safety(plan)
-    return await spawner.spawn(plan)
+
+    if sessions is not None:
+        sessions.reserve(plan)
+
+    try:
+        process = await spawner.spawn(plan)
+    except BaseException:
+        if sessions is not None:
+            sessions.release(plan)
+        raise
+
+    # After the spawn, so the journal holds starts rather than attempts.
+    if journal is not None:
+        journal.record(decide_launch(plan))
+
+    return process

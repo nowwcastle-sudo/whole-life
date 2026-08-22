@@ -2,6 +2,7 @@
 
 from collections.abc import AsyncIterator, Mapping
 from pathlib import Path
+from uuid import uuid4
 
 from whole_life.runtime.childenv import build_child_env
 from whole_life.runtime.contract import (
@@ -12,6 +13,7 @@ from whole_life.runtime.contract import (
     RunOutcome,
     RuntimeEvent,
     RuntimeStatus,
+    TurnMode,
     TurnRequest,
 )
 from whole_life.runtime.launch import (
@@ -19,6 +21,7 @@ from whole_life.runtime.launch import (
     PreStartRefusal,
     RefusalCode,
     VersionConformance,
+    launch,
 )
 from whole_life.runtime.preflight import (
     CommandRunner,
@@ -69,6 +72,9 @@ class ClaudeRuntime:
         executable: Path,
         runner: CommandRunner,
         parent_env: Mapping[str, str],
+        spawner=None,
+        sessions=None,
+        journal=None,
     ) -> None:
         self._executable = executable
         self._runner = runner
@@ -76,6 +82,11 @@ class ClaudeRuntime:
         #: this exact mapping, so they cannot diverge.
         self.child_env = build_child_env(parent_env)
         self._conformance: VersionConformance | None = None
+        #: Injected so a turn can be started without a real process, and so the
+        #: registry and journal are owned by the caller rather than this module.
+        self._spawner = spawner
+        self._sessions = sessions
+        self._journal = journal
 
     @property
     def conformance(self) -> VersionConformance | None:
@@ -123,17 +134,45 @@ class ClaudeRuntime:
         if self._conformance is None:
             raise PreStartRefusal(RefusalCode.UNSUPPORTED_CLI_VERSION)
 
+        args = CLAUDE_TURN_ARGS
+        if request.mode is TurnMode.RESUME:
+            # The provider's own resume operation. The read-only controls above
+            # are not conditional on mode: resuming is not a way around them.
+            args += ("--resume", request.native_session_id)
+
         return LaunchPlan(
             provider=Provider.CLAUDE,
             executable=self._executable,
-            args=CLAUDE_TURN_ARGS,
+            args=args,
             child_env=self.child_env,
             version_conformance=self._conformance,
             turn_request=request,
         )
 
     async def start_turn(self, request: TurnRequest) -> RunHandle:
-        raise NotImplementedError(f"start_turn {_LATER_SLICE}")
+        """Assemble, check, and start — one path, no way around the gate.
+
+        The Broker calls this. Everything the gate verifies is verified about
+        the plan that is actually handed to the spawner, because it is the same
+        value: assembled once here and passed straight through.
+
+        The run's lifecycle — events, wait, cancel, close — arrives with the
+        later tickets. What this method owns is that a turn cannot begin except
+        through the pre-spawn boundary.
+        """
+        plan = self.assemble_launch_plan(request)
+        await launch(
+            plan,
+            self._spawner,
+            sessions=self._sessions,
+            journal=self._journal,
+        )
+        return RunHandle(
+            run_id=str(uuid4()),
+            participant_id=request.participant_id,
+            provider=self.provider,
+            native_session_id=request.native_session_id,
+        )
 
     def events(self, run: RunHandle) -> AsyncIterator[RuntimeEvent]:
         raise NotImplementedError(f"events {_LATER_SLICE}")
