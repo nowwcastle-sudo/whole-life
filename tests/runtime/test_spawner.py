@@ -11,6 +11,7 @@ and no turn is spent.
 
 import asyncio
 import dataclasses
+import os
 import sys
 import unittest
 from pathlib import Path
@@ -163,7 +164,7 @@ class CommandLauncherArgvTests(unittest.IsolatedAsyncioTestCase):
     """
 
     async def test_a_launcher_expands_and_splits_arguments(self):
-        """Hermetic: the launcher calls this interpreter by absolute path.
+        """Hermetic: absolute interpreter path, and a probe variable of its own.
 
         An earlier version invoked a bare `python` inside the batch and sent
         stderr to DEVNULL. On a machine without `python` on PATH the launcher
@@ -184,13 +185,22 @@ class CommandLauncherArgvTests(unittest.IsolatedAsyncioTestCase):
                 b'"' + str(Path(sys.executable)).encode("utf-8") + b'"'
                 b' -c "import sys,json;print(json.dumps(sys.argv[1:]))" %*\r\n'
             )
-            passed = ["plain", "%PATH%"]
+            # The probe is a variable this test defines, not an ambient one.
+            # It used to be `%PATH%`, which made the outcome depend on the
+            # caller's environment: Windows deletes a variable set to the empty
+            # string, `cmd` leaves `%UNDEFINED%` as literal text, and so the
+            # expansion this test watches for simply did not happen. Under a
+            # clean-clone run with `PATH=""` that reported the launcher as
+            # *safe* — a false failure from an inert probe, in a test whose
+            # docstring claims to be hermetic.
+            passed = ["plain", "%WL_ARGV_PROBE%"]
 
             process = await asyncio.create_subprocess_exec(
                 str(launcher),
                 *passed,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
+                env={**os.environ, "WL_ARGV_PROBE": "expanded"},
             )
             stdout, stderr = await process.communicate()
 
@@ -203,7 +213,7 @@ class CommandLauncherArgvTests(unittest.IsolatedAsyncioTestCase):
         self.assertNotEqual(
             passed, received, "a launcher preserving argv would be usable"
         )
-        self.assertNotIn("%PATH%", received)
+        self.assertNotIn("%WL_ARGV_PROBE%", received)
 
 
 class SpawnerEnforcesResolutionTests(unittest.IsolatedAsyncioTestCase):

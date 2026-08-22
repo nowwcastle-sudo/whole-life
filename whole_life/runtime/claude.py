@@ -2,6 +2,7 @@
 
 from collections.abc import AsyncIterator, Mapping
 from pathlib import Path
+import dataclasses
 from uuid import uuid4
 
 from whole_life.runtime.childenv import build_child_env
@@ -23,6 +24,8 @@ from whole_life.runtime.launch import (
     VersionConformance,
     launch,
 )
+from whole_life.runtime.normalize import normalize_claude_line
+from whole_life.runtime.observe import RunObserver
 from whole_life.runtime.preflight import (
     CommandRunner,
     conformance_for,
@@ -87,6 +90,13 @@ class ClaudeRuntime:
         self._spawner = spawner
         self._sessions = sessions
         self._journal = journal
+        #: Observers for runs this adapter started, keyed by run id. Held so
+        #: `events` and `wait` describe the process `start_turn` actually
+        #: spawned rather than one reconstructed from a handle.
+        self._runs: dict[str, RunObserver] = {}
+        #: Test seam: substitute the argument vector while keeping assembly,
+        #: the pre-spawn gate and the spawner real.
+        self.turn_args_override = None
 
     @property
     def conformance(self) -> VersionConformance | None:
@@ -161,27 +171,40 @@ class ClaudeRuntime:
         through the pre-spawn boundary.
         """
         plan = self.assemble_launch_plan(request)
-        await launch(
+        if self.turn_args_override is not None:
+            plan = dataclasses.replace(plan, args=self.turn_args_override)
+
+        process = await launch(
             plan,
             self._spawner,
             sessions=self._sessions,
             journal=self._journal,
         )
+        run_id = str(uuid4())
+        self._runs[run_id] = RunObserver(
+            process, normalize=normalize_claude_line, run_id=run_id
+        )
         return RunHandle(
-            run_id=str(uuid4()),
+            run_id=run_id,
             participant_id=request.participant_id,
             provider=self.provider,
             native_session_id=request.native_session_id,
         )
 
     def events(self, run: RunHandle) -> AsyncIterator[RuntimeEvent]:
-        raise NotImplementedError(f"events {_LATER_SLICE}")
+        """Canonical events for a run this adapter started.
+
+        A handle for a run this adapter did not start is a programming error,
+        not a quiet empty stream.
+        """
+        return self._runs[run.run_id].events()
 
     async def cancel(self, run: RunHandle) -> CancelOutcome:
         raise NotImplementedError(f"cancel {_LATER_SLICE}")
 
     async def wait(self, run: RunHandle) -> RunOutcome:
-        raise NotImplementedError(f"wait {_LATER_SLICE}")
+        """The resolved outcome. Meaningful once `events` has finished."""
+        return await self._runs[run.run_id].outcome()
 
     async def close(self) -> None:
         raise NotImplementedError(f"close {_LATER_SLICE}")

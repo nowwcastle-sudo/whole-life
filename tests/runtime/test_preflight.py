@@ -3,6 +3,7 @@
 Everything here is hermetic. No test depends on an authenticated account.
 """
 
+import asyncio
 import json
 import unittest
 
@@ -53,10 +54,18 @@ class AdapterContractTests(unittest.TestCase):
         self.assertIsInstance(codex(), AgentRuntime)
 
     def test_operations_that_arrive_in_later_slices_fail_loudly(self):
+        """`cancel` and `close` are #16's. `events` and `wait` landed with #15.
+
+        The point of this test is that an unfinished operation raises rather
+        than returning something empty and plausible, so it tracks whichever
+        operations are still unfinished.
+        """
         for adapter in (claude(), codex()):
             with self.subTest(provider=adapter.provider):
                 with self.assertRaises(NotImplementedError):
-                    adapter.events(run=None)
+                    asyncio.run(adapter.cancel(run=None))
+                with self.assertRaises(NotImplementedError):
+                    asyncio.run(adapter.close())
 
 
 class ChildEnvironmentReuseTests(unittest.IsolatedAsyncioTestCase):
