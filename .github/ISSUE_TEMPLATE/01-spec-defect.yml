@@ -1,0 +1,71 @@
+name: Specification defect
+description: A contradiction, gap, or ambiguity in a document in this repository.
+title: "[spec] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form when a document in this repository is internally inconsistent, contradicts
+        another document, or can be read two ways. For something the specification does not cover
+        yet, use **Change proposal** instead.
+
+        Do not paste credentials, session material, real prompts, or machine-specific logs.
+        See SECURITY.md.
+  - type: dropdown
+    id: document
+    attributes:
+      label: Document
+      description: Which file contains the defect?
+      options:
+        - docs/spec/whole-life-v0.md
+        - docs/adr/0001-local-subscription-v0.md
+        - CONTEXT.md
+        - README.md
+        - CONTRIBUTING.md
+        - SECURITY.md
+        - other
+    validations:
+      required: true
+  - type: input
+    id: location
+    attributes:
+      label: Section or line
+      description: Section number, heading, or line number.
+      placeholder: "§5, or F-16, or line 214"
+    validations:
+      required: true
+  - type: textarea
+    id: quote
+    attributes:
+      label: What the document currently says
+      description: Quote the exact text. Keep it short.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Why this is a defect
+      description: |
+        State which of these it is and against what: a contradiction (name the other passage),
+        a gap (name the case that has no defined behavior), or an ambiguity (give both readings).
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested correction
+      description: Optional. Proposed wording, if you have one.
+    validations:
+      required: false
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Before submitting
+      options:
+        - label: I read CONTRIBUTING.md.
+          required: true
+        - label: This report contains no credentials, session identifiers, real prompts, or machine-specific logs.
+          required: true
+        - label: This is a defect in an existing document, not a request for new behavior.
+          required: true

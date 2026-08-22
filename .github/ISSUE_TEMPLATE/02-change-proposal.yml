@@ -1,0 +1,76 @@
+name: Change proposal
+description: Propose behavior, a boundary change, or anything the v0 specification does not define yet.
+title: "[proposal] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        v0 is deliberately small. CONTEXT.md lists dependencies and patterns that are **not**
+        going in — FastAPI, A2A, AG-UI, CloudEvents, Redis, NATS, Kafka, ULID packages, a
+        transactional outbox, a dynamic adapter registry, a web UI, and a generalized storage
+        interface — and requires the standard library first. A seam is added only after a second
+        real implementation makes the existing concrete module leak complexity to callers.
+
+        Proposals that do not answer the questions below will be closed without discussion.
+
+        Public-release and provider-policy decisions are out of scope here until the gate in
+        CONTEXT.md has passed (CONTRIBUTING.md).
+  - type: textarea
+    id: requirement
+    attributes:
+      label: The concrete current requirement
+      description: |
+        What breaks, or what cannot be expressed, today? Describe the actual case — not a future
+        one. "We might need it later" is not a requirement and is the most common reason a
+        proposal is closed.
+    validations:
+      required: true
+  - type: textarea
+    id: stdlib
+    attributes:
+      label: What you tried from the standard library first
+      description: Which standard-library approach did you consider, and specifically why is it insufficient?
+    validations:
+      required: true
+  - type: dropdown
+    id: touches_invariant
+    attributes:
+      label: Does this touch a non-negotiable v0 invariant?
+      description: The list is in CONTEXT.md under "Non-negotiable v0 invariants".
+      options:
+        - "No"
+        - "Yes"
+        - "Unsure"
+    validations:
+      required: true
+  - type: textarea
+    id: invariant_detail
+    attributes:
+      label: Which invariant, and how it stays satisfied
+      description: |
+        Required if you answered Yes or Unsure above. Name the invariant and explain how your
+        proposal keeps it true, or argue why it should change. Changing a security or
+        state-machine invariant requires updating the normative specification and an ADR first.
+    validations:
+      required: false
+  - type: textarea
+    id: verification
+    attributes:
+      label: How this would be verified
+      description: |
+        What failing reproduction proves the problem exists, and what mutation would prove the
+        test actually catches it? A green test suite is not evidence unless its scope covers the
+        changed contract.
+    validations:
+      required: false
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Before submitting
+      options:
+        - label: I read CONTEXT.md, including "Keep v0 small" and the non-negotiable v0 invariants.
+          required: true
+        - label: This is not a public-release or provider-policy decision.
+          required: true
+        - label: This proposal contains no credentials, session material, or machine-specific logs.
+          required: true
