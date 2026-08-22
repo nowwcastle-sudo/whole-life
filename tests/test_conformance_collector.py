@@ -16,8 +16,11 @@ Every case here is synthetic. No CLI is executed.
 """
 
 import importlib.util
+import json
+import subprocess
 import sys
 import unittest
+from unittest import mock
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
@@ -199,6 +202,59 @@ class BinaryIdentityTests(unittest.TestCase):
     def test_a_changed_digest_stops_the_collection(self):
         with self.assertRaises(collector.CollectionFailed):
             collector.assert_same_binary("abc", "def")
+
+
+class SameExecutableTests(unittest.TestCase):
+    """All three Claude executions must be the binary whose hash is recorded.
+
+    Hashing a resolved path proves nothing about a command invoked by bare name:
+    that name is re-resolved through PATH by the shell, and could reach a
+    different file. `assert_same_binary` would still pass, because the file it
+    hashed never changed — it simply was not the file that ran.
+    """
+
+    def test_version_auth_and_the_turn_all_receive_the_resolved_path(self):
+        resolved = Path("C:/resolved/claude.exe")
+        seen = []
+
+        def fake_run(executable, args, env):
+            seen.append(executable)
+            if args == ["--version"]:
+                return 0, "2.1.240 (Claude Code)", ""
+            return 0, json.dumps(AuthDecisionGuardTests.OK), ""
+
+        def fake_probe(env, executable):
+            seen.append(str(executable))
+            return collector.BareProbe(0, False)
+
+        with (
+            mock.patch.object(collector, "resolved_executable", return_value=resolved),
+            mock.patch.object(collector, "binary_digest", return_value="deadbeef"),
+            mock.patch.object(collector, "run", fake_run),
+            mock.patch.object(collector, "probe_bare_default", fake_probe),
+        ):
+            collector.collect_claude()
+
+        self.assertEqual([str(resolved)] * 3, seen)
+
+
+class ProbeOutputDisposalTests(unittest.TestCase):
+    """The turn's body is a model response and is never held, not even in memory.
+
+    `capture_output=True` buffers stdout and stderr into the CompletedProcess.
+    Not reading them is not the same as not having them.
+    """
+
+    def test_the_turn_discards_both_streams_at_the_operating_system(self):
+        with mock.patch.object(subprocess, "run") as spawned:
+            spawned.return_value = mock.Mock(returncode=0)
+            collector.probe_bare_default({}, Path("C:/resolved/claude.exe"))
+
+        kwargs = spawned.call_args.kwargs
+        self.assertIs(subprocess.DEVNULL, kwargs["stdout"])
+        self.assertIs(subprocess.DEVNULL, kwargs["stderr"])
+        self.assertNotIn("capture_output", kwargs)
+        self.assertIs(False, kwargs["shell"])
 
 
 if __name__ == "__main__":

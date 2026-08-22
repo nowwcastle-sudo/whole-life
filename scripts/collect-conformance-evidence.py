@@ -126,14 +126,17 @@ def probe_bare_default(env, executable):
     """Run the minimal `-p` turn and keep only whether it completed.
 
     `shell=False` with split argv, the prompt on stdin rather than in argv, and
-    the output discarded unread — the turn's body is a model response, which
+    both streams sent to `DEVNULL` — the turn's body is a model response, which
     section 5 does not permit persisting and this script has no reason to see.
+    `capture_output=True` would buffer it into the CompletedProcess; not reading
+    it is weaker than not holding it.
     """
     try:
         completed = subprocess.run(
             [str(executable), *BARE_PROBE_ARGS],
             input=BARE_PROBE_PROMPT.encode("utf-8"),
-            capture_output=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
             env=dict(env),
             shell=False,
             timeout=BARE_PROBE_TIMEOUT_SECONDS,
@@ -214,8 +217,11 @@ def collect_claude():
     executable = resolved_executable("claude")
     digest_before = binary_digest(executable)
 
-    version_exit, version_out, _ = run("claude", ["--version"], env)
-    auth_exit, auth_out, _ = run("claude", ["auth", "status", "--json"], env)
+    # The resolved path, not the name: a bare name is re-resolved through PATH
+    # by the shell, so hashing one file and invoking another would satisfy
+    # `assert_same_binary` while measuring something else entirely.
+    version_exit, version_out, _ = run(str(executable), ["--version"], env)
+    auth_exit, auth_out, _ = run(str(executable), ["auth", "status", "--json"], env)
     payload = json.loads(auth_out)
     probe = probe_bare_default(env, executable)
 
