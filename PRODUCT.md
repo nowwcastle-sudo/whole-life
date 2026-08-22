@@ -100,4 +100,4 @@ No logo or typeface has been chosen.
 
 - docs/spec/whole-life-v0.md - approved normative design, hash-baselined
 - docs/adr/0001-local-subscription-v0.md - reasoning, hash-baselined
-- docs/conformance/claude-2.1.239.md and codex-0.149.0.md - measured CLI evidence
+- docs/conformance/claude-2.1.240.md and codex-0.149.0.md - measured CLI evidence
