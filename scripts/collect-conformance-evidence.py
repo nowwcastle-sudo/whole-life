@@ -66,20 +66,61 @@ class CollectionFailed(Exception):
 PE_SIGNATURE = b"MZ"
 
 
-def terminate_process_tree(pid):
-    """End the process and everything it started.
+#: How long the process is given to actually disappear after being killed.
+REAP_TIMEOUT_SECONDS = 30
 
-    Windows only, which is the platform this whole collector targets. `/T`
-    is the entire point: without it a launcher dies and its child keeps the
-    request alive.
+
+def system_taskkill():
+    """The Windows `taskkill` under SYSTEMROOT, or refuse.
+
+    Located rather than named. Resolving it through PATH would reintroduce the
+    exact hazard already closed for the CLI itself — and this is the tool whose
+    result is the evidence that a billed request stopped.
     """
-    subprocess.run(
-        ["taskkill", "/F", "/T", "/PID", str(pid)],
+    root = os.environ.get("SYSTEMROOT") or os.environ.get("WINDIR")
+    if not root:
+        raise CollectionFailed(
+            "SYSTEMROOT is not set, so the process killer cannot be located"
+        )
+
+    killer = Path(root) / "System32" / "taskkill.exe"
+    if not killer.is_file():
+        raise CollectionFailed(f"{killer.name} was not found under SYSTEMROOT")
+    return killer
+
+
+def terminate_process_tree(process):
+    """End the process and everything it started, and prove it ended.
+
+    `/T` is the entire point: without it a launcher dies and its child keeps the
+    request alive. But issuing the kill is not the outcome — a nonzero exit, an
+    unavailable killer, or a process that outlives the kill all mean descendants
+    may still be running. None of those may be reported as a tidy timeout, so
+    each raises instead.
+
+    The wait also reaps the started process, so no handle is left behind.
+    """
+    killer = system_taskkill()
+    completed = subprocess.run(
+        [str(killer), "/F", "/T", "/PID", str(process.pid)],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
         shell=False,
         check=False,
     )
+    if completed.returncode != 0:
+        raise CollectionFailed(
+            "the probe process tree could not be terminated, so a model request "
+            "may still be running; this run reports nothing"
+        )
+
+    try:
+        process.wait(timeout=REAP_TIMEOUT_SECONDS)
+    except subprocess.TimeoutExpired:
+        raise CollectionFailed(
+            "the probe process was still alive after termination, so it cannot "
+            "be treated as a clean timeout"
+        ) from None
 
 
 def resolved_executable(name):
@@ -102,7 +143,12 @@ def resolved_executable(name):
         raise CollectionFailed(f"{name} is not on PATH; nothing can be measured")
 
     resolved = Path(found).resolve()
-    if resolved.suffix.lower() != ".exe" or not resolved.read_bytes()[:2] == PE_SIGNATURE:
+    with resolved.open("rb") as image:
+        # Two bytes, not the whole file: this executable is ~337 MB and the
+        # digest already reads it twice.
+        signature = image.read(2)
+
+    if resolved.suffix.lower() != ".exe" or signature != PE_SIGNATURE:
         raise CollectionFailed(
             f"{name} resolves to something other than a PE executable; this "
             "collector does not fingerprint launcher-dispatched implementations"
@@ -183,7 +229,7 @@ def probe_bare_default(env, executable):
         # `Popen.kill()` would end this process only. A launcher's descendant
         # would keep the model request running, unobserved and still billed,
         # while the collection reported a clean timeout.
-        terminate_process_tree(process.pid)
+        terminate_process_tree(process)
         return BareProbe(exit_code=None, timed_out=True)
 
     return BareProbe(exit_code=process.returncode, timed_out=False)

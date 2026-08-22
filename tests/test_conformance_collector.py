@@ -290,65 +290,123 @@ class AuthBeforeTurnTests(unittest.TestCase):
 
 
 class ProbeProcessTests(unittest.TestCase):
-    """The turn is spawned, watched, and — if it hangs — killed as a whole tree.
+    """A hung turn is not over until the whole tree is gone and reaped.
 
-    `subprocess.run(timeout=...)` kills only the process it started. If the
-    launched process has descendants, catching `TimeoutExpired` reports a clean
-    collection failure while a model request keeps running, unobserved and
-    still billed. So the probe owns the process and terminates the tree.
-
-    Also: the streams go to `DEVNULL`, not into a buffer. `capture_output=True`
-    would hold the model's response in memory; not reading it is weaker than
-    not having it.
+    Calling a killer is not the same as terminating. If `taskkill` cannot run,
+    or exits nonzero, or the process never actually goes away, then a model
+    request may still be running and still billing while this collector reports
+    a tidy timeout. So termination is verified, and anything unverified raises
+    rather than returning a clean result.
     """
 
-    def spawn(self, *, returncode=0, timeout=False):
+    def spawn(self, *, returncode=0, timeout=False, wait_hangs=False):
         proc = mock.Mock()
         proc.pid = 4321
         proc.returncode = returncode
-        if timeout:
-            proc.communicate.side_effect = subprocess.TimeoutExpired(cmd="claude", timeout=1)
-        else:
+        proc.communicate.side_effect = (
+            subprocess.TimeoutExpired(cmd="claude", timeout=1) if timeout else None
+        )
+        if not timeout:
             proc.communicate.return_value = (None, None)
+        if wait_hangs:
+            proc.wait.side_effect = subprocess.TimeoutExpired(cmd="claude", timeout=1)
+        else:
+            proc.wait.return_value = 1
         return proc
 
-    def run_probe(self, proc):
+    def run_probe(self, proc, *, kill_exit=0, killer_present=True):
+        killer = Path("C:/Windows/System32/taskkill.exe")
         with (
             mock.patch.object(subprocess, "Popen", return_value=proc) as popen,
-            mock.patch.object(subprocess, "run") as killer,
+            mock.patch.object(subprocess, "run") as kill,
         ):
-            result = collector.probe_bare_default({}, Path("C:/resolved/claude.exe"))
-        return result, popen, killer
+            kill.return_value = mock.Mock(returncode=kill_exit)
+            patcher = mock.patch.object(
+                collector,
+                "system_taskkill",
+                side_effect=(
+                    None if killer_present
+                    else collector.CollectionFailed("taskkill unavailable")
+                ),
+                return_value=killer,
+            )
+            with patcher:
+                result = collector.probe_bare_default(
+                    {}, Path("C:/resolved/claude.exe")
+                )
+        return result, popen, kill
 
     def test_a_clean_turn_reports_its_exit_code(self):
-        result, _popen, killer = self.run_probe(self.spawn(returncode=0))
+        result, _popen, kill = self.run_probe(self.spawn(returncode=0))
 
         self.assertEqual(collector.BareProbe(0, False), result)
-        killer.assert_not_called()
+        kill.assert_not_called()
 
     def test_a_failed_turn_reports_its_exit_code_without_killing(self):
-        result, _popen, killer = self.run_probe(self.spawn(returncode=1))
+        result, _popen, kill = self.run_probe(self.spawn(returncode=1))
 
         self.assertEqual(collector.BareProbe(1, False), result)
-        killer.assert_not_called()
+        kill.assert_not_called()
 
-    def test_a_hung_turn_terminates_the_whole_tree(self):
-        result, _popen, killer = self.run_probe(self.spawn(timeout=True))
+    def test_a_hung_turn_is_reported_only_after_the_tree_is_gone(self):
+        proc = self.spawn(timeout=True)
+
+        result, _popen, kill = self.run_probe(proc)
 
         self.assertEqual(collector.BareProbe(None, True), result)
-        killed = " ".join(str(a) for a in killer.call_args.args[0])
-        self.assertIn("taskkill", killed)
-        self.assertIn("/T", killed)
-        self.assertIn("4321", killed)
+        argv = [str(a) for a in kill.call_args.args[0]]
+        self.assertIn("/T", argv)
+        self.assertIn("4321", argv)
+        proc.wait.assert_called()
+
+    def test_a_failed_kill_stops_the_collection(self):
+        """A nonzero taskkill means descendants may still be running."""
+        with self.assertRaises(collector.CollectionFailed):
+            self.run_probe(self.spawn(timeout=True), kill_exit=1)
+
+    def test_an_unavailable_killer_stops_the_collection(self):
+        with self.assertRaises(collector.CollectionFailed):
+            self.run_probe(self.spawn(timeout=True), killer_present=False)
+
+    def test_a_process_that_survives_the_kill_stops_the_collection(self):
+        """Reaping is the proof. Without it the kill is only a request."""
+        with self.assertRaises(collector.CollectionFailed):
+            self.run_probe(self.spawn(timeout=True, wait_hangs=True))
 
     def test_both_streams_are_discarded_by_the_operating_system(self):
-        _result, popen, _killer = self.run_probe(self.spawn())
+        _result, popen, _kill = self.run_probe(self.spawn())
 
         kwargs = popen.call_args.kwargs
         self.assertIs(subprocess.DEVNULL, kwargs["stdout"])
         self.assertIs(subprocess.DEVNULL, kwargs["stderr"])
         self.assertNotIn("capture_output", kwargs)
         self.assertIs(False, kwargs["shell"])
+
+
+class SystemTaskkillTests(unittest.TestCase):
+    """The killer is located under SYSTEMROOT, never through PATH.
+
+    PATH is exactly the re-resolution hazard already fixed for the CLI itself.
+    The tool that proves termination must not be the one thing still picked up
+    by name.
+    """
+
+    def test_it_resolves_under_system_root(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            system32 = Path(tmp) / "System32"
+            system32.mkdir()
+            (system32 / "taskkill.exe").write_bytes(b"MZ")
+            with mock.patch.dict(collector.os.environ, {"SYSTEMROOT": tmp}, clear=False):
+                resolved = collector.system_taskkill()
+
+        self.assertEqual(system32 / "taskkill.exe", resolved)
+        self.assertTrue(resolved.is_absolute())
+
+    def test_a_missing_killer_is_refused(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            with mock.patch.dict(collector.os.environ, {"SYSTEMROOT": tmp}, clear=False):
+                with self.assertRaises(collector.CollectionFailed):
+                    collector.system_taskkill()
 
 
 class ResolvedTargetTests(unittest.TestCase):
