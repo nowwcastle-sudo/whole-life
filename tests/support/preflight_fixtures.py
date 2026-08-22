@@ -18,7 +18,7 @@ SENTINEL_EMAIL = "SENTINEL-EMAIL-ADDRESS"
 SENTINEL_ORG_ID = "SENTINEL-ORG-ID"
 SENTINEL_ORG_NAME = "SENTINEL-ORG-NAME"
 
-#: Exactly the field set Claude Code 2.1.239 returns, observed locally.
+#: Exactly the field set Claude Code 2.1.240 returns, observed locally.
 CLAUDE_AUTH_OK = {
     "loggedIn": True,
     "authMethod": "claude.ai",
@@ -77,7 +77,7 @@ class ScriptedRunner:
 
 
 def claude_runner(
-    *, version="2.1.239 (Claude Code)", auth=None, version_exit=0
+    *, version="2.1.240 (Claude Code)", auth=None, version_exit=0
 ) -> ScriptedRunner:
     return ScriptedRunner(
         {

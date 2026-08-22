@@ -25,6 +25,8 @@ class RefusalCode(StrEnum):
     TURN_REQUEST_INVALID = "TurnRequestInvalid"
     CHILD_ENV_FORBIDDEN_VARIABLE = "ChildEnvForbiddenVariable"
     UNSUPPORTED_CLI_VERSION = "UnsupportedCliVersion"
+    BARE_MODE_ARGV = "BareModeArgv"
+    BARE_MODE_DEFAULT = "BareModeDefault"
     AUTH_STATUS_UNSUPPORTED = "AuthStatusUnsupported"
     SUBSCRIPTION_AUTH_REQUIRED = "SubscriptionAuthRequired"
 
@@ -66,8 +68,8 @@ class VersionConformance:
 #: for that provider and version is evidence.
 SUPPORTED_VERSIONS: Mapping[Provider, Mapping[str, VersionConformance]] = {
     Provider.CLAUDE: {
-        "2.1.239": VersionConformance(
-            cli_version="2.1.239", allowlisted=True, bare_default=False
+        "2.1.240": VersionConformance(
+            cli_version="2.1.240", allowlisted=True, bare_default=False
         )
     },
     Provider.CODEX: {
@@ -127,6 +129,21 @@ def enforce_launch_safety(plan: LaunchPlan) -> None:
     Each control is a separate statement on purpose: removing one must make
     exactly one test fail.
     """
+    # Spec section 5, bare mode gate. Three separate controls, and the version
+    # one runs first because the spec refuses it `allowlist 통과 여부와 무관하게`
+    # — a release whose `-p` defaults to bare cannot use a subscription sign-in
+    # no matter how clean argv and the environment are.
+    if plan.version_conformance.bare_default:
+        raise PreStartRefusal(RefusalCode.BARE_MODE_DEFAULT)
+
+    if "--bare" in plan.args:
+        raise PreStartRefusal(RefusalCode.BARE_MODE_ARGV)
+
+    # Same condition and same diagnostic as `build_child_env`. Checked again
+    # because a plan can be assembled, or mutated, without passing through it.
+    if "CLAUDE_CODE_SIMPLE" in {name.upper() for name in plan.child_env}:
+        raise PreStartRefusal(RefusalCode.CHILD_ENV_FORBIDDEN_VARIABLE)
+
     canonical = SUPPORTED_VERSIONS[plan.provider].get(
         plan.version_conformance.cli_version
     )

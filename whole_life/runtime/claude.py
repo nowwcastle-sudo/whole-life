@@ -14,7 +14,12 @@ from whole_life.runtime.contract import (
     RuntimeStatus,
     TurnRequest,
 )
-from whole_life.runtime.launch import VersionConformance
+from whole_life.runtime.launch import (
+    LaunchPlan,
+    PreStartRefusal,
+    RefusalCode,
+    VersionConformance,
+)
 from whole_life.runtime.preflight import (
     CommandRunner,
     conformance_for,
@@ -22,6 +27,13 @@ from whole_life.runtime.preflight import (
 )
 
 _LATER_SLICE = "arrives with a later ticket; this slice ends at preflight"
+
+#: The final arguments for one Claude turn. `--safe-mode`, never `--bare`:
+#: `--safe-mode` disables customization while leaving authentication, model
+#: selection, built-in tools and permissions working, which is what the section 4
+#: read-only boundary needs. `--bare` additionally replaces the authentication
+#: path and would break the subscription premise.
+CLAUDE_TURN_ARGS = ("-p", "--safe-mode", "--output-format", "stream-json")
 
 
 class ClaudeRuntime:
@@ -73,6 +85,29 @@ class ClaudeRuntime:
             worker_concurrency_enforcement=EnforcementLevel.COOPERATIVE,
             worker_total_start_enforcement=EnforcementLevel.COOPERATIVE,
             delegation_depth_enforcement=EnforcementLevel.HARD,
+        )
+
+    def assemble_launch_plan(self, request: TurnRequest) -> LaunchPlan:
+        """Everything one turn is about to be started with, as one value.
+
+        Separated from `start_turn` so that the safety boundary can be exercised
+        against the plan this adapter really builds. `start_turn` arrives with
+        #14 and starts by calling this.
+
+        `--bare` is never placed here. `--safe-mode` is what disables
+        customization; the two are not interchangeable, because `--bare` also
+        replaces the authentication path (spec section 5).
+        """
+        if self._conformance is None:
+            raise PreStartRefusal(RefusalCode.UNSUPPORTED_CLI_VERSION)
+
+        return LaunchPlan(
+            provider=Provider.CLAUDE,
+            executable=self._executable,
+            args=CLAUDE_TURN_ARGS,
+            child_env=self.child_env,
+            version_conformance=self._conformance,
+            turn_request=request,
         )
 
     async def start_turn(self, request: TurnRequest) -> RunHandle:

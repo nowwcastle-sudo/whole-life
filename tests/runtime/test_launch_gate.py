@@ -34,7 +34,7 @@ class AcceptedLaunchTests(unittest.IsolatedAsyncioTestCase):
             ("-p", "--safe-mode", "--output-format", "stream-json"), spawned.args
         )
         self.assertEqual(r"C:\Windows", spawned.child_env["SYSTEMROOT"])
-        self.assertEqual("2.1.239", spawned.version_conformance.cli_version)
+        self.assertEqual("2.1.240", spawned.version_conformance.cli_version)
         self.assertEqual("claude-01", spawned.turn_request.participant_id)
 
 
@@ -81,10 +81,16 @@ class PreStartRefusalTests(unittest.IsolatedAsyncioTestCase):
     async def test_a_conformance_record_disagreeing_with_the_canonical_one_is_refused(
         self,
     ):
-        """A known version carrying measurements we never recorded is not that version."""
+        """A known version carrying measurements we never recorded is not that version.
+
+        The disagreeing field is `allowlisted`, not `bare_default`. Since #13 a
+        `bare_default=True` record is refused earlier and more specifically, by
+        the section 5 bare mode gate — see `test_bare_mode_gate.py`. This case
+        still tests what it was written for: the canonical comparison itself.
+        """
         plan = launch_plan(
             version_conformance=VersionConformance(
-                cli_version="2.1.239", allowlisted=True, bare_default=True
+                cli_version="2.1.240", allowlisted=False, bare_default=False
             )
         )
 

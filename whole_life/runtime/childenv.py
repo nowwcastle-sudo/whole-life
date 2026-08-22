@@ -30,7 +30,7 @@ FORBIDDEN_VARIABLES = frozenset(
 
 #: Carried over from the parent when present. Enough for the official CLIs to
 #: locate themselves, their configuration and the operator's existing sign-in,
-#: and nothing else. Verified sufficient against Claude Code 2.1.239 and
+#: and nothing else. Verified sufficient against Claude Code 2.1.240 and
 #: Codex CLI 0.149.0.
 INHERITED_VARIABLES = (
     "SYSTEMROOT",
@@ -52,6 +52,13 @@ INHERITED_VARIABLES = (
 )
 
 assert not (FORBIDDEN_VARIABLES & set(INHERITED_VARIABLES))
+
+#: Every forbidden name is upper case, because the membership test below
+#: upper-cases the environment's names before comparing. A mixed-case entry here
+#: would never match anything and would fail *open* — the one direction this
+#: module must not fail in. `-O` strips this line, so the invariant is also a
+#: test; unlike the assertion above it has no runtime check standing behind it.
+assert all(name == name.upper() for name in FORBIDDEN_VARIABLES)
 
 
 def build_child_env(

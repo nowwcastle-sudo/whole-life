@@ -43,13 +43,26 @@ class EvidenceDocumentTests(unittest.TestCase):
                     UNMEASURED_HEADING, path.read_text(encoding="utf-8")
                 )
 
-    def test_no_bare_mode_claim_is_recorded_as_an_observation(self):
-        """The collector executes no turn, so it cannot observe this."""
-        for path in evidence_documents():
-            with self.subTest(document=path.name):
-                observations = section(path.read_text(encoding="utf-8"), "## Observations")
+    def test_no_unobserved_claim_is_recorded_as_an_observation(self):
+        """Tripwires for the claims this collector carries but never measures.
 
-                self.assertNotIn("bare", observations.lower())
+        `--ignore-user-config` covers the Codex `CODEX_HOME` separation, which
+        is a spec statement rather than a result.
+
+        Claude's `-p` default had a `bare` tripwire here until #13. The collector
+        now runs the turn and measures it, so the tripwire was removed in the
+        same commit that added the probe — which is the contract below, working.
+
+        When a probe genuinely measures one of these, its tripwire must be
+        removed in the same commit that adds the probe — otherwise a legitimate
+        observation fails this test. That is the intended contract: the tripwire
+        is what forces the measurement and the claim to move together.
+        """
+        for path in evidence_documents():
+            observations = section(path.read_text(encoding="utf-8"), "## Observations")
+            for tripwire in ("--ignore-user-config",):
+                with self.subTest(document=path.name, tripwire=tripwire):
+                    self.assertNotIn(tripwire, observations.lower())
 
     def test_the_unmeasured_section_says_it_carries_no_new_evidence(self):
         for path in evidence_documents():
