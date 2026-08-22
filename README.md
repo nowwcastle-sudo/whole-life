@@ -16,7 +16,7 @@ There is nothing to install yet. This repository holds the approved design, not 
 
 **When v0 ships,** the intended shape is a single local command that starts the broker on your own machine. You sign in to Claude Code and Codex CLI yourself, exactly as you already do. The broker launches the CLIs already installed on the machine and reads their output streams; keeping subscription credentials out of its execution path is a design requirement checked at every launch, not a permanent property of the CLIs — see [v0 boundaries](#v0-boundaries).
 
-Nothing here talks to a provider API, a remote service, or another machine.
+The **broker** makes no network calls of its own: it does not use a provider API, expose a service, or reach another machine. The CLIs it launches are cloud-backed and do talk to their own providers — exactly as they do when you run them by hand. The boundary is that the broker adds no remote surface, not that the session is offline.
 
 ## Technology
 
