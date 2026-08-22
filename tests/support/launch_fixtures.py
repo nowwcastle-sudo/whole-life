@@ -70,7 +70,7 @@ def launch_plan(**overrides) -> LaunchPlan:
         "provider": Provider.CLAUDE,
         "executable": Path("C:/tools/claude/claude.cmd"),
         "args": ("-p", "--safe-mode", "--output-format", "stream-json"),
-        "child_env": {"SYSTEMROOT": "C:\Windows", "LANG": "en-US.UTF-8"},
+        "child_env": {"SYSTEMROOT": r"C:\Windows", "LANG": "en-US.UTF-8"},
         "version_conformance": VersionConformance(
             cli_version="2.1.239",
             allowlisted=True,
