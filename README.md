@@ -2,7 +2,7 @@
 
 *English · [한국어](README.ko.md)*
 
-Whole Life is a Windows-first, local orchestration project for collaboration between multiple Claude Code and Codex CLI participants using each user's own official CLI sign-in.
+Whole Life specifies a Windows-first, local orchestration layer for collaboration between multiple Claude Code and Codex CLI participants, driven by the operator's own single official CLI sign-in on the operator's own machine. It is a single-user tool: it never relays, pools, or shares a sign-in between people.
 
 > **Status:** architecture approved; documentation only. There is no runnable broker yet.
 
@@ -12,9 +12,9 @@ The v0 design keeps the provider set deliberately small—Claude and Codex—whi
 
 There is nothing to install yet. This repository holds the approved design, not an implementation.
 
-**To read the design,** start with the [v0 specification](docs/spec/whole-life-v0.md), then [ADR 0001](docs/adr/0001-local-subscription-v0.md) for the reasoning behind it. [CONTEXT.md](CONTEXT.md) records the approved baseline and the SHA-256 hash of each pinned document.
+**To read the design,** start with the [v0 specification](docs/spec/whole-life-v0.md), then [ADR 0001](docs/adr/0001-local-subscription-v0.md) for the reasoning behind it. [CONTEXT.md](CONTEXT.md) records the approved baseline, the SHA-256 hash of each pinned document, and the current status of every public-release gate.
 
-**When v0 ships,** the intended shape is a single local command that starts the broker on your own machine. You sign in to Claude Code and Codex CLI yourself, exactly as you already do; the broker never reads, stores, or relays those credentials. It launches the CLIs already installed on the machine, observes their output streams, and writes one deterministic dossier per collaboration session.
+**When v0 ships,** the intended shape is a single local command that starts the broker on your own machine. You sign in to Claude Code and Codex CLI yourself, exactly as you already do. The broker launches the CLIs already installed on the machine and reads their output streams; keeping subscription credentials out of its execution path is a design requirement checked at every launch, not a permanent property of the CLIs — see [v0 boundaries](#v0-boundaries).
 
 Nothing here talks to a provider API, a remote service, or another machine.
 
@@ -33,7 +33,7 @@ Supported CLI versions are pinned to a compiled-in allowlist. An unrecognised ve
 
 ## Why this project exists
 
-Current agent tools can stream events, resume sessions, and invoke subagents, but they do not provide a shared cross-provider collaboration state with consistent replay, process cleanup, context boundaries, and deterministic output. Whole Life specifies that missing local control layer.
+Current agent tools can stream events, resume sessions, and invoke subagents. We are not aware of one that also provides a shared cross-provider collaboration state with consistent replay, process cleanup, context boundaries, and deterministic output. Whole Life specifies that local control layer.
 
 ## v0 boundaries
 
@@ -43,7 +43,8 @@ Current agent tools can stream events, resume sessions, and invoke subagents, bu
 - Read-only agent runtimes; broker-only artifact commits
 - Event observation in real time; AI-to-AI context exchange at turn boundaries
 - A deterministic dossier that preserves original answers, critiques, agreements, conflicts, and provenance
-- No web UI, remote service, multi-user credential relay, worktree writing, or provider API dependency in v0
+- No web UI, remote service, multi-user credential relay, or worktree writing in v0
+- No provider API key in the broker's execution path — **conditional on current CLI behavior, not a permanent property.** Claude Code's `--bare` mode reads authentication strictly from `ANTHROPIC_API_KEY` or `apiKeyHelper` and never from OAuth or the keychain, and Anthropic documents that `--bare` will become the default for `-p` in a future release. The broker therefore pins CLI versions, asserts bare mode is off, and fails closed rather than silently switching to an API key (see [specification §5](docs/spec/whole-life-v0.md))
 
 ## Token-aware collaboration
 
@@ -61,12 +62,13 @@ Full answers remain in the dossier and are never injected into another participa
 
 Whole Life must not read, copy, export, or broker Claude or ChatGPT credentials. Official CLI processes authenticate themselves. Unknown authentication, CLI versions, worker observability, or process outcomes fail closed.
 
-Technical feasibility is not the same as provider-policy approval. The repository remains private until current OpenAI and Anthropic policy, actual subscription usage attribution, and credential-handling gates have been revalidated.
+Technical feasibility is not the same as provider-policy approval. The public-release gate and its current per-item status — including this repository's visibility history — are tracked in [CONTEXT.md](CONTEXT.md). Subscription usage attribution has not been measured yet, so nothing here should be read as a statement about how a provider will meter or bill this usage.
 
 ## Canonical documents
 
 - [Whole Life v0 normative specification](docs/spec/whole-life-v0.md)
 - [ADR 0001: local subscription v0](docs/adr/0001-local-subscription-v0.md)
+- [Gate 2 usage-attribution smoke test design](docs/smoke/gate-2-usage-attribution.md)
 - [Implementation context](CONTEXT.md)
 - [Security policy](SECURITY.md)
 - [Contributing](CONTRIBUTING.md)
