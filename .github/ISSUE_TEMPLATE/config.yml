@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or open-ended discussion
+    url: https://github.com/nowwcastle-sudo/whole-life/discussions
+    about: Usage questions, design brainstorming, and anything that is not yet a concrete specification defect or change proposal.
