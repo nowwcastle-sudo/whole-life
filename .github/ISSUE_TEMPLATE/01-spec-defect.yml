@@ -19,7 +19,8 @@ body:
       options:
         - docs/spec/whole-life-v0.md
         - docs/adr/0001-local-subscription-v0.md
-        - CONTEXT.md
+        - CONTEXT.md (glossary)
+        - docs/project-context.md
         - README.md
         - CONTRIBUTING.md
         - SECURITY.md

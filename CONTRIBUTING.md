@@ -6,7 +6,7 @@ Whole Life is in a documentation-first architecture phase. Contributions should 
 
 ## Before contributing
 
-1. Read [CONTEXT.md](CONTEXT.md), the [normative v0 specification](docs/spec/whole-life-v0.md), and [ADR 0001](docs/adr/0001-local-subscription-v0.md).
+1. Read [`docs/project-context.md`](docs/project-context.md), the [normative v0 specification](docs/spec/whole-life-v0.md), and [ADR 0001](docs/adr/0001-local-subscription-v0.md). Use the vocabulary in [`CONTEXT.md`](CONTEXT.md).
 2. Distinguish verified provider behavior from a proposal or inference.
 3. Do not add a dependency, abstraction, provider, remote service, or write capability without a concrete current requirement and an ADR.
 4. Never include credentials, session material, real user prompts, runtime databases, or machine-specific logs.
@@ -22,14 +22,15 @@ Treat the following as **established, not as gaps to fill**:
 | Artifact | Status |
 |---|---|
 | `LICENSE`, `README.md`, `CONTRIBUTING.md`, `SECURITY.md`, `.gitignore` | Established. Extend; do not replace. |
-| `docs/spec/whole-life-v0.md`, `docs/adr/0001-*.md` | Approved baseline, pinned by SHA-256 in `CONTEXT.md`. Changing either requires a new ADR and a matching baseline update in the same commit. |
-| `CONTEXT.md` | Holds the approved baseline and current status — **not** a domain glossary. See the reconciliation note below. |
+| `docs/spec/whole-life-v0.md`, `docs/adr/0001-*.md` | Approved baseline, pinned by SHA-256 in `docs/project-context.md`. Changing either requires a new ADR and a matching baseline update in the same commit. |
+| `CONTEXT.md` | The **domain glossary** and nothing else, per [`docs/agents/domain.md`](docs/agents/domain.md). Extend it when a term is resolved; do not put status, decisions, or implementation detail here. |
+| `docs/project-context.md` | Project status, approved baseline, non-negotiable v0 invariants, implementation order, and the public-release gate. |
 | CI workflow | Deliberately absent. No code and no dependency manifest exist yet. |
 | Commit hooks | Deliberately absent, for the same reason. |
 
 Everything the table does not list is filled in progressively, as the flow reaches it. The team does not front-load scaffolding for work that has not started.
 
-**`CONTEXT.md` reconciliation.** Several agent skills assume `CONTEXT.md` is a glossary and nothing else. This repository uses it for the approved baseline instead. Until that conflict is resolved, leave `CONTEXT.md` as it is: propose moving the baseline into its own document, then wait for a decision.
+**Where each kind of knowledge goes.** The engineering skills assume `CONTEXT.md` is a glossary and nothing else, so that is what it is here. Everything that used to share the file now lives in `docs/project-context.md`. A term belongs in `CONTEXT.md`; a decision belongs in `docs/adr/`; status, baseline hashes, and gates belong in `docs/project-context.md`. If you are unsure which, it is not a term.
 
 **Contribution surface.** This file and `SECURITY.md` exist, but the repository stays private until the gates in the README's *Security and policy boundary* clear. No external triage process is in place, and none is created until distribution is unblocked.
 
@@ -48,4 +49,4 @@ Everything the table does not list is filled in progressively, as the flow reach
 
 Keep pull requests small and explain what changed, why it was necessary, how it was verified, and what remains unverified. A green test suite is not sufficient unless its scope covers the changed contract.
 
-Public-release and provider-policy decisions are out of scope for ordinary pull requests until the policy gate in [CONTEXT.md](CONTEXT.md) has passed.
+Public-release and provider-policy decisions are out of scope for ordinary pull requests until the policy gate in [`docs/project-context.md`](docs/project-context.md) has passed.
