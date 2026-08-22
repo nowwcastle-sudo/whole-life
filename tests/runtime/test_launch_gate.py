@@ -1,4 +1,7 @@
-"""The final pre-spawn boundary — normative source: spec sections 4, 5 and 7."""
+"""The final pre-spawn boundary — normative source: spec sections 4 and 7.
+
+The section 5 bare mode gate runs at this same boundary but arrives with #13.
+"""
 
 import unittest
 from pathlib import Path
@@ -25,7 +28,7 @@ class AcceptedLaunchTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(
             ("-p", "--safe-mode", "--output-format", "stream-json"), spawned.args
         )
-        self.assertEqual("C:\Windows", spawned.child_env["SYSTEMROOT"])
+        self.assertEqual(r"C:\Windows", spawned.child_env["SYSTEMROOT"])
         self.assertEqual("2.1.239", spawned.version_conformance.cli_version)
         self.assertEqual("claude-01", spawned.turn_request.participant_id)
 
@@ -104,7 +107,7 @@ class PreStartRefusalTests(unittest.IsolatedAsyncioTestCase):
         env_sentinel = "SENTINEL-ENV-VALUE"
         prompt_sentinel = "SENTINEL-PROMPT-TEXT"
         plan = launch_plan(
-            child_env={"SYSTEMROOT": "C:\Windows", "CODEX_HOME": env_sentinel},
+            child_env={"SYSTEMROOT": r"C:\Windows", "CODEX_HOME": env_sentinel},
             turn_request=turn_request(participant_id="", prompt=prompt_sentinel),
         )
 
@@ -118,7 +121,7 @@ class PreStartRefusalTests(unittest.IsolatedAsyncioTestCase):
 
 class LaunchPlanTests(unittest.TestCase):
     def test_child_env_cannot_be_mutated_after_assembly(self):
-        env = {"SYSTEMROOT": "C:\Windows"}
+        env = {"SYSTEMROOT": r"C:\Windows"}
         plan = launch_plan(child_env=env)
 
         with self.assertRaises(TypeError):
