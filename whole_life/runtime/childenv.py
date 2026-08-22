@@ -73,7 +73,10 @@ def build_child_env(
     }
     env.update(extra or {})
 
-    if FORBIDDEN_VARIABLES & set(env):
+    # Compared upper-cased because Windows treats environment names
+    # case-insensitively: `openai_api_key` and `OPENAI_API_KEY` are one variable
+    # to the child, so a case-sensitive comparison is not a control at all.
+    if FORBIDDEN_VARIABLES & {name.upper() for name in env}:
         # The code is the whole diagnostic; naming the variable here would put
         # it one careless format string away from its value.
         raise PreStartRefusal(RefusalCode.CHILD_ENV_FORBIDDEN_VARIABLE)

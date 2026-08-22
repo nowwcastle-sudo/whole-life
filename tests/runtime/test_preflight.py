@@ -3,6 +3,7 @@
 Everything here is hermetic. No test depends on an authenticated account.
 """
 
+import json
 import unittest
 
 from tests.support.preflight_fixtures import (
@@ -184,6 +185,20 @@ class ClaudeAuthTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(RefusalCode.AUTH_STATUS_UNSUPPORTED, refusal.code)
 
+    async def test_a_repeated_authentication_field_is_refused(self):
+        """`json.loads` keeps the last duplicate silently.
+
+        A payload saying `loggedIn: false` and then `loggedIn: true` parses to
+        a signed-in decision with the pinned field set intact, so every later
+        check agrees. An ambiguous payload is a schema we have not evaluated.
+        """
+        body = json.dumps(CLAUDE_AUTH_OK)
+        repeated = '{"loggedIn": false, ' + body[1:]
+
+        refusal = await self._refused(stdout=repeated)
+
+        self.assertEqual(RefusalCode.AUTH_STATUS_UNSUPPORTED, refusal.code)
+
     async def test_unparseable_output_is_refused(self):
         refusal = await self._refused(stdout="not json at all")
 
@@ -245,6 +260,21 @@ class CodexAuthTests(unittest.IsolatedAsyncioTestCase):
         refusal = await self._refused(stderr="Not logged in")
 
         self.assertEqual(RefusalCode.AUTH_STATUS_UNSUPPORTED, refusal.code)
+
+    async def test_a_status_that_also_writes_stdout_is_refused(self):
+        """The measured fixture has stdout exactly empty; anything else is a
+        changed build.
+
+        Matching stderr alone accepts a status whose shape we never measured —
+        including one that says the pinned line and then contradicts it on
+        stdout. Whitespace counts: the pinned shape is the empty string, not
+        "nothing worth reading".
+        """
+        for stdout in ("Logged in using an API key", " \r\n", "\n"):
+            with self.subTest(stdout=stdout):
+                refusal = await self._refused(stdout=stdout)
+
+                self.assertEqual(RefusalCode.AUTH_STATUS_UNSUPPORTED, refusal.code)
 
     async def test_a_nonzero_status_exit_is_refused(self):
         refusal = await self._refused(exit_code=1)

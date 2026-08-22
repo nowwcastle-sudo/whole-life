@@ -61,6 +61,49 @@ class PreStartRefusalTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(RefusalCode.UNSUPPORTED_CLI_VERSION, refusal.code)
 
+    async def test_a_conformance_record_claiming_an_unknown_version_is_refused(self):
+        """`allowlisted` is a claim by the caller, not evidence.
+
+        Anything can construct `VersionConformance(..., allowlisted=True)`. The
+        gate has to check the claim against the canonical table, or an adapter
+        defect walks an untested CLI version straight past the boundary.
+        """
+        plan = launch_plan(
+            version_conformance=VersionConformance(
+                cli_version="9.9.9", allowlisted=True, bare_default=False
+            )
+        )
+
+        refusal = await self._refuse(plan)
+
+        self.assertEqual(RefusalCode.UNSUPPORTED_CLI_VERSION, refusal.code)
+
+    async def test_a_conformance_record_disagreeing_with_the_canonical_one_is_refused(
+        self,
+    ):
+        """A known version carrying measurements we never recorded is not that version."""
+        plan = launch_plan(
+            version_conformance=VersionConformance(
+                cli_version="2.1.239", allowlisted=True, bare_default=True
+            )
+        )
+
+        refusal = await self._refuse(plan)
+
+        self.assertEqual(RefusalCode.UNSUPPORTED_CLI_VERSION, refusal.code)
+
+    async def test_a_conformance_record_from_another_provider_is_refused(self):
+        """Codex's allowlisted version must not satisfy a Claude plan."""
+        plan = launch_plan(
+            version_conformance=VersionConformance(
+                cli_version="0.149.0", allowlisted=True, bare_default=False
+            )
+        )
+
+        refusal = await self._refuse(plan)
+
+        self.assertEqual(RefusalCode.UNSUPPORTED_CLI_VERSION, refusal.code)
+
     async def test_resume_without_a_native_session_is_refused(self):
         plan = launch_plan(
             turn_request=turn_request(mode=TurnMode.RESUME, native_session_id=None)

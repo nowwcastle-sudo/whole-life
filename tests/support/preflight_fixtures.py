@@ -49,8 +49,10 @@ def claude_auth_result(payload=None, *, exit_code=0, stdout=None) -> CommandResu
     return CommandResult(exit_code=exit_code, stdout=stdout, stderr="")
 
 
-def codex_auth_result(stderr=CODEX_LOGGED_IN_STDERR, *, exit_code=0) -> CommandResult:
-    return CommandResult(exit_code=exit_code, stdout="", stderr=stderr)
+def codex_auth_result(
+    stderr=CODEX_LOGGED_IN_STDERR, *, exit_code=0, stdout=""
+) -> CommandResult:
+    return CommandResult(exit_code=exit_code, stdout=stdout, stderr=stderr)
 
 
 class ScriptedRunner:

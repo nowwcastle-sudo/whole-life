@@ -24,6 +24,7 @@ from whole_life.runtime.contract import Provider
 from whole_life.runtime.launch import (
     PreStartRefusal,
     RefusalCode,
+    SUPPORTED_VERSIONS,
     VersionConformance,
 )
 
@@ -55,22 +56,6 @@ class CommandRunner(Protocol):
 _VERSION_PATTERNS = {
     Provider.CLAUDE: re.compile(r"\A(\d+\.\d+\.\d+) \(Claude Code\)\Z"),
     Provider.CODEX: re.compile(r"\Acodex-cli (\d+\.\d+\.\d+)\Z"),
-}
-
-#: Exact versions with local conformance evidence, and nothing else. Extending
-#: this is a deliberate compatibility decision that re-runs the conformance
-#: fixtures on the new version — not a version-ordering comparison.
-SUPPORTED_VERSIONS: Mapping[Provider, Mapping[str, VersionConformance]] = {
-    Provider.CLAUDE: {
-        "2.1.239": VersionConformance(
-            cli_version="2.1.239", allowlisted=True, bare_default=False
-        )
-    },
-    Provider.CODEX: {
-        "0.149.0": VersionConformance(
-            cli_version="0.149.0", allowlisted=True, bare_default=False
-        )
-    },
 }
 
 #: The complete field set of `claude auth status --json`, pinned to the tested
@@ -107,6 +92,19 @@ def conformance_for(provider: Provider, result: CommandResult) -> VersionConform
     return conformance
 
 
+def _object_without_repeats(pairs: list[tuple[str, object]]) -> dict[str, object]:
+    """Build a JSON object, rejecting a repeated field instead of keeping the last.
+
+    Without this, `{"loggedIn": false, "loggedIn": true}` parses to a signed-in
+    decision and every later check agrees with it. The message carries no value
+    from the payload.
+    """
+    names = [name for name, _value in pairs]
+    if len(names) != len(set(names)):
+        raise ValueError("repeated field in authentication status")
+    return dict(pairs)
+
+
 def decide_claude_auth(result: CommandResult) -> None:
     """Accept only the pinned first-party subscription state. Returns nothing.
 
@@ -118,8 +116,8 @@ def decide_claude_auth(result: CommandResult) -> None:
         raise PreStartRefusal(RefusalCode.AUTH_STATUS_UNSUPPORTED)
 
     try:
-        payload = json.loads(result.stdout)
-    except (json.JSONDecodeError, TypeError):
+        payload = json.loads(result.stdout, object_pairs_hook=_object_without_repeats)
+    except (ValueError, TypeError):
         raise PreStartRefusal(RefusalCode.AUTH_STATUS_UNSUPPORTED) from None
 
     if not isinstance(payload, dict) or set(payload) != CLAUDE_AUTH_FIELDS:
@@ -156,6 +154,12 @@ def decide_codex_auth(result: CommandResult) -> None:
     imprecision costs a clearer diagnostic, not safety.
     """
     if result.exit_code != 0:
+        raise PreStartRefusal(RefusalCode.AUTH_STATUS_UNSUPPORTED)
+
+    # Exactly empty, not "empty after stripping": the pinned shape is the empty
+    # string, and a build that started writing whitespace to stdout is a build
+    # whose output format we have not measured.
+    if result.stdout != "":
         raise PreStartRefusal(RefusalCode.AUTH_STATUS_UNSUPPORTED)
 
     if result.stderr.strip() != CODEX_SUBSCRIPTION_STATUS:

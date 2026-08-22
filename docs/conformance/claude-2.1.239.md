@@ -6,6 +6,8 @@ Redacted by construction: no environment values, no credentials, no full authent
 
 ## Observations
 
+Every line below was computed from a command this run executed.
+
 - `claude --version` exit `0`, stdout `2.1.239 (Claude Code)`
 - `claude auth status --json` exit `0`, parsed as a JSON object
 - field names present: `apiProvider`, `authMethod`, `email`, `loggedIn`, `orgId`, `orgName`, `subscriptionType`
@@ -15,7 +17,12 @@ Redacted by construction: no environment values, no credentials, no full authent
 - `apiProvider == "firstParty"`: **True**
 - `subscriptionType` is a non-empty string: **True**
 - `email`, `orgId` and `orgName` were present in the output and were not read
-- bare mode default: `-p` does not imply bare mode on this version; bare mode is reachable only via `--bare` or `CLAUDE_CODE_SIMPLE` (spec section 5). The gate that enforces this arrives with #13.
+
+## Not measured by this script
+
+Carried from the specification, not observed here. The collection date above does not apply to this section: these claims are not measured by this script, so re-running it for a new version does not re-verify them.
+
+- bare mode default: `-p` is documented not to imply bare mode, which is reachable via `--bare` or `CLAUDE_CODE_SIMPLE` (spec section 5). Deciding `bare_default` for a version needs an observed turn; this collector runs none. The gate that enforces it arrives with #13.
 
 ## Collection environment
 
