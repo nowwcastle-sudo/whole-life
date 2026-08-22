@@ -2,14 +2,21 @@
 
 ## Current status
 
-The architecture is approved for a private, documentation-only repository. No implementation code or dependency manifest exists yet. Public distribution remains blocked by provider-policy and usage-attribution gates.
+The architecture is approved for a private, documentation-only repository. No implementation code or dependency manifest exists yet.
+
+**Visibility history.** This repository was switched from private to public at approximately 2026-08-22 04:16 UTC to unblock a desktop client clone, and the owner reverted it to private the same hour (confirmed private again at 2026-08-22 04:57 UTC). Commit `4e38cee` and its author metadata were publicly fetchable during that window. Any later statement that this repository "has never been public" is false.
 
 ## Approved baseline
 
-| Artifact | SHA-256 | Lines |
-|---|---|---:|
-| `docs/spec/whole-life-v0.md` | `A48270E57CE1D106910A8C50443331B6973ED7F1746A6362FF8008988EF835F0` | 574 |
-| `docs/adr/0001-local-subscription-v0.md` | `123BAFBDE315B7BA237E25731F78AF1E56BFBBD6A872CD2CD3F5FBC06BAE10C5` | 91 |
+| Artifact | SHA-256 | Lines | Note |
+|---|---|---:|---|
+| `docs/spec/whole-life-v0.md` | `A48270E57CE1D106910A8C50443331B6973ED7F1746A6362FF8008988EF835F0` | 574 | 2026-08-20 audited baseline |
+| `docs/spec/whole-life-v0.md` | `E8C6EA089A16A99106CF1C3C85D454FAF0F885E9091BD7E1CFB7EABCCE4E691C` | 607 | 2026-08-22 revision — §5 bare mode gate, §12 authentication conformance, §13 F-16 |
+| `docs/adr/0001-local-subscription-v0.md` | `123BAFBDE315B7BA237E25731F78AF1E56BFBBD6A872CD2CD3F5FBC06BAE10C5` | 91 | unchanged |
+
+The audited baseline row is kept so the 2026-08-20 audit provenance stays verifiable. The revision row is the current file.
+
+Hashes are taken over the stored Git blob (LF line endings), reproducible with `git show HEAD:<path> | sha256sum`. Do not hash the working-tree file on a checkout with `core.autocrlf=true` — it will differ.
 
 The original 709-line research document is intentionally not copied into this repository. It remains non-normative source material with SHA-256 `C243DB1EF4C27662872C17E85350883C5663943D4C1F13F1D6D3F977643F831F`.
 
@@ -46,9 +53,13 @@ Every step starts from the corresponding conformance failures in the normative s
 
 ## Public-release gate
 
-Before considering public visibility:
+| # | Gate | Status |
+|---:|---|---|
+| 1 | Recheck current OpenAI and Anthropic documentation, or obtain written confirmation, for a local tool in which the operator runs their own officially authenticated CLI | **Owner-accepted 2026-08-22.** Documentation was reviewed and the owner accepted the residual risk. This is the owner's judgement, not a written confirmation from either provider; no provider has been asked. |
+| 2 | Verify actual Claude and Codex subscription usage attribution with a smoke test | **Designed, not executed.** Procedure and pass criteria are in [gate 2 smoke test](docs/smoke/gate-2-usage-attribution.md). Execution is deferred until a runnable testbed exists. |
+| 3 | Confirm that credentials, session tokens, user settings, runtime databases, logs, and local audit material are absent from Git history | **Verified 2026-08-22.** Every blob in every commit of the full history was scanned; no matches. |
+| 4 | Keep README claims limited to verified behavior; do not describe planned subscription support as policy approval | **Applied 2026-08-22.** Five overstated or stale claims were corrected. |
 
-- Recheck current OpenAI and Anthropic documentation or obtain written confirmation for a local tool in which every user runs their own officially authenticated CLI.
-- Verify actual Claude and Codex subscription usage attribution with a smoke test.
-- Confirm that credentials, session tokens, user settings, runtime databases, logs, and local audit material are absent from Git history.
-- Keep README claims limited to verified behavior; do not describe planned subscription support as policy approval.
+Gate 2 is the one still open. Until it passes, no document in this repository may state that provider metering or billing behaves in a particular way.
+
+While reviewing gate 1, one design-level risk surfaced that is not a policy question: Claude Code's `--bare` mode authenticates strictly from an API key and never from OAuth, and it is documented to become the default for `-p` in a future release. The specification now gates on this in §5; see [F-16](docs/spec/whole-life-v0.md).
