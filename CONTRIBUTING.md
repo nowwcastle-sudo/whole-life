@@ -25,8 +25,8 @@ Treat the following as **established, not as gaps to fill**:
 | `docs/spec/whole-life-v0.md`, `docs/adr/0001-*.md` | Approved baseline, pinned by SHA-256 in `docs/project-context.md`. Changing either requires a new ADR and a matching baseline update in the same commit. |
 | `CONTEXT.md` | The **domain glossary** and nothing else, per [`docs/agents/domain.md`](docs/agents/domain.md). Extend it when a term is resolved; do not put status, decisions, or implementation detail here. |
 | `docs/project-context.md` | Project status, approved baseline, non-negotiable v0 invariants, implementation order, and the public-release gate. |
-| CI workflow | Deliberately absent. No code and no dependency manifest exist yet. |
-| Commit hooks | Deliberately absent, for the same reason. |
+| CI workflows | Established. Documentation checks and the Python unit-test suite run on pushes to `main` and on pull requests. The Python version comes from `.python-version`. |
+| Commit hooks | Deliberately absent. The repository guardrails and CI checks are the current enforcement points. |
 
 Everything the table does not list is filled in progressively, as the flow reaches it. The team does not front-load scaffolding for work that has not started.
 
