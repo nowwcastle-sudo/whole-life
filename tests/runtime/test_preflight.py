@@ -170,6 +170,41 @@ class VersionAllowlistTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual([("--version",)], [args for _e, args, _v in runner.calls])
 
 
+class ConformanceInvalidationTests(unittest.IsolatedAsyncioTestCase):
+    """A plan may only carry the record of the *latest* successful preflight.
+
+    `_conformance` is written on success only. Without clearing it first, a
+    caller that catches a later preflight failure can still assemble a plan
+    carrying the previous canonical record — and the launch gate accepts it,
+    because the record is genuine. It is simply no longer true.
+    """
+
+    async def test_a_failed_later_preflight_discards_the_earlier_record(self):
+        adapter = claude(claude_runner())
+        await adapter.preflight()
+        self.assertIsNotNone(adapter.conformance)
+
+        adapter._runner = claude_runner(version="9.9.9 (Claude Code)")
+        with self.assertRaises(PreStartRefusal):
+            await adapter.preflight()
+
+        self.assertIsNone(adapter.conformance)
+
+    async def test_assembly_after_a_failed_preflight_is_refused(self):
+        from tests.support.launch_fixtures import turn_request
+
+        adapter = claude(claude_runner())
+        await adapter.preflight()
+        adapter._runner = claude_runner(version="9.9.9 (Claude Code)")
+        with self.assertRaises(PreStartRefusal):
+            await adapter.preflight()
+
+        with self.assertRaises(PreStartRefusal) as caught:
+            adapter.assemble_launch_plan(turn_request())
+
+        self.assertEqual(RefusalCode.UNSUPPORTED_CLI_VERSION, caught.exception.code)
+
+
 class ClaudeAuthTests(unittest.IsolatedAsyncioTestCase):
     async def _refused(self, payload=None, **kwargs) -> PreStartRefusal:
         runner = claude_runner(auth=claude_auth_result(payload, **kwargs))

@@ -28,12 +28,29 @@ from whole_life.runtime.preflight import (
 
 _LATER_SLICE = "arrives with a later ticket; this slice ends at preflight"
 
-#: The final arguments for one Claude turn. `--safe-mode`, never `--bare`:
-#: `--safe-mode` disables customization while leaving authentication, model
-#: selection, built-in tools and permissions working, which is what the section 4
-#: read-only boundary needs. `--bare` additionally replaces the authentication
-#: path and would break the subscription premise.
-CLAUDE_TURN_ARGS = ("-p", "--safe-mode", "--output-format", "stream-json")
+#: The final arguments for one Claude turn, as spec section 4 lists them
+#: (lines 128 and 139). `--safe-mode`, never `--bare`: `--bare` replaces the
+#: authentication path and would break the subscription premise.
+#:
+#: `--safe-mode` alone is *not* the read-only boundary. The spec says plainly
+#: that it leaves authentication, model selection, built-in tools and
+#: permissions working — so the tool allowlist, the permission mode and a strict
+#: empty MCP configuration are what actually keep `Write`, `Edit`, `Bash` and
+#: network side-effect tools off the turn.
+CLAUDE_TURN_ARGS = (
+    "-p",
+    "--safe-mode",
+    "--output-format",
+    "stream-json",
+    "--verbose",
+    "--strict-mcp-config",
+    "--mcp-config",
+    '{"mcpServers": {}}',
+    "--tools",
+    "Agent,Read,Glob,Grep",
+    "--permission-mode",
+    "dontAsk",
+)
 
 
 class ClaudeRuntime:
@@ -66,6 +83,11 @@ class ClaudeRuntime:
         return self._conformance
 
     async def preflight(self) -> RuntimeStatus:
+        # Cleared first, not merely overwritten on success. A caller that
+        # catches a failure here must not be left holding an adapter that can
+        # still assemble a plan from the previous run's record.
+        self._conformance = None
+
         version = await self._runner.run(
             self._executable, ("--version",), self.child_env
         )

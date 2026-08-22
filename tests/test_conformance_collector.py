@@ -17,6 +17,7 @@ Every case here is synthetic. No CLI is executed.
 
 import importlib.util
 import json
+import tempfile
 import subprocess
 import sys
 import unittest
@@ -238,23 +239,147 @@ class SameExecutableTests(unittest.TestCase):
         self.assertEqual([str(resolved)] * 3, seen)
 
 
-class ProbeOutputDisposalTests(unittest.TestCase):
-    """The turn's body is a model response and is never held, not even in memory.
+class AuthBeforeTurnTests(unittest.TestCase):
+    """An unapproved account must not have a turn issued against it.
 
-    `capture_output=True` buffers stdout and stderr into the CompletedProcess.
-    Not reading them is not the same as not having them.
+    The authentication decisions gate whether this is the operator's first-party
+    subscription. Running the turn first and judging afterwards spends a real
+    request on an account we then refuse to describe, and inverts the T-1/T-2
+    ordering the smoke procedure specifies.
     """
 
-    def test_the_turn_discards_both_streams_at_the_operating_system(self):
-        with mock.patch.object(subprocess, "run") as spawned:
-            spawned.return_value = mock.Mock(returncode=0)
-            collector.probe_bare_default({}, Path("C:/resolved/claude.exe"))
+    def collect_with(self, payload):
+        probed = []
 
-        kwargs = spawned.call_args.kwargs
+        def fake_run(executable, args, env):
+            if args == ["--version"]:
+                return 0, "2.1.240 (Claude Code)", ""
+            return 0, json.dumps(payload), ""
+
+        def fake_probe(env, executable):
+            probed.append(True)
+            return collector.BareProbe(0, False)
+
+        with (
+            mock.patch.object(collector, "resolved_executable",
+                              return_value=Path("C:/resolved/claude.exe")),
+            mock.patch.object(collector, "binary_digest", return_value="deadbeef"),
+            mock.patch.object(collector, "run", fake_run),
+            mock.patch.object(collector, "probe_bare_default", fake_probe),
+        ):
+            try:
+                collector.collect_claude()
+            except collector.CollectionFailed:
+                pass
+        return probed
+
+    def test_a_signed_out_account_never_reaches_the_turn(self):
+        probed = self.collect_with({**AuthDecisionGuardTests.OK, "loggedIn": False})
+
+        self.assertEqual([], probed)
+
+    def test_an_api_key_account_never_reaches_the_turn(self):
+        probed = self.collect_with({**AuthDecisionGuardTests.OK, "authMethod": "apiKey"})
+
+        self.assertEqual([], probed)
+
+    def test_an_approved_subscription_does_reach_the_turn(self):
+        probed = self.collect_with(AuthDecisionGuardTests.OK)
+
+        self.assertEqual([True], probed)
+
+
+class ProbeProcessTests(unittest.TestCase):
+    """The turn is spawned, watched, and — if it hangs — killed as a whole tree.
+
+    `subprocess.run(timeout=...)` kills only the process it started. If the
+    launched process has descendants, catching `TimeoutExpired` reports a clean
+    collection failure while a model request keeps running, unobserved and
+    still billed. So the probe owns the process and terminates the tree.
+
+    Also: the streams go to `DEVNULL`, not into a buffer. `capture_output=True`
+    would hold the model's response in memory; not reading it is weaker than
+    not having it.
+    """
+
+    def spawn(self, *, returncode=0, timeout=False):
+        proc = mock.Mock()
+        proc.pid = 4321
+        proc.returncode = returncode
+        if timeout:
+            proc.communicate.side_effect = subprocess.TimeoutExpired(cmd="claude", timeout=1)
+        else:
+            proc.communicate.return_value = (None, None)
+        return proc
+
+    def run_probe(self, proc):
+        with (
+            mock.patch.object(subprocess, "Popen", return_value=proc) as popen,
+            mock.patch.object(subprocess, "run") as killer,
+        ):
+            result = collector.probe_bare_default({}, Path("C:/resolved/claude.exe"))
+        return result, popen, killer
+
+    def test_a_clean_turn_reports_its_exit_code(self):
+        result, _popen, killer = self.run_probe(self.spawn(returncode=0))
+
+        self.assertEqual(collector.BareProbe(0, False), result)
+        killer.assert_not_called()
+
+    def test_a_failed_turn_reports_its_exit_code_without_killing(self):
+        result, _popen, killer = self.run_probe(self.spawn(returncode=1))
+
+        self.assertEqual(collector.BareProbe(1, False), result)
+        killer.assert_not_called()
+
+    def test_a_hung_turn_terminates_the_whole_tree(self):
+        result, _popen, killer = self.run_probe(self.spawn(timeout=True))
+
+        self.assertEqual(collector.BareProbe(None, True), result)
+        killed = " ".join(str(a) for a in killer.call_args.args[0])
+        self.assertIn("taskkill", killed)
+        self.assertIn("/T", killed)
+        self.assertIn("4321", killed)
+
+    def test_both_streams_are_discarded_by_the_operating_system(self):
+        _result, popen, _killer = self.run_probe(self.spawn())
+
+        kwargs = popen.call_args.kwargs
         self.assertIs(subprocess.DEVNULL, kwargs["stdout"])
         self.assertIs(subprocess.DEVNULL, kwargs["stderr"])
         self.assertNotIn("capture_output", kwargs)
         self.assertIs(False, kwargs["shell"])
+
+
+class ResolvedTargetTests(unittest.TestCase):
+    """Evidence is only collected against a real PE executable.
+
+    A `.cmd` launcher dispatches to an implementation this collector never sees,
+    so hashing the launcher certifies nothing about what actually ran — the
+    implementation behind it could be replaced between the version check, the
+    auth check and the turn while the wrapper's bytes stay identical. v0 does
+    not chase the delegated target; it refuses.
+    """
+
+    def resolve(self, name, contents):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / name
+            path.write_bytes(contents)
+            with mock.patch.object(collector.shutil, "which", return_value=str(path)):
+                return collector.resolved_executable("claude")
+
+    def test_a_pe_executable_is_accepted(self):
+        resolved = self.resolve("claude.exe", bytes((0x4D, 0x5A, 0x90, 0)) + b"padding")
+
+        self.assertEqual("claude.exe", resolved.name)
+
+    def test_a_command_launcher_is_refused(self):
+        with self.assertRaises(collector.CollectionFailed):
+            self.resolve("claude.cmd", b"@echo off" + bytes((13, 10)) + b"node claude.js %*")
+
+    def test_a_file_named_exe_without_a_pe_header_is_refused(self):
+        with self.assertRaises(collector.CollectionFailed):
+            self.resolve("claude.exe", b"#!/usr/bin/env node")
 
 
 if __name__ == "__main__":

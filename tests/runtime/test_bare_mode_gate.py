@@ -63,6 +63,68 @@ class AcceptedTurnTests(unittest.IsolatedAsyncioTestCase):
         self.assertIs(False, spawned.version_conformance.bare_default)
 
 
+class ReadOnlyArgvTests(unittest.IsolatedAsyncioTestCase):
+    """Spec section 4 line 139 lists what a Claude turn must carry.
+
+    `--safe-mode` alone is not the read-only boundary. The spec is explicit that
+    it leaves built-in tools and permissions working, which is why the tool
+    allowlist, the permission mode and the strict empty MCP configuration are
+    named alongside it. A plan missing them is not a launchable plan.
+    """
+
+    async def test_the_assembled_argv_carries_every_required_control(self):
+        plan = await assembled_plan()
+
+        self.assertIn("--safe-mode", plan.args)
+        self.assertIn("--strict-mcp-config", plan.args)
+        self.assertIn("--permission-mode", plan.args)
+        self.assertIn("dontAsk", plan.args)
+        self.assertIn("--tools", plan.args)
+        self.assertIn("Agent,Read,Glob,Grep", plan.args)
+
+    async def test_the_mcp_configuration_is_present_and_empty(self):
+        plan = await assembled_plan()
+
+        index = plan.args.index("--mcp-config")
+        self.assertEqual('{"mcpServers": {}}', plan.args[index + 1])
+
+    async def test_the_argv_is_exactly_the_specified_tuple(self):
+        """Spelled out here, never imported from the production constant.
+
+        A test that asserts `plan.args == CLAUDE_TURN_ARGS` passes whatever that
+        constant becomes, including a constant with the read-only controls
+        deleted. The specification's tuple has to exist somewhere the production
+        code cannot edit.
+        """
+        plan = await assembled_plan()
+
+        self.assertEqual(
+            (
+                "-p",
+                "--safe-mode",
+                "--output-format",
+                "stream-json",
+                "--verbose",
+                "--strict-mcp-config",
+                "--mcp-config",
+                '{"mcpServers": {}}',
+                "--tools",
+                "Agent,Read,Glob,Grep",
+                "--permission-mode",
+                "dontAsk",
+            ),
+            plan.args,
+        )
+
+    async def test_no_write_capable_tool_is_named(self):
+        plan = await assembled_plan()
+
+        joined = " ".join(plan.args)
+        for tool in ("Write", "Edit", "Bash"):
+            with self.subTest(tool=tool):
+                self.assertNotIn(tool, joined)
+
+
 class BareModeGateTests(unittest.IsolatedAsyncioTestCase):
     async def _refuse(self, plan) -> PreStartRefusal:
         spawner = RecordingSpawner()

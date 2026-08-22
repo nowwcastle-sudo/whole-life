@@ -61,6 +61,27 @@ class CollectionFailed(Exception):
     """
 
 
+#: A PE image begins with this signature. Checked rather than trusting the
+#: extension, so a script merely *named* `.exe` cannot pass.
+PE_SIGNATURE = b"MZ"
+
+
+def terminate_process_tree(pid):
+    """End the process and everything it started.
+
+    Windows only, which is the platform this whole collector targets. `/T`
+    is the entire point: without it a launcher dies and its child keeps the
+    request alive.
+    """
+    subprocess.run(
+        ["taskkill", "/F", "/T", "/PID", str(pid)],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        shell=False,
+        check=False,
+    )
+
+
 def resolved_executable(name):
     """The absolute path `name` resolves to, or refuse to measure anything.
 
@@ -68,11 +89,25 @@ def resolved_executable(name):
     is machine-specific and does not belong in this repository. The identity that
     *is* recorded is the hash below, which is what makes the version, the
     authentication check and the turn provably the same binary.
+
+    A command launcher is refused rather than followed. A `.cmd` wrapper
+    dispatches to an implementation this collector never sees, so hashing the
+    wrapper certifies nothing: the implementation behind it could be replaced
+    between the three executions while the wrapper's bytes stay identical. v0
+    does not chase the delegated target — it declines to produce evidence it
+    cannot stand behind.
     """
     found = shutil.which(name)
     if found is None:
         raise CollectionFailed(f"{name} is not on PATH; nothing can be measured")
-    return Path(found).resolve()
+
+    resolved = Path(found).resolve()
+    if resolved.suffix.lower() != ".exe" or not resolved.read_bytes()[:2] == PE_SIGNATURE:
+        raise CollectionFailed(
+            f"{name} resolves to something other than a PE executable; this "
+            "collector does not fingerprint launcher-dispatched implementations"
+        )
+    return resolved
 
 
 def binary_digest(executable):
@@ -131,20 +166,54 @@ def probe_bare_default(env, executable):
     `capture_output=True` would buffer it into the CompletedProcess; not reading
     it is weaker than not holding it.
     """
+    process = subprocess.Popen(
+        [str(executable), *BARE_PROBE_ARGS],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        env=dict(env),
+        shell=False,
+    )
     try:
-        completed = subprocess.run(
-            [str(executable), *BARE_PROBE_ARGS],
+        process.communicate(
             input=BARE_PROBE_PROMPT.encode("utf-8"),
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            env=dict(env),
-            shell=False,
             timeout=BARE_PROBE_TIMEOUT_SECONDS,
         )
     except subprocess.TimeoutExpired:
+        # `Popen.kill()` would end this process only. A launcher's descendant
+        # would keep the model request running, unobserved and still billed,
+        # while the collection reported a clean timeout.
+        terminate_process_tree(process.pid)
         return BareProbe(exit_code=None, timed_out=True)
 
-    return BareProbe(exit_code=completed.returncode, timed_out=False)
+    return BareProbe(exit_code=process.returncode, timed_out=False)
+
+
+def assert_approved_subscription(auth_exit, payload):
+    """Refuse anything but the pinned first-party subscription state.
+
+    Called before the turn, not after. An account this build will not describe
+    should never have a request issued against it — a parseable but unsupported
+    state (signed out, API key, third-party provider) must cost nothing.
+    """
+    decisions = {
+        "auth status exited zero": auth_exit == 0,
+        "field set is the pinned one": set(payload) == set(CLAUDE_AUTH_FIELDS),
+        "loggedIn is True": payload.get("loggedIn") is True,
+        "authMethod is claude.ai": payload.get("authMethod") == "claude.ai",
+        "apiProvider is firstParty": payload.get("apiProvider") == "firstParty",
+        "subscriptionType is a non-empty string": isinstance(
+            payload.get("subscriptionType"), str
+        )
+        and bool(payload.get("subscriptionType")),
+    }
+    if not all(decisions.values()):
+        # Names which condition failed, never the value that failed it.
+        failed = sorted(name for name, held in decisions.items() if not held)
+        raise CollectionFailed(
+            "the sign-in is not the pinned first-party subscription state, so "
+            f"this run has nothing to record: {', '.join(failed)}"
+        )
 
 
 def claude_measurement_lines(version_exit, version_out, auth_exit, payload, probe):
@@ -168,24 +237,7 @@ def claude_measurement_lines(version_exit, version_out, auth_exit, payload, prob
             "decide bare_default for this version"
         )
 
-    decisions = {
-        "auth status exited zero": auth_exit == 0,
-        "field set is the pinned one": set(payload) == set(CLAUDE_AUTH_FIELDS),
-        "loggedIn is True": payload.get("loggedIn") is True,
-        "authMethod is claude.ai": payload.get("authMethod") == "claude.ai",
-        "apiProvider is firstParty": payload.get("apiProvider") == "firstParty",
-        "subscriptionType is a non-empty string": isinstance(
-            payload.get("subscriptionType"), str
-        )
-        and bool(payload.get("subscriptionType")),
-    }
-    if not all(decisions.values()):
-        # Names which condition failed, never the value that failed it.
-        failed = sorted(name for name, held in decisions.items() if not held)
-        raise CollectionFailed(
-            "the sign-in is not the pinned first-party subscription state, so "
-            f"this run has nothing to record: {', '.join(failed)}"
-        )
+    assert_approved_subscription(auth_exit, payload)
 
     measured = [
         f"- `claude --version` exit `{version_exit}`, stdout `{version_out}`",
@@ -223,6 +275,10 @@ def collect_claude():
     version_exit, version_out, _ = run(str(executable), ["--version"], env)
     auth_exit, auth_out, _ = run(str(executable), ["auth", "status", "--json"], env)
     payload = json.loads(auth_out)
+
+    # Before the turn: an unapproved account never has a request issued.
+    assert_approved_subscription(auth_exit, payload)
+
     probe = probe_bare_default(env, executable)
 
     assert_same_binary(digest_before, binary_digest(executable))
