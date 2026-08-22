@@ -6,6 +6,8 @@ Redacted by construction: no environment values, no credentials, no full authent
 
 ## Observations
 
+Every line below was computed from a command this run executed.
+
 - `codex --version` exit `0`, stdout `codex-cli 0.149.0`
 - `codex login status` exit `0`, stdout empty: **True**
 - decision arrives on stderr and equals the pinned `Logged in using ChatGPT`: **True**
@@ -13,7 +15,12 @@ Redacted by construction: no environment values, no credentials, no full authent
 - with `OPENAI_API_KEY` present, stdout identical: **True**
 - with `OPENAI_API_KEY` present, stderr identical: **True**
 - therefore the status output cannot distinguish a subscription sign-in from an API-key credential path, and excluding the variable from the child environment is the only detection this build has
-- `CODEX_HOME` is set explicitly rather than inherited; `--ignore-user-config` ignores `config.toml` only and authentication is still read from `CODEX_HOME`
+
+## Not measured by this script
+
+Carried from the specification, not observed here. The collection date above does not apply to this section: these claims are not measured by this script, so re-running it for a new version does not re-verify them.
+
+- `CODEX_HOME` is set explicitly rather than inherited; `--ignore-user-config` is documented to ignore `config.toml` only, leaving authentication in `CODEX_HOME` (spec section 5). This collector runs no `--ignore-user-config` probe, so it does not confirm that separation.
 
 ## Collection environment
 

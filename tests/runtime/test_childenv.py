@@ -54,6 +54,29 @@ class ForbiddenVariableTests(unittest.TestCase):
             RefusalCode.CHILD_ENV_FORBIDDEN_VARIABLE, caught.exception.code
         )
 
+    def test_a_case_variant_of_a_forbidden_name_is_refused(self):
+        """Windows environment names are case-insensitive; this check was not.
+
+        `openai_api_key` reaches the child as the same variable as
+        `OPENAI_API_KEY`, so a case-sensitive comparison hands the child exactly
+        the credential path the control exists to remove. Spelled out literally
+        rather than derived from FORBIDDEN_VARIABLES.
+        """
+        for name in (
+            "openai_api_key",
+            "Anthropic_Api_Key",
+            "anthropic_auth_token",
+            "claude_code_oauth_token",
+            "Claude_Code_Simple",
+        ):
+            with self.subTest(name=name):
+                with self.assertRaises(PreStartRefusal) as caught:
+                    build_child_env(PARENT, extra={name: "sk-injected"})
+
+                self.assertEqual(
+                    RefusalCode.CHILD_ENV_FORBIDDEN_VARIABLE, caught.exception.code
+                )
+
     def test_refusal_does_not_carry_the_environment_value(self):
         with self.assertRaises(PreStartRefusal) as caught:
             build_child_env(PARENT, extra={"ANTHROPIC_API_KEY": "SENTINEL-KEY-VALUE"})

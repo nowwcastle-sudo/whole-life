@@ -57,6 +57,27 @@ class VersionConformance:
     bare_default: bool
 
 
+#: Exact versions with local conformance evidence, and nothing else. Extending
+#: this is a deliberate compatibility decision that re-runs the conformance
+#: fixtures on the new version — not a version-ordering comparison.
+#:
+#: It lives beside the dataclass because the gate below compares against it.
+#: A conformance record is a *claim*; only a record equal to the canonical one
+#: for that provider and version is evidence.
+SUPPORTED_VERSIONS: Mapping[Provider, Mapping[str, VersionConformance]] = {
+    Provider.CLAUDE: {
+        "2.1.239": VersionConformance(
+            cli_version="2.1.239", allowlisted=True, bare_default=False
+        )
+    },
+    Provider.CODEX: {
+        "0.149.0": VersionConformance(
+            cli_version="0.149.0", allowlisted=True, bare_default=False
+        )
+    },
+}
+
+
 @dataclass(frozen=True, slots=True)
 class LaunchPlan:
     """Everything one provider process is about to be started with.
@@ -106,7 +127,10 @@ def enforce_launch_safety(plan: LaunchPlan) -> None:
     Each control is a separate statement on purpose: removing one must make
     exactly one test fail.
     """
-    if not plan.version_conformance.allowlisted:
+    canonical = SUPPORTED_VERSIONS[plan.provider].get(
+        plan.version_conformance.cli_version
+    )
+    if canonical != plan.version_conformance:
         raise PreStartRefusal(RefusalCode.UNSUPPORTED_CLI_VERSION)
 
     request = plan.turn_request
