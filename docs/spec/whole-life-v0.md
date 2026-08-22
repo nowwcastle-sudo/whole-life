@@ -25,6 +25,7 @@
 | 기준 조사본 | SHA-256 `C243DB1EF4C27662872C17E85350883C5663943D4C1F13F1D6D3F977643F831F`, 709줄 |
 | Codex 원본 task | `01a0195a-930d-7533-90df-b3627c68a440` |
 | Claude 교차검증 session | `1c2b60bc-7764-420f-92bc-fa3446fac9a9` |
+| 개정 | 2026-08-22 — §5에 bare mode gate와 실측 auth schema, §12 인증 conformance, §13 F-16 추가 |
 
 이 문서는 구현 코드가 아니다. 여기서 “합격”은 interface·상태·실패 경계가 구현 가능한 수준으로 결정됐다는 뜻이며, 실행 코드의 무결점 판정을 뜻하지 않는다.
 
@@ -126,6 +127,8 @@ class AgentRuntime(Protocol):
 | Codex | `codex exec --json` + inline `agents.enabled=true`, `agents.max_concurrent_threads_per_session=3`, provider-side output schema가 지원되면 `--output-schema` | `codex exec resume <native_session_id>`에 동일 안전 옵션 적용 | JSONL |
 | Claude | `claude -p --safe-mode --output-format stream-json --verbose`, `--tools Agent,Read,Glob,Grep`, provider-side output schema가 지원되면 `--json-schema` | `--resume <native_session_id>` | stream-json |
 
+Claude argv에는 `--bare`를 **넣지 않는다.** 넣지 않는 것만으로는 부족하며, 최종 argv에 `--bare`가 없다는 것과 pinned version의 `-p` 기본 모드가 bare가 아니라는 것을 §5 bare mode gate가 실행 직전에 확인한다.
+
 prompt는 command-line argument가 아니라 UTF-8 stdin으로 전달한다. executable은 시작 시 절대경로로 해석한다. Windows에서 PowerShell shim은 직접 실행 대상으로 쓰지 않고 실제 실행 가능한 `.cmd` 또는 `.exe`를 해석한다. provider-side schema option의 실제 지원 여부는 preflight로 확인하며, 지원되지 않아도 broker의 동일 JSON schema 검증은 생략하지 않는다.
 
 broker release는 conformance를 통과한 Claude Code·Codex CLI exact version allowlist를 코드에 포함한다. preflight의 실제 version이 allowlist에 없으면 flag·stream 의미가 같다고 추정하지 않고 `UnsupportedCliVersion`으로 기동을 거부한다. 지원 version을 늘릴 때는 auth·safe argv·sandbox·tool allowlist·stream fixture를 해당 version에서 다시 통과시키고 새 release로 allowlist를 갱신한다.
@@ -147,7 +150,9 @@ Whole Life의 v0 subscription mode는 각 공식 CLI의 기존 사용자 로그�
 
 - 부모 process 환경은 변경하지 않는다.
 - child env는 필요한 OS·locale·CLI 실행 변수의 allowlist로 새로 만든다.
-- 다음 값은 존재 여부와 무관하게 child env에서 제거한다: `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN`, `CLAUDE_CODE_OAUTH_TOKEN`, `OPENAI_API_KEY`.
+- 다음 값은 존재 여부와 무관하게 child env에서 제거한다: `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN`, `CLAUDE_CODE_OAUTH_TOKEN`, `OPENAI_API_KEY`, `CLAUDE_CODE_SIMPLE`.
+- `CLAUDE_CODE_SIMPLE`은 API key 변수가 아니라 **인증 경로 자체를 바꾸는 mode switch**다. 값이 있으면 Claude Code는 `--bare`와 동일하게 동작하며 OAuth와 keychain을 읽지 않는다(§5 bare mode gate). API key 목록과 같은 줄에서 함께 제거한다.
+- `CODEX_HOME`은 상속에 맡기지 않고 broker가 명시적으로 지정한다. `--ignore-user-config`는 `config.toml`만 무시하고 **인증은 그대로 `CODEX_HOME`에서 찾으므로**, 이 값이 흔들리면 auth 판정과 실제 실행이 서로 다른 credential store를 볼 수 있다.
 - status와 실행 process는 정확히 같은 env builder를 사용한다.
 - 환경값 원문, 전체 auth JSON, raw stderr는 Journal·artifact·vault에 저장하지 않는다.
 
@@ -158,18 +163,39 @@ Whole Life의 v0 subscription mode는 각 공식 CLI의 기존 사용자 로그�
 - 출력 parse 성공
 - `loggedIn == true`
 - `authMethod == "claude.ai"`
-- API key source를 뜻하는 필드가 현재 지원 schema에 존재할 경우 값이 비어 있음
-- 알려지지 않은 auth schema, key source의 비어 있지 않은 값, parse 실패, nonzero exit는 전부 fail-closed
+- `apiProvider == "firstParty"` — 이 필드가 provider 경로(first-party 구독 대 Bedrock/Vertex 등 제3자 credential)를 가른다
+- `subscriptionType`이 존재하고 비어 있지 않음
+- 알려지지 않은 auth schema, 위 값 중 하나라도 불일치, parse 실패, nonzero exit는 전부 fail-closed
 
-현재 CLI가 key source 필드를 생략하는 경우에는 version-pinned conformance fixture와 child env key 부재를 함께 확인한다. 지원하지 않는 새 version의 schema는 성공으로 추정하지 않고 `AuthStatusUnsupported`로 중단한다.
+version-pinned fixture로 필드 집합 자체를 고정한다. 필드가 사라지거나 새 값이 나타나면 성공으로 추정하지 않고 `AuthStatusUnsupported`로 중단한다. 예상 필드가 없는 상태에서 `loggedIn`만 보고 통과시키지 않는다.
+
+같은 출력에는 `email`, `orgId`, `orgName`처럼 판정에 쓰이지 않는 계정 식별자가 함께 들어 있다. preflight는 위 네 개 판정 필드만 읽고, 나머지는 Journal·artifact·log·진단 메시지 어디에도 남기지 않는다.
 
 ### Codex 성공 조건
 
 정제한 child env에서 `codex login status`가 version-pinned fixture의 ChatGPT 로그인 상태와 정확히 일치해야 한다. API key env가 없어야 하며, 출력 형식 변화·불일치·nonzero exit는 `AuthStatusUnsupported` 또는 `SubscriptionAuthRequired`로 중단한다.
 
+### bare mode gate
+
+Claude Code의 `--bare`는 hook·plugin·CLAUDE.md 같은 customization을 끄는 것에서 그치지 않고 **인증 경로를 바꾼다.** bare mode에서 Anthropic 인증은 `ANTHROPIC_API_KEY` 또는 `--settings`의 `apiKeyHelper`로 한정되며 OAuth와 keychain은 읽지 않는다. 즉 bare mode가 켜지는 순간 v0의 구독 전제가 성립하지 않는다.
+
+customization을 끄는 목적으로는 `--safe-mode`만 쓴다. `--safe-mode`는 인증·model 선택·built-in tool·권한을 정상 동작시키므로 §4 read-only 실행 경계가 요구하는 것을 모두 만족한다. 두 flag를 같은 것으로 취급하지 않는다.
+
+gate는 세 겹이다.
+
+1. **argv** — 최종 argv에 `--bare`가 없음을 실행 직전에 assert한다. adapter가 argv를 만들 때 넣지 않는 것과, 만들어진 argv를 검사하는 것은 다른 통제다.
+2. **env** — child env에 `CLAUDE_CODE_SIMPLE`이 없음을 확인한다. 이 변수만으로도 `--bare` 없이 bare mode가 켜진다.
+3. **version** — pinned version의 `-p` 기본 모드가 bare인지 검사한다. bare가 기본인 version은 argv·env를 아무리 정제해도 구독 로그인을 쓸 수 없으므로, allowlist 통과 여부와 무관하게 `BareModeDefault`로 기동을 거부한다.
+
+3번이 필요한 이유는 이 값이 고정이 아니기 때문이다. `--bare`는 현재 opt-in이지만 공식 문서는 향후 release에서 `-p`의 기본값이 된다고 예고하고 있다. 기본값이 바뀌는 release가 allowlist에 들어오면 §5의 다른 검사는 모두 통과하면서 실행만 API key를 요구하게 된다. version 검사를 auth 검사와 분리해 두는 것이 이 실패를 fail-open이 아니라 fail-closed로 만든다.
+
+3번의 판정 근거는 문서 문장이 아니라 pinned version 실행 결과여야 한다. API key가 없는 정제 child env에서 해당 version의 `-p` 최소 turn이 구독 인증으로 성립하는지를 conformance fixture로 확인하며, 이 fixture는 [gate 2 usage attribution smoke test](../smoke/gate-2-usage-attribution.md)의 T-2에서 같은 절차로 만들어진다.
+
+> 실측 기준선 (2026-08-22, Claude Code 2.1.239): bare mode는 `CLAUDE_CODE_SIMPLE` 환경변수 또는 argv의 `--bare`로만 켜지며, `-p`가 이를 암묵적으로 켜는 경로는 없다. 이 version에서는 3번 검사가 통과한다. 이후 version은 같은 방식으로 다시 확인한다.
+
 ### 과금 귀속 한계
 
-auth preflight는 잘못된 credential 선택을 막는 로컬 안전 gate이지 provider 청구 원장의 최종 증거가 아니다. 실제 사용량 귀속은 별도 smoke test로 확인하고, 확인 전 README에 “구독 과금 보장”을 쓰지 않는다.
+auth preflight는 잘못된 credential 선택을 막는 로컬 안전 gate이지 provider 청구 원장의 최종 증거가 아니다. 실제 사용량 귀속은 별도 smoke test로 확인하고, 확인 전 README에 “구독 과금 보장”을 쓰지 않는다. 해당 test의 절차·합격 기준·오독 함정은 [gate 2 usage attribution smoke test](../smoke/gate-2-usage-attribution.md)에 있다.
 
 ## 6. process lifecycle과 stream 경계
 
@@ -437,7 +463,13 @@ file rename 뒤 DB commit 전 crash가 나면 orphan file만 남는다. startup 
 
 - exact CLI version이 compiled-in tested allowlist에 없거나 version 출력 schema가 바뀌면 `UnsupportedCliVersion`으로 기동 거부
 - child env에 API key/token 변수가 있으면 기동 거부
-- 로그인·auth method·key source가 불명확하거나 schema가 바뀌면 기동 거부
+- 로그인·auth method·provider 경로·subscription 필드가 불명확하거나 schema가 바뀌면 기동 거부
+- `apiProvider`가 `firstParty`가 아니면 기동 거부
+- auth status 출력의 `email`·`orgId`·`orgName`이 Journal·artifact·log·진단 메시지에 남지 않음
+- 최종 argv에 `--bare`가 들어가면 실행 전 기동 거부
+- child env에 `CLAUDE_CODE_SIMPLE`이 있으면 기동 거부
+- pinned version의 `-p` 기본 모드가 bare이면 다른 auth 검사가 모두 통과해도 `BareModeDefault`로 기동 거부
+- `CODEX_HOME`이 명시되지 않았거나 auth 판정과 실행 process에서 서로 다르면 기동 거부
 - status와 실제 process가 동일 env builder를 쓰는지 검사
 
 ### stream·process
@@ -519,6 +551,7 @@ file rename 뒤 DB commit 전 crash가 나면 orphan file만 남는다. startup 
 | F-13 participant 수가 Claude 1+Codex 1로 고정 | §2~4, §7~8 | 닫힘 |
 | F-14 participant의 자율 subagent 실행력 없음 | §4, §6~8, §12 | 닫힘 |
 | F-15 roster·round·native worker의 token 증폭 | §2, §4, §7~8, §11~12 | 닫힘 |
+| F-16 CLI bare mode 기본값 전환 시 구독 전제 붕괴 | §4 transport, §5 bare mode gate, §12 인증 | 닫힘 |
 
 ## 14. 설계·저장소 gate
 
