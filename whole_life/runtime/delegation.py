@@ -47,6 +47,11 @@ class DelegationLedger:
         """How many worker starts this turn has been observed to make."""
         return self._started
 
+    @property
+    def unresolved(self) -> bool:
+        """Whether a worker was announced as started and never as finished."""
+        return bool(self._live)
+
     def worker_started(
         self, *, native_child_id: str, depth: int | None
     ) -> str | None:

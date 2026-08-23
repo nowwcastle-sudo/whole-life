@@ -142,6 +142,16 @@ def started(task_id, depth=1):
     )
 
 
+def finished(task_id, status="completed"):
+    return claude_line(
+        type="system",
+        subtype="task_notification",
+        task_id=task_id,
+        status=status,
+        session_id="s",
+    )
+
+
 def emitting(lines, *, linger):
     """A child that writes `lines`, then either exits or waits to be stopped.
 
@@ -184,9 +194,16 @@ class BudgetEnforcementTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_a_turn_inside_its_budget_is_not_disturbed(self):
         """The at-limit case. One start against a budget of one is spending
-        the budget, not exceeding it."""
+        the budget, not exceeding it.
+
+        The worker is finished here on purpose. Written without the finish,
+        this test asserted a completed turn over a worker whose end was never
+        announced — which spec line 282 says is exactly not a completion. It
+        passed until the rule existed, which is what a test encoding the wrong
+        expectation looks like.
+        """
         events, outcome, process = await observe_claude(
-            [INIT, started("a"), RESULT],
+            [INIT, started("a"), finished("a"), RESULT],
             budget=self.ONE_START,
             linger=False,
         )
@@ -226,6 +243,54 @@ class BudgetEnforcementTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(RunStatus.UNKNOWN_OUTCOME, outcome.status)
         self.assertEqual("DelegationDepthExceeded", outcome.diagnostic)
+
+class UnresolvedWorkerTests(unittest.IsolatedAsyncioTestCase):
+    """Spec line 282: a terminal result arriving while a worker is still
+    unresolved does not make the turn complete. The provider says the
+    conversation ended; it does not say the worker it launched stopped, and a
+    turn reported complete over a live worker is a bill nobody is watching."""
+
+    BUDGET = DelegationBudget(
+        max_concurrent_workers=3, max_total_worker_starts=3, max_depth=1
+    )
+
+    async def test_a_turn_whose_worker_finished_completes(self):
+        _events, outcome, _process = await observe_claude(
+            [INIT, started("a"), finished("a"), RESULT],
+            budget=self.BUDGET,
+            linger=False,
+        )
+
+        self.assertEqual(RunStatus.COMPLETED, outcome.status)
+
+    async def test_a_terminal_over_a_live_worker_is_unknown(self):
+        _events, outcome, _process = await observe_claude(
+            [INIT, started("a"), RESULT],
+            budget=self.BUDGET,
+            linger=False,
+        )
+
+        self.assertEqual(RunStatus.UNKNOWN_OUTCOME, outcome.status)
+        self.assertEqual("NativeWorkerUnresolved", outcome.diagnostic)
+
+    async def test_only_the_unfinished_worker_matters(self):
+        """Two started, one finished. The turn is still not complete."""
+        _events, outcome, _process = await observe_claude(
+            [INIT, started("a"), started("b"), finished("a"), RESULT],
+            budget=self.BUDGET,
+            linger=False,
+        )
+
+        self.assertEqual(RunStatus.UNKNOWN_OUTCOME, outcome.status)
+
+    async def test_a_turn_without_a_budget_is_judged_as_before(self):
+        """No budget means no ledger, so there is nothing to be unresolved
+        against — every run written before delegation keeps its behaviour."""
+        _events, outcome, _process = await observe_claude(
+            [INIT, started("a"), RESULT], budget=None, linger=False
+        )
+
+        self.assertEqual(RunStatus.COMPLETED, outcome.status)
 
 if __name__ == "__main__":
     unittest.main()

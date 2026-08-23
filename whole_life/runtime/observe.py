@@ -368,6 +368,9 @@ class RunObserver:
             cancelled_before_terminal=self._cancelled_before_terminal,
             cancelled_after_terminal=self._cancelled_after_terminal,
             cancel_diagnostic=self._breach,
+            unresolved_worker=(
+                self._ledger is not None and self._ledger.unresolved
+            ),
         )
 
 

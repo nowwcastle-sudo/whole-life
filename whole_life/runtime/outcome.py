@@ -37,6 +37,7 @@ def resolve_outcome(
     cancelled_before_terminal: bool = False,
     cancelled_after_terminal: bool = False,
     cancel_diagnostic: str | None = None,
+    unresolved_worker: bool = False,
 ) -> RunOutcome:
     """Combine the two witnesses into one status.
 
@@ -101,6 +102,17 @@ def resolve_outcome(
                 if terminal is TerminalEvent.COMPLETED
                 else "NonZeroExit"
             ),
+        )
+
+    if unresolved_worker:
+        # Spec line 282. The provider said the conversation ended; it did not
+        # say the worker it launched stopped. Reporting the turn complete over
+        # a worker whose end was never announced would claim knowledge of
+        # something nobody reported — and the thing still running is billable.
+        return RunOutcome(
+            status=RunStatus.UNKNOWN_OUTCOME,
+            exit_code=exit_code,
+            diagnostic="NativeWorkerUnresolved",
         )
 
     if terminal is TerminalEvent.NONE:
