@@ -166,11 +166,52 @@ e84ccc1  #13  Enforce Claude bare mode at the final pre-spawn gate       <span c
     <p style="margin:16px 0 0" class="note">
       <b>이것은 일지편에서는 안 보입니다.</b> 대상 하나만 보면 「병합됐다」로 끝나고,
       <b>구간을 줄 세워야 둘만 꼬리가 없다는 것이 보입니다.</b>
-      PR 은 <code>claude-review</code> 와 리뷰 게이트가 도는 자리이므로,
-      <b>그 둘이 어떤 검토를 지났는지는 이 편이 확인하지 않았습니다</b> — 사료에 답이 있는지도 확인 안 했습니다.
-      <b>지금 말할 수 있는 것은 「PR 을 거치지 않았다」까지입니다.</b>
+      <b>여기까지가 「PR 을 거치지 않았다」이고, 그것이 무엇을 뜻하는지는 다음 칸에서 따로 쟀습니다</b> —
+      <b>「PR 이 없었다」와 「검토가 없었다」는 다른 말이기 때문입니다.</b>
     </p>
   </div>
+
+  <div class="card">
+    <p style="margin:0 0 12px"><b>그 뒤를 통치자가 쟀고, 제가 다시 쟀습니다. 셋으로 갈립니다.</b></p>
+
+    <p style="margin:0 0 12px">
+      <b>① 리뷰·완결 축은 돌았습니다.</b> 「리뷰 없이 들어갔다」가 아닙니다 — 사료가 넷 있습니다.<sup><a href="#g9">[9]</a></sup>
+    </p>
+
+    <p style="margin:0 0 12px">
+      <b>② CI 도 돌았습니다. 그런데 착지 <b>뒤</b>에 돌았습니다.</b>
+    </p>
+
+    <div class="term"><span class="d">$ gh api repos/{owner}/{repo}/commits/&lt;SHA&gt;/check-runs</span>
+9e4c076  <span class="r">unit-tests=failure</span>   docs-checks=success     <span class="r">← 실패를 달고 main 에 있었다</span>
+4a2fe80  unit-tests=success   docs-checks=success
+73f3b31  unit-tests=success   docs-checks=success</div>
+
+    <p style="margin:16px 0 12px">
+      <b><code>9e4c076</code> 이 <code>unit-tests</code> 실패를 달고 <code>main</code> 에 들어갔습니다.</b><sup><a href="#g8">[8]</a></sup>
+      그리고 <b>바로 다음 커밋</b>이 <code>4a2fe80</code> —
+      「python-ci 를 Windows runner 로 옮긴다 — <b>안전 불변식이 Windows 동작이기 때문</b>」입니다.
+      <b>알아채고 다음 커밋에서 고쳤습니다.</b>
+    </p>
+
+    <p style="margin:0 0 12px">
+      <b>③ 그래서 PR 이 그 자체로 게이트였습니다.</b>
+      <b>PR 이 있으면 CI 가 착지 <b>전</b>에 돌고, 없으면 착지 <b>뒤</b>에 돕니다.</b>
+      늦게 도는 검사는 <b>알려 주기는 해도 막지는 못합니다.</b>
+    </p>
+
+    <p style="margin:0" class="note">
+      <b>한 대목은 근거가 약해 빼 둡니다.</b> 「<code>claude</code> 리뷰 봇이 <code>skipped</code> 인 것도
+      PR 이 없어서다」라는 읽기가 있었는데, <b>PR 로 병합된 커밋에도 <code>claude=skipped</code> 가 붙습니다</b>
+      (<code>e84ccc1</code>·<code>8fb9aa4</code>, 각각 PR #23·#29).<sup><a href="#g8">[8]</a></sup>
+      <b>그 표시는 PR 유무를 가르지 못합니다.</b> 이 편은 <b>CI 시점</b>만 근거로 씁니다.
+    </p>
+  </div>
+
+  <p class="note">
+    <b>지금은 초록입니다.</b> 그 셋 위에 <code>#16</code>·<code>#28</code>·<code>#31</code>·<code>#32</code>·<code>#17</code> 이
+    전부 PR 로 얹혔고, <code>main</code> = <code>4808bc1</code> 은 <code>unit-tests</code>·<code>docs-checks</code> 둘 다 통과입니다.<sup><a href="#g8">[8]</a></sup>
+  </p>
 
   <p style="margin-top:18px">
     <b>순서는 임의가 아닙니다.</b> 저장소가 구현 순서를 다섯 단계로 못박아 두었고,
@@ -495,6 +536,17 @@ e84ccc1  #13  Enforce Claude bare mode at the final pre-spawn gate       <span c
     읽는 사람이 바뀌거나, 읽고도 자기 자리에 적용하지 않으면 그대로 다시 납니다.
   </p>
 
+  <div class="card">
+    <p style="margin:0 0 10px"><b>같은 구조가 하나 더 있습니다 — 그리고 이쪽은 아직 안 옮겨졌습니다.</b></p>
+    <p style="margin:0">
+      <b>PR 은 그 자체로 게이트였는데, 「모든 티켓은 PR 을 거친다」는 규칙이 저장소에 없습니다.</b>
+      <code>#16</code> 이후로는 <b>습관으로</b> 지켜졌을 뿐입니다.
+      오늘 승인된 「완결자는 리뷰 통과 뒤에 PR 을 연다」는 <b>언제 여는지만 정하고 반드시 여는지는 안 정합니다.</b>
+      <b>이 구간의 결함들이 「규칙이 기준으로 안 걸려서」였다면, 이것은 아예 규칙이 없는 자리</b>입니다.
+      통치자가 명문화를 대표께 올렸고, <b>이 편은 그 결정을 기다리는 상태로 적습니다.</b>
+    </p>
+  </div>
+
   <div class="card warn">
     <div class="tag">이 편이 확인한 한계</div>
     <p style="margin:8px 0 0">
@@ -632,6 +684,8 @@ e84ccc1  #13  Enforce Claude bare mode at the final pre-spawn gate       <span c
       <li id="g5"><span class="path">WORK_LOGS/REV_15_BOUNDED_STREAMS.md</span> — <span class="quote">「내 first-terminal PASS는 outcome만 assert한 거짓통과」</span></li>
       <li id="g6"><span class="path">WORK_LOGS/REV_17_NATIVE_WORKER_ENFORCEMENT.md</span> — <span class="quote">「내 하드축 probe(test_delegation 33 OK)도 같은 함정에 빠질 뻔」</span> · <span class="quote">「그 테스트가 start_turn 우회」</span></li>
       <li id="g7"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — <span class="quote">「공통형: **「정의·테스트는 있는데 실제 조립 경로에서 도달하지 않는다」.**」</span> · <span class="quote">「#14·#15·#17×2 로 네 번 반복된 결함형」</span> · <span class="quote">「수용기준은 조립 경로(`start_turn`→`wait`)로 증명한다」</span> · <span class="quote">「이 티켓부터 게이트로 건다」</span></li>
+      <li id="g8">조회 — <span class="path">gh api repos/{owner}/{repo}/commits/&lt;SHA&gt;/check-runs</span> (2026-08-24 08:19). <span class="quote">「9e4c076 → unit-tests=failure · docs-checks=success」</span> · <span class="quote">「4a2fe80 → unit-tests=success」</span> · <span class="quote">「73f3b31 → unit-tests=success」</span> · <span class="quote">「4808bc1 → unit-tests=success · docs-checks=success」</span> · <span class="quote">「e84ccc1(PR #23) → claude=skipped」</span> · <span class="quote">「8fb9aa4(PR #29) → claude=skipped」</span><br><span class="note">파일 사료가 아니라 <b>GitHub 조회 결과</b>다. 조회 시점을 함께 적는다 — 되풀어 재려면 같은 명령을 다시 돌려야 하고, 값이 달라지면 그 사이에 무언가 다시 돌았다는 뜻이다.</span></li>
+      <li id="g9"><span class="path">WORK_LOGS/REV_14_SAFE_TURN_START.md</span> (16,221 B) · <span class="path">WORK_LOGS/CLS_14_SAFE_TURN_START.md</span> (4,636 B) · <span class="path">WORK_LOGS/REV_15_BOUNDED_STREAMS.md</span> (13,613 B) · <span class="path">WORK_LOGS/CLS_15_BOUNDED_STREAMS.md</span> (4,881 B)<br><span class="note">넷 다 존재한다 — <b>「PR 이 없었다」와 「리뷰가 없었다」는 다르다.</b> 크기는 2026-08-24 08:19 시점 값이다.</span></li>
     </ol>
 
     <p class="note" style="margin-top:20px">
