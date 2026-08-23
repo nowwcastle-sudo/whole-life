@@ -228,9 +228,19 @@ def _worker_event(parsed: dict, run_id: str, kind: str, **extra) -> NormalizedEv
     description and its answer; none of them is read.
     """
     task_id = _require(parsed, "task_id", lambda v: _typed(v, str))
-    depth = parsed.get("spawn_depth")
-    if depth is not None:
+    if kind == "runtime.activity.started":
+        # Required on the start and only on the start. Spec 48 makes observing
+        # `spawn_depth` the broker's means of holding the depth bound and spec
+        # 117 gives that observability as the reason Claude's depth axis is
+        # `cooperative` rather than `unsupported`; a start without it leaves
+        # the bound unenforced while still reporting it as held. The finish
+        # does not carry the field on this build, so requiring it everywhere
+        # would fail every ordinary worker completion.
         depth = _require(parsed, "spawn_depth", _number)
+    else:
+        depth = parsed.get("spawn_depth")
+        if depth is not None:
+            depth = _require(parsed, "spawn_depth", _number)
     return _event(
         run_id,
         kind,

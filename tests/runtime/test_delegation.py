@@ -48,6 +48,7 @@ from whole_life.runtime.launch import (
 from whole_life.runtime.observe import RunObserver
 from whole_life.runtime.outcome import TerminalEvent
 from whole_life.runtime.spawn import SubprocessSpawner
+from whole_life.runtime.streams import StreamFailure
 from whole_life.runtime.delegation import (
     REPORTED_ENFORCEMENT,
     DelegationLedger,
@@ -179,6 +180,22 @@ def started(task_id, depth=1):
         subtype="task_started",
         task_id=task_id,
         spawn_depth=depth,
+        session_id="s",
+    )
+
+
+def started_without_depth(task_id):
+    """A worker start that never says how deep it is.
+
+    The conformance record for 2.1.240 has no entry for `task_started` or
+    `spawn_depth`, so "the field is always there" is not something this build
+    is on record promising — which makes its absence a reachable input rather
+    than a hypothetical.
+    """
+    return claude_line(
+        type="system",
+        subtype="task_started",
+        task_id=task_id,
         session_id="s",
     )
 
@@ -882,6 +899,85 @@ class ProductionPathTests(unittest.IsolatedAsyncioTestCase):
         finally:
             await runtime.close()
 
+        self.assertEqual(RunStatus.COMPLETED, outcome.status)
+        self.assertIsNone(outcome.diagnostic)
+
+    async def test_a_worker_start_without_a_depth_fails_the_stream(self):
+        """Spec 48 and 117, through the door the broker uses.
+
+        Line 48 makes observing `spawn_depth` the broker's one means of holding
+        the depth-1 bound, and line 117 gives that observability as the whole
+        reason Claude's depth axis is reported `cooperative` rather than
+        `unsupported`. A start that omits the field is therefore not a start
+        with an unknown depth to be waved through — it is the enforcement
+        evidence going missing, and passing it would report a bound nobody
+        measured.
+        """
+        request = turn_request(
+            prompt="hi",
+            delegation_budget=DelegationBudget(
+                max_concurrent_workers=3,
+                max_total_worker_starts=3,
+                max_depth=1,
+            ),
+        )
+        runtime, handle = await self.claude_running(
+            [INIT, started_without_depth("a"), RESULT],
+            request=request,
+            linger=False,
+        )
+
+        try:
+            async def drain():
+                return [event async for event in runtime.events(handle)]
+
+            with self.assertRaises(StreamFailure) as caught:
+                await asyncio.wait_for(drain(), timeout=OBSERVE_TIMEOUT_SECONDS)
+        finally:
+            await runtime.close()
+
+        # Named as schema drift, not as a depth violation: the run broke
+        # because the provider stopped saying something, and calling that
+        # `DelegationDepthExceeded` would report a limit breach that never
+        # happened.
+        self.assertEqual("StdoutSchemaMismatch", caught.exception.diagnostic)
+
+    async def test_a_worker_finish_without_a_depth_is_still_read(self):
+        """The control for the test above.
+
+        `task_notification` genuinely does not carry `spawn_depth` on this
+        build. Requiring the field on every worker event — rather than on the
+        start kind alone — would turn every ordinary worker completion into a
+        stream failure, so this pins the half that must keep working.
+        """
+        request = turn_request(
+            prompt="hi",
+            delegation_budget=DelegationBudget(
+                max_concurrent_workers=3,
+                max_total_worker_starts=3,
+                max_depth=1,
+            ),
+        )
+        runtime, handle = await self.claude_running(
+            [INIT, started("a"), finished("a"), RESULT],
+            request=request,
+            linger=False,
+        )
+
+        try:
+            async def drain():
+                return [event async for event in runtime.events(handle)]
+
+            events = await asyncio.wait_for(
+                drain(), timeout=OBSERVE_TIMEOUT_SECONDS
+            )
+            outcome = await runtime.wait(handle)
+        finally:
+            await runtime.close()
+
+        self.assertIn(
+            "runtime.activity.finished", [event.kind for event in events]
+        )
         self.assertEqual(RunStatus.COMPLETED, outcome.status)
         self.assertIsNone(outcome.diagnostic)
 
