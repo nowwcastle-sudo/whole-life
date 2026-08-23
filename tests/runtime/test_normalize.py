@@ -662,10 +662,28 @@ class ClaudeNativeWorkerTests(unittest.TestCase):
 
         self.assertEqual("summary_only", event.data["observability"])
 
-    def test_the_worker_payload_carries_nothing_beyond_the_allowlist(self):
-        (event,) = normalize_claude_line(self.task_started(), run_id=RUN_ID)
+    def test_the_worker_payload_is_exactly_these_keys(self):
+        """Asserted as a whole set, not as the absence of one name. Spec line
+        247 states a whitelist, and a test that only forbids today's unwanted
+        key lets tomorrow's walk in. `parent_participant_id` is absent because
+        this function sees one line and not the roster; the caller that knows
+        the participant is the one that can add it, and it stays inside the
+        five the specification permits."""
+        (started,) = normalize_claude_line(self.task_started(), run_id=RUN_ID)
+        (finished,) = normalize_claude_line(
+            self.task_notification(), run_id=RUN_ID
+        )
 
-        self.assertLessEqual(set(event.data), self.WORKER_PAYLOAD_FIELDS)
+        self.assertEqual(
+            {"activity_kind", "native_child_id", "observability"},
+            set(started.data),
+        )
+        self.assertEqual(
+            {"activity_kind", "native_child_id", "observability", "status"},
+            set(finished.data),
+        )
+        self.assertLessEqual(set(started.data), self.WORKER_PAYLOAD_FIELDS)
+        self.assertLessEqual(set(finished.data), self.WORKER_PAYLOAD_FIELDS)
 
     @staticmethod
     def task_notification(**overrides):
@@ -1010,6 +1028,42 @@ class ClaudeRecordedDelegationTests(unittest.TestCase):
         self.assertEqual(
             2, len({event.data["native_child_id"] for event in workers})
         )
+
+    def test_worker_depth_reaches_the_caller_without_entering_the_payload(self):
+        """Spec line 247 fixes the payload of a native-worker activity, and
+        depth is not in it — so depth cannot be recorded as Journal content.
+        But delegation depth is a limit somebody has to enforce, and on this
+        build the provider does not: the nested recording completed with a
+        worker at depth 2 and `refused.depth_limit` at zero. The number
+        therefore has to reach the enforcing caller by another route, the way
+        `terminal` already does for the outcome resolver."""
+        starts = [
+            event
+            for event in self.replay(self.NESTED)
+            if event.kind == "runtime.activity.started"
+            and event.data.get("activity_kind") == "native_worker"
+        ]
+
+        self.assertEqual([1, 2], [event.worker_depth for event in starts])
+        for event in starts:
+            self.assertNotIn("spawn_depth", event.data)
+
+    def test_every_recorded_worker_event_keeps_the_exact_payload(self):
+        """The same whole-set check, applied to lines the provider really
+        wrote rather than to fixtures written here."""
+        for path in (self.DELEGATING, self.NESTED):
+            for event in self.replay(path):
+                if event.data.get("activity_kind") != "native_worker":
+                    continue
+                with self.subTest(recording=path.name, kind=event.kind):
+                    expected = {
+                        "activity_kind",
+                        "native_child_id",
+                        "observability",
+                    }
+                    if event.kind == "runtime.activity.finished":
+                        expected.add("status")
+                    self.assertEqual(expected, set(event.data))
 
     def test_the_delegation_recordings_carry_no_local_identifier(self):
         for path in (self.DELEGATING, self.NESTED):

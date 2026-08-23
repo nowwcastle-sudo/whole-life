@@ -142,6 +142,12 @@ class NormalizedEvent:
     occurred_at: datetime
     data: Mapping[str, object]
     terminal: TerminalEvent = TerminalEvent.NONE
+    #: How deep a native worker was spawned, when the line announced one.
+    #: Kept off `data` for the same reason `terminal` is: spec line 247 fixes
+    #: what a worker activity may carry into the Journal, and depth is not in
+    #: it — but the caller enforcing the delegation limit needs the number,
+    #: because on this build the provider does not enforce it.
+    worker_depth: int | None = None
 
 
 def _reject_non_json_number(value):
@@ -201,13 +207,16 @@ def _require(mapping, field, checker):
     return checker(mapping[field])
 
 
-def _event(run_id, kind, terminal=TerminalEvent.NONE, **data) -> NormalizedEvent:
+def _event(
+    run_id, kind, terminal=TerminalEvent.NONE, worker_depth=None, **data
+) -> NormalizedEvent:
     return NormalizedEvent(
         run_id=run_id,
         kind=kind,
         occurred_at=datetime.now(UTC),
         data=dict(data),
         terminal=terminal,
+        worker_depth=worker_depth,
     )
 
 
@@ -219,9 +228,13 @@ def _worker_event(parsed: dict, run_id: str, kind: str, **extra) -> NormalizedEv
     description and its answer; none of them is read.
     """
     task_id = _require(parsed, "task_id", lambda v: _typed(v, str))
+    depth = parsed.get("spawn_depth")
+    if depth is not None:
+        depth = _require(parsed, "spawn_depth", _number)
     return _event(
         run_id,
         kind,
+        worker_depth=depth,
         activity_kind="native_worker",
         native_child_id=task_id,
         observability=WORKER_OBSERVABILITY,
