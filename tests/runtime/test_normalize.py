@@ -594,5 +594,183 @@ class UsageAccountingTests(unittest.TestCase):
                 self.assertEqual("StdoutSchemaMismatch", caught.exception.diagnostic)
 
 
+class ClaudeNativeWorkerTests(unittest.TestCase):
+    """The `Agent` delegation lifecycle. Spec section 4, native delegation.
+
+    Every fixture below is the shape a live Claude Code 2.1.240 turn actually
+    wrote, recorded by running the production argument vector against the
+    operator's own sign-in. The synthetic fixtures this suite started with did
+    not contain these lines at all, which is why a green suite coexisted with a
+    normalizer that rejected most of a real delegating turn.
+    """
+
+    @staticmethod
+    def task_started(**overrides):
+        line = {
+            "type": "system",
+            "subtype": "task_started",
+            "task_id": "a3755a9018fbc95a8",
+            "tool_use_id": "toolu_01A1tLe2g217PHsZYZ2nSxVf",
+            "description": "Return a single word",
+            "subagent_type": "general-purpose",
+            "is_backgrounded": False,
+            "spawn_depth": 1,
+            "task_type": "local_agent",
+            "prompt": "Reply with exactly the word PINEAPPLE7731 and nothing else.",
+            "uuid": "0a7d9c57-d042-4544-b42d-3a3930031566",
+            "session_id": "beb0fa2d-8b57-4457-baca-38f66765c0ef",
+        }
+        line.update(overrides)
+        return json.dumps(line)
+
+    def test_a_task_start_is_a_native_worker_activity(self):
+        (event,) = normalize_claude_line(self.task_started(), run_id=RUN_ID)
+
+        self.assertEqual("runtime.activity.started", event.kind)
+        self.assertEqual("native_worker", event.data["activity_kind"])
+
+    def test_the_worker_carries_the_provider_issued_lifecycle_id(self):
+        """Spec line 118. The broker never invents one, but this build publishes
+        `task_id`, so leaving `native_child_id` empty would discard a real
+        identifier and record less than was observed."""
+        (event,) = normalize_claude_line(
+            self.task_started(task_id="a46dacfacc666a194"), run_id=RUN_ID
+        )
+
+        self.assertEqual("a46dacfacc666a194", event.data["native_child_id"])
+
+    #: Spec line 247 names the whole permitted payload for a native-worker
+    #: activity. `parent_participant_id` belongs to the caller, which knows the
+    #: participant; the normalizer sees one line and cannot supply it.
+    WORKER_PAYLOAD_FIELDS = frozenset(
+        {
+            "activity_kind",
+            "parent_participant_id",
+            "native_child_id",
+            "observability",
+            "status",
+        }
+    )
+
+    def test_the_worker_payload_records_how_much_can_be_seen(self):
+        """Spec line 118 requires `observability` on a worker activity. The
+        provider publishes a lifecycle id, a status and a summary — never the
+        worker's reasoning or tool state — so what is seen is a summary."""
+        (event,) = normalize_claude_line(self.task_started(), run_id=RUN_ID)
+
+        self.assertEqual("summary_only", event.data["observability"])
+
+    def test_the_worker_payload_carries_nothing_beyond_the_allowlist(self):
+        (event,) = normalize_claude_line(self.task_started(), run_id=RUN_ID)
+
+        self.assertLessEqual(set(event.data), self.WORKER_PAYLOAD_FIELDS)
+
+    @staticmethod
+    def task_notification(**overrides):
+        line = {
+            "type": "system",
+            "subtype": "task_notification",
+            "task_id": "a3755a9018fbc95a8",
+            "tool_use_id": "toolu_01A1tLe2g217PHsZYZ2nSxVf",
+            "status": "completed",
+            "output_file": r"C:\Temp\a3755a9018fbc95a8.output",
+            "summary": "PINEAPPLE7731",
+            "usage": {"total_tokens": 4759, "tool_uses": 0, "duration_ms": 1606},
+            "uuid": "29da1725-bf25-48c8-b0f4-db9e6060af4e",
+            "session_id": "beb0fa2d-8b57-4457-baca-38f66765c0ef",
+        }
+        line.update(overrides)
+        return json.dumps(line)
+
+    def test_a_task_notification_ends_the_same_worker(self):
+        """The provider's published summary boundary. It is where a worker is
+        known to have finished, and the id ties it to the start."""
+        (event,) = normalize_claude_line(self.task_notification(), run_id=RUN_ID)
+
+        self.assertEqual("runtime.activity.finished", event.kind)
+        self.assertEqual("native_worker", event.data["activity_kind"])
+        self.assertEqual("a3755a9018fbc95a8", event.data["native_child_id"])
+
+    def test_the_finish_carries_the_status_the_provider_reported(self):
+        """Spec line 247 permits `status`. A worker that ended is not the same
+        fact as a worker that ended *well*, and the turn gate below needs the
+        difference."""
+        (event,) = normalize_claude_line(
+            self.task_notification(status="completed"), run_id=RUN_ID
+        )
+
+        self.assertEqual("completed", event.data["status"])
+
+    def test_no_worker_prompt_or_summary_survives_normalization(self):
+        """Spec line 247 and AC5. The provider hands us the worker's prompt on
+        the start line and its answer on the finish line; neither is ours to
+        carry into another participant's history."""
+        started = normalize_claude_line(
+            self.task_started(prompt="RAWPROMPT4402", description="RAWDESC4402"),
+            run_id=RUN_ID,
+        )
+        finished = normalize_claude_line(
+            self.task_notification(summary="RAWSUMMARY4402"), run_id=RUN_ID
+        )
+
+        carried = json.dumps(
+            [dict(event.data) for event in (*started, *finished)]
+        )
+        self.assertNotIn("RAWPROMPT4402", carried)
+        self.assertNotIn("RAWDESC4402", carried)
+        self.assertNotIn("RAWSUMMARY4402", carried)
+
+    def test_intermediate_worker_lines_carry_no_canonical_event(self):
+        """`task_updated` and `task_progress` sit between the start and the
+        finish. Section 7 has a started and a finished event and no notion of
+        an update in between — the same answer already given to Codex's
+        `item.updated`. Recognised and skipped, not invented into an event."""
+        updated = json.dumps(
+            {
+                "type": "system",
+                "subtype": "task_updated",
+                "task_id": "a3755a9018fbc95a8",
+                "patch": {"status": "running"},
+                "uuid": "dd0dd3ef-a2ab-4555-aa5a-0163c486066a",
+                "session_id": "beb0fa2d-8b57-4457-baca-38f66765c0ef",
+            }
+        )
+        progress = json.dumps(
+            {
+                "type": "system",
+                "subtype": "task_progress",
+                "task_id": "a3755a9018fbc95a8",
+                "uuid": "1f6a2b19-6f57-4f4e-9a2e-0a4a1f0f2b77",
+                "session_id": "beb0fa2d-8b57-4457-baca-38f66765c0ef",
+            }
+        )
+
+        self.assertEqual([], normalize_claude_line(updated, run_id=RUN_ID))
+        self.assertEqual([], normalize_claude_line(progress, run_id=RUN_ID))
+
+    def test_the_subagent_announcement_is_not_a_participant_message(self):
+        """A live delegating turn writes a `user` line whose blocks are prose,
+        not a tool result — the provider restating the delegated task. Counting
+        it as `message.committed` would file the worker's brief as the
+        participant's own answer, and the worker's lifecycle is already carried
+        by the task lines."""
+        line = json.dumps(
+            {
+                "type": "user",
+                "message": {
+                    "role": "user",
+                    "content": [{"type": "text", "text": "RAWBRIEF4402"}],
+                },
+                "parent_tool_use_id": "toolu_01A1tLe2g217PHsZYZ2nSxVf",
+                "subagent_type": "general-purpose",
+                "task_description": "Return a single word",
+                "session_id": "beb0fa2d-8b57-4457-baca-38f66765c0ef",
+                "uuid": "3b9c1d2e-3f4a-4b5c-8d6e-7f8a9b0c1d2e",
+            }
+        )
+
+        self.assertEqual([], normalize_claude_line(line, run_id=RUN_ID))
+
+
 if __name__ == "__main__":
     unittest.main()

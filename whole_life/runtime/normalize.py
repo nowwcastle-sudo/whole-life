@@ -101,7 +101,18 @@ CLAUDE_ASSISTANT_BLOCKS = frozenset(
 #: The documented `system` and `result` subtypes. Closed rather than "any
 #: string": a subtype this build has not evaluated is drift, and accepting it
 #: would make the claim "pinned required shape, checked in full" false.
-CLAUDE_SYSTEM_SUBTYPES = frozenset({"init"})
+#: `task_started` is the provider announcing a native worker. It is listed
+#: here because a live 2.1.240 turn writes it, not because documentation
+#: mentions it.
+CLAUDE_SYSTEM_SUBTYPES = frozenset(
+    {"init", "task_started", "task_updated", "task_progress", "task_notification"}
+)
+#: Spec line 118's one named value. What the provider publishes about a worker
+#: is its lifecycle id, its status and a summary — never the worker's prompt,
+#: reasoning or tool state — so a summary is the whole of what can be seen. The
+#: specification names no second value and this module does not invent one.
+WORKER_OBSERVABILITY = "summary_only"
+
 CLAUDE_RESULT_SUBTYPES = frozenset(
     {"success", "error_max_turns", "error_during_execution"}
 )
@@ -187,6 +198,24 @@ def _event(run_id, kind, terminal=TerminalEvent.NONE, **data) -> NormalizedEvent
         occurred_at=datetime.now(UTC),
         data=dict(data),
         terminal=terminal,
+    )
+
+
+def _worker_event(parsed: dict, run_id: str, kind: str, **extra) -> NormalizedEvent:
+    """One native-worker lifecycle event, carrying only spec line 247's fields.
+
+    Built here rather than at each call site so that the payload allowlist is
+    one statement. The provider's line also holds the worker's prompt, its
+    description and its answer; none of them is read.
+    """
+    task_id = _require(parsed, "task_id", lambda v: _typed(v, str))
+    return _event(
+        run_id,
+        kind,
+        activity_kind="native_worker",
+        native_child_id=task_id,
+        observability=WORKER_OBSERVABILITY,
+        **extra,
     )
 
 
@@ -351,8 +380,30 @@ def normalize_claude_line(line: str, *, run_id: str) -> list[NormalizedEvent]:
     kind = _typed(parsed.get("type"), str)
 
     if kind == "system":
-        _require(parsed, "subtype", lambda v: _enum(v, CLAUDE_SYSTEM_SUBTYPES))
+        subtype = _require(
+            parsed, "subtype", lambda v: _enum(v, CLAUDE_SYSTEM_SUBTYPES)
+        )
         _require(parsed, "session_id", lambda v: _typed(v, str))
+        if subtype in ("task_updated", "task_progress"):
+            # Between the start and the finish. Section 7 has a started and a
+            # finished event and no notion of an update in between — the same
+            # answer already given to Codex's `item.updated`.
+            return []
+
+        if subtype == "task_started":
+            return [_worker_event(parsed, run_id, "runtime.activity.started")]
+
+        if subtype == "task_notification":
+            # Checked as a string rather than against a closed set. Only
+            # `completed` has been observed on 2.1.240; listing the failure
+            # wordings this build uses would be inventing a schema, and a
+            # worker that ended badly must not become a stream failure.
+            status = _require(parsed, "status", lambda v: _typed(v, str))
+            return [
+                _worker_event(
+                    parsed, run_id, "runtime.activity.finished", status=status
+                )
+            ]
         return [_event(run_id, "turn.started")]
 
     if kind == "assistant":
@@ -379,10 +430,20 @@ def normalize_claude_line(line: str, *, run_id: str) -> list[NormalizedEvent]:
     if kind == "user":
         message = _require(parsed, "message", lambda v: _typed(v, dict))
         blocks = _require(message, "content", lambda v: _typed(v, list))
+        carries_tool_result = False
         for block in blocks:
             _typed(block, dict)
-            if _require(block, "type", lambda v: _typed(v, str)) != "tool_result":
+            block_type = _require(block, "type", lambda v: _typed(v, str))
+            if block_type == "text":
+                # A live delegating turn writes a `user` line of prose: the
+                # provider restating the delegated task. It is not the
+                # participant's message and the worker's lifecycle is already
+                # carried by the `task_*` lines, so it commits nothing.
+                _require(block, "text", lambda v: _typed(v, str))
+                continue
+            if block_type != "tool_result":
                 raise StreamFailure("UnknownProviderEvent")
+            carries_tool_result = True
             _require(block, "tool_use_id", lambda v: _typed(v, str))
             # Only `tool_use_id` is required. The official ToolResultBlock makes
             # `content` `str | list[dict] | None` and `is_error` `bool | None`,
@@ -398,6 +459,9 @@ def normalize_claude_line(line: str, *, run_id: str) -> list[NormalizedEvent]:
                     _require(_typed(entry, dict), "type", lambda v: _typed(v, str))
             if block.get("is_error") is not None:
                 _typed(block["is_error"], bool)
+
+        if not carries_tool_result:
+            return []
         return [_event(run_id, "runtime.activity.finished", activity_kind="tool_use")]
 
     if kind == "result":
