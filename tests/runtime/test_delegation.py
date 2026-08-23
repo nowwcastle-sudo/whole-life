@@ -16,6 +16,7 @@ from unittest import mock
 from pathlib import Path
 
 from tests.support.launch_fixtures import (
+    codex_delegation_measured,
     RecordingSpawner,
     launch_plan,
     turn_request,
@@ -628,6 +629,147 @@ class OneDoorTests(unittest.IsolatedAsyncioTestCase):
         plan = emitting([INIT, RESULT], linger=False)
 
         self.assertIsNone(enforce_launch_safety(plan))
+
+class ProductionPathTests(unittest.IsolatedAsyncioTestCase):
+    """The budget has to reach the run the adapter actually starts.
+
+    Everything above builds a `RunObserver` directly, which proves the ledger
+    works and proves nothing about whether a real turn is given one. This
+    repository has been bitten by that shape three times — a control defined
+    and tested, and never wired to the path that runs. So this class starts
+    the turn through `start_turn` and reads it through `events`, the way the
+    broker will.
+    """
+
+    @staticmethod
+    async def claude_running(lines, *, request, linger=True):
+        runtime = ClaudeRuntime(
+            executable=Path(sys.executable),
+            runner=claude_runner(),
+            parent_env=PARENT_ENV,
+            spawner=SubprocessSpawner(),
+        )
+        await runtime.preflight()
+        body = "import sys, time" + chr(10)
+        for line in lines:
+            body += f"sys.stdout.write({line!r} + chr(10))" + chr(10)
+        body += "sys.stdout.flush()" + chr(10)
+        # Lingering is how a cancellation gets something to prove. A turn that
+        # is supposed to end on its own must not linger, or the reader waits
+        # for an EOF the child was told never to send.
+        if linger:
+            body += "time.sleep(300)" + chr(10)
+        runtime.turn_args_override = ("-c", body)
+        return runtime, await runtime.start_turn(request)
+
+    async def test_a_started_turn_carries_its_delegation_budget(self):
+        """Read off the run the adapter started, not off a value this test
+        handed it."""
+        request = turn_request(
+            prompt="hi",
+            delegation_budget=DelegationBudget(
+                max_concurrent_workers=3,
+                max_total_worker_starts=1,
+                max_depth=1,
+            ),
+        )
+        runtime, handle = await self.claude_running(
+            [INIT], request=request, linger=False
+        )
+
+        try:
+            observer = runtime._runs[handle.run_id]
+            self.assertIsNotNone(
+                observer._ledger,
+                "start_turn gave the run no budget to hold it to",
+            )
+        finally:
+            await runtime.close()
+
+    async def test_a_codex_turn_also_carries_its_budget(self):
+        """The other adapter. Mutation `U` — deleting the argument from the
+        Codex adapter alone — survived a run where only Claude was checked,
+        which is what a coverage gap looks like from the inside: every
+        assertion passing and one of two call sites unexamined.
+
+        The measurement table is stood in for here because this test is about
+        wiring, not capability: Codex reports `unsupported` until its
+        delegation measurement is made, and the gate would refuse the turn
+        before the question this test asks could be reached.
+        """
+        request = turn_request(prompt="hi")
+        with codex_delegation_measured():
+            runtime = CodexRuntime(
+                executable=Path(sys.executable),
+                runner=codex_runner(),
+                parent_env=PARENT_ENV,
+                codex_home=CODEX_HOME,
+                spawner=SubprocessSpawner(),
+            )
+            await runtime.preflight()
+            runtime.turn_args_override = ("-c", "pass")
+            handle = await runtime.start_turn(request)
+
+            try:
+                observer = runtime._runs[handle.run_id]
+                self.assertIsNotNone(
+                    observer._ledger,
+                    "start_turn gave the run no budget to hold it to",
+                )
+            finally:
+                await runtime.close()
+
+    async def test_a_started_turn_is_cancelled_when_it_overspends(self):
+        """The whole chain, through the door the broker uses: assemble, gate,
+        spawn, observe, count, cancel, resolve."""
+        request = turn_request(
+            prompt="hi",
+            delegation_budget=DelegationBudget(
+                max_concurrent_workers=3,
+                max_total_worker_starts=1,
+                max_depth=1,
+            ),
+        )
+        runtime, handle = await self.claude_running(
+            [INIT, started("a"), started("b"), RESULT], request=request
+        )
+
+        try:
+            async def drain():
+                return [event async for event in runtime.events(handle)]
+
+            await asyncio.wait_for(drain(), timeout=OBSERVE_TIMEOUT_SECONDS)
+            outcome = await runtime.wait(handle)
+        finally:
+            await runtime.close()
+
+        self.assertEqual(RunStatus.UNKNOWN_OUTCOME, outcome.status)
+        self.assertEqual("DelegationBudgetExceeded", outcome.diagnostic)
+
+    async def test_a_started_turn_is_unknown_while_a_worker_is_unresolved(self):
+        request = turn_request(
+            prompt="hi",
+            delegation_budget=DelegationBudget(
+                max_concurrent_workers=3,
+                max_total_worker_starts=3,
+                max_depth=1,
+            ),
+        )
+        runtime, handle = await self.claude_running(
+            [INIT, started("a"), RESULT], request=request, linger=False
+        )
+
+        try:
+            async def drain():
+                return [event async for event in runtime.events(handle)]
+
+            await asyncio.wait_for(drain(), timeout=OBSERVE_TIMEOUT_SECONDS)
+            outcome = await runtime.wait(handle)
+        finally:
+            await runtime.close()
+
+        self.assertEqual(RunStatus.UNKNOWN_OUTCOME, outcome.status)
+        self.assertEqual("NativeWorkerUnresolved", outcome.diagnostic)
 
 if __name__ == "__main__":
     unittest.main()

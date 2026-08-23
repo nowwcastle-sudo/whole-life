@@ -175,7 +175,13 @@ class CodexRuntime:
         )
         run_id = str(uuid4())
         self._runs[run_id] = RunObserver(
-            process, normalize=normalize_codex_line, run_id=run_id
+            process,
+            normalize=normalize_codex_line,
+            run_id=run_id,
+            # The budget the Broker sent with this turn. Without it the
+            # run counts nothing, and the limits would be a thing this
+            # module defines and never applies.
+            delegation_budget=request.delegation_budget,
         )
         return RunHandle(
             run_id=run_id,

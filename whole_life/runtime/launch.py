@@ -185,13 +185,20 @@ def enforce_launch_safety(plan: LaunchPlan) -> None:
     # as its own evidence. Comparing the whole mapping also refuses a row
     # that simply omits an axis — an omission passes any test written as
     # "no axis says unsupported", because an empty mapping says nothing.
+    # Four separate statements, like the controls above: removing one has to
+    # make exactly one test fail, and a reader stepping through a refusal has
+    # to be able to see which condition stopped it.
     measured = REPORTED_ENFORCEMENT.get(plan.provider)
-    if (
-        measured is None
-        or plan.delegation_enforcement != measured
-        or set(measured) != DELEGATION_AXES
-        or EnforcementLevel.UNSUPPORTED in measured.values()
-    ):
+    if measured is None:
+        raise PreStartRefusal(RefusalCode.DELEGATION_UNSUPPORTED)
+
+    if set(measured) != DELEGATION_AXES:
+        raise PreStartRefusal(RefusalCode.DELEGATION_UNSUPPORTED)
+
+    if EnforcementLevel.UNSUPPORTED in measured.values():
+        raise PreStartRefusal(RefusalCode.DELEGATION_UNSUPPORTED)
+
+    if plan.delegation_enforcement != measured:
         raise PreStartRefusal(RefusalCode.DELEGATION_UNSUPPORTED)
 
     request = plan.turn_request
