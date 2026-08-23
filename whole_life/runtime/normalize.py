@@ -101,7 +101,10 @@ CLAUDE_ASSISTANT_BLOCKS = frozenset(
 #: The documented `system` and `result` subtypes. Closed rather than "any
 #: string": a subtype this build has not evaluated is drift, and accepting it
 #: would make the claim "pinned required shape, checked in full" false.
-CLAUDE_SYSTEM_SUBTYPES = frozenset({"init"})
+#: `thinking_tokens` is listed because a live 2.1.240 turn writes it, not
+#: because documentation mentions it. Widening this set is how a measured
+#: line stops ending the run; the closed-set check itself stays.
+CLAUDE_SYSTEM_SUBTYPES = frozenset({"init", "thinking_tokens"})
 CLAUDE_RESULT_SUBTYPES = frozenset(
     {"success", "error_max_turns", "error_during_execution"}
 )
@@ -350,9 +353,21 @@ def normalize_claude_line(line: str, *, run_id: str) -> list[NormalizedEvent]:
     parsed = _parse(line)
     kind = _typed(parsed.get("type"), str)
 
-    if kind == "system":
-        _require(parsed, "subtype", lambda v: _enum(v, CLAUDE_SYSTEM_SUBTYPES))
+    if kind == "rate_limit_event":
+        # The provider's own quota accounting. Section 7 has no event for it,
+        # and its `resetsAt` and overage wording are subscription state rather
+        # than turn history. Recognised so a real turn survives it, and not
+        # recorded.
         _require(parsed, "session_id", lambda v: _typed(v, str))
+        return []
+
+    if kind == "system":
+        subtype = _require(parsed, "subtype", lambda v: _enum(v, CLAUDE_SYSTEM_SUBTYPES))
+        _require(parsed, "session_id", lambda v: _typed(v, str))
+        if subtype == "thinking_tokens":
+            # An estimate *about* reasoning. Section 7 keeps reasoning out, so
+            # this commits nothing — the same answer a thinking block gets.
+            return []
         return [_event(run_id, "turn.started")]
 
     if kind == "assistant":
