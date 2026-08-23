@@ -17,7 +17,11 @@ import sys
 import unittest
 from pathlib import Path
 
-from tests.support.launch_fixtures import launch_plan, turn_request
+from tests.support.launch_fixtures import (
+    codex_delegation_measured,
+    launch_plan,
+    turn_request,
+)
 from tests.support.preflight_fixtures import CODEX_HOME, codex_runner
 from whole_life.runtime.codex import CodexRuntime
 from whole_life.runtime.delegation import REPORTED_ENFORCEMENT
@@ -36,6 +40,21 @@ from whole_life.runtime.launch import (
 from whole_life.runtime.normalize import normalize_codex_line
 from whole_life.runtime.observe import RunObserver
 from whole_life.runtime.spawn import SubprocessSpawner
+
+
+#: This module's subject is not delegation capability. See the helper.
+_CODEX_MEASURED = None
+
+
+def setUpModule():
+    global _CODEX_MEASURED
+    _CODEX_MEASURED = codex_delegation_measured()
+    _CODEX_MEASURED.start()
+
+
+def tearDownModule():
+    _CODEX_MEASURED.stop()
+
 
 CLEAN_PARENT_ENV = {"SYSTEMROOT": r"C:\Windows", "PATH": r"C:\Windows\system32"}
 MESSAGE = '{"type":"item.completed","item":{"id":"i1","type":"agent_message","text":"hi"}}'
@@ -61,12 +80,6 @@ async def adapter(script, *, sessions=None):
         codex_home=CODEX_HOME,
         spawner=SubprocessSpawner(),
         sessions=sessions,
-        # This suite's subject is not delegation capability, so the adapter
-        # is given a row it can hold. Codex reports `unsupported` on every
-        # axis until its delegation measurement is made, and a turn from an
-        # unsupported runtime is refused before spawn — which is the control
-        # working, not this test failing.
-        delegation_enforcement=REPORTED_ENFORCEMENT[Provider.CLAUDE],
     )
     await runtime.preflight()
     runtime.turn_args_override = ("-c", script)
@@ -378,8 +391,6 @@ class UnresolvedTerminationTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(
             RefusalCode.CONCURRENT_RESUME_REJECTED, caught.exception.code
         )
-
-
 class _NeverExits:
     """A child that cannot be killed, so termination cannot be confirmed."""
 

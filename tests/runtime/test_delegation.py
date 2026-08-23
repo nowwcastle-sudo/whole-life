@@ -11,6 +11,7 @@ has already let the turn exceed it.
 import json
 import sys
 import unittest
+from unittest import mock
 from pathlib import Path
 
 from tests.support.launch_fixtures import launch_plan, turn_request
@@ -25,19 +26,24 @@ from tests.support.preflight_fixtures import (
 from whole_life.runtime.claude import ClaudeRuntime
 from whole_life.runtime.codex import CodexRuntime
 from whole_life.runtime.contract import (
+    Provider,
     DelegationBudget,
     EnforcementLevel,
     RunStatus,
 )
 from whole_life.runtime.normalize import normalize_claude_line
 from whole_life.runtime.launch import (
+    SUPPORTED_VERSIONS,
     PreStartRefusal,
     RefusalCode,
     enforce_launch_safety,
 )
 from whole_life.runtime.observe import RunObserver
 from whole_life.runtime.spawn import SubprocessSpawner
-from whole_life.runtime.delegation import DelegationLedger
+from whole_life.runtime.delegation import (
+    REPORTED_ENFORCEMENT,
+    DelegationLedger,
+)
 
 BUDGET = DelegationBudget(
     max_concurrent_workers=3, max_total_worker_starts=2, max_depth=1
@@ -440,6 +446,78 @@ class FailClosedCapabilityTests(unittest.IsolatedAsyncioTestCase):
         await runtime.preflight()
 
         plan = runtime.assemble_launch_plan(turn_request(prompt="hi"))
+
+        self.assertIsNone(enforce_launch_safety(plan))
+
+class ClaimedEnforcementTests(unittest.TestCase):
+    """What a plan says about itself is not evidence that it is true.
+
+    #12 closed this shape once already: the gate trusted a caller-supplied
+    `allowlisted` flag until it was made to compare the whole record against
+    the canonical table. A delegation row travelling on the plan is the same
+    kind of value — a report, not a measurement — so the gate resolves it the
+    same way, by looking it up.
+    """
+
+    @staticmethod
+    def codex_plan(row):
+        return launch_plan(
+            provider=Provider.CODEX,
+            version_conformance=SUPPORTED_VERSIONS[Provider.CODEX]["0.149.0"],
+            turn_request=turn_request(),
+            delegation_enforcement=row,
+        )
+
+    def refusal(self, row):
+        with self.assertRaises(PreStartRefusal) as caught:
+            enforce_launch_safety(self.codex_plan(row))
+        return caught.exception.code
+
+    def test_the_honest_row_of_an_unmeasured_provider_is_refused(self):
+        self.assertEqual(
+            RefusalCode.DELEGATION_UNSUPPORTED,
+            self.refusal(REPORTED_ENFORCEMENT[Provider.CODEX]),
+        )
+
+    def test_a_row_the_caller_made_up_is_refused(self):
+        """The plan claims every limit is held. The measurement table says
+        none of them is known to be."""
+        self.assertEqual(
+            RefusalCode.DELEGATION_UNSUPPORTED,
+            self.refusal(
+                {
+                    "worker_concurrency_enforcement": EnforcementLevel.COOPERATIVE,
+                    "worker_total_start_enforcement": EnforcementLevel.COOPERATIVE,
+                    "delegation_depth_enforcement": EnforcementLevel.COOPERATIVE,
+                }
+            ),
+        )
+
+    def test_a_row_with_no_axes_at_all_is_refused(self):
+        """A check written as "no axis says unsupported" passes an empty
+        mapping, because an empty mapping says nothing at all. Omission is
+        quieter than a lie and has to be refused just as firmly."""
+        self.assertEqual(
+            RefusalCode.DELEGATION_UNSUPPORTED, self.refusal({})
+        )
+
+    def test_a_row_missing_an_axis_is_refused(self):
+        self.assertEqual(
+            RefusalCode.DELEGATION_UNSUPPORTED,
+            self.refusal(
+                {"worker_total_start_enforcement": EnforcementLevel.COOPERATIVE}
+            ),
+        )
+
+    def test_a_measured_provider_still_starts(self):
+        """The control. Without this, every assertion above could be passing
+        because the gate refuses everything."""
+        plan = launch_plan(
+            provider=Provider.CLAUDE,
+            version_conformance=SUPPORTED_VERSIONS[Provider.CLAUDE]["2.1.240"],
+            turn_request=turn_request(),
+            delegation_enforcement=REPORTED_ENFORCEMENT[Provider.CLAUDE],
+        )
 
         self.assertIsNone(enforce_launch_safety(plan))
 

@@ -8,7 +8,11 @@ and only the second one is the acceptance criterion.
 
 import unittest
 
-from tests.support.launch_fixtures import RecordingSpawner, turn_request
+from tests.support.launch_fixtures import (
+    codex_delegation_measured,
+    RecordingSpawner,
+    turn_request,
+)
 from tests.support.preflight_fixtures import (
     CLAUDE_EXECUTABLE,
     CODEX_EXECUTABLE,
@@ -26,6 +30,21 @@ from whole_life.runtime.launch import (
     RecordingJournal,
     RefusalCode,
 )
+
+
+#: This module's subject is not delegation capability. See the helper.
+_CODEX_MEASURED = None
+
+
+def setUpModule():
+    global _CODEX_MEASURED
+    _CODEX_MEASURED = codex_delegation_measured()
+    _CODEX_MEASURED.start()
+
+
+def tearDownModule():
+    _CODEX_MEASURED.stop()
+
 
 CLEAN_PARENT_ENV = {"SYSTEMROOT": r"C:\Windows", "PATH": r"C:\Windows\system32"}
 NATIVE_SESSION = "1f0c6d9e-8f2a-4c3b-9d61-2b7a5e4f8c10"
@@ -59,12 +78,6 @@ async def codex_adapter(**overrides):
         parent_env=CLEAN_PARENT_ENV,
         codex_home=CODEX_HOME,
         **parts,
-        # This suite's subject is not delegation capability, so the adapter
-        # is given a row it can hold. Codex reports `unsupported` on every
-        # axis until its delegation measurement is made, and a turn from an
-        # unsupported runtime is refused before spawn — which is the control
-        # working, not this test failing.
-        delegation_enforcement=REPORTED_ENFORCEMENT[Provider.CLAUDE],
     )
     await runtime.preflight()
     return runtime, parts
@@ -131,7 +144,6 @@ class StartTurnTests(unittest.IsolatedAsyncioTestCase):
                         mode=TurnMode.RESUME, native_session_id=NATIVE_SESSION
                     )
                 )
-
                 self.assertEqual(NATIVE_SESSION, handle.native_session_id)
                 self.assertEqual("claude-01", handle.participant_id)
 

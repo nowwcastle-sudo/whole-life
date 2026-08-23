@@ -16,6 +16,10 @@ from typing import Protocol
 
 import re
 
+from whole_life.runtime.delegation import (
+    DELEGATION_AXES,
+    REPORTED_ENFORCEMENT,
+)
 from whole_life.runtime.contract import (
     EnforcementLevel,
     Provider,
@@ -172,12 +176,21 @@ def enforce_launch_safety(plan: LaunchPlan) -> None:
 
     # Spec line 121. Every v0 profile grants native delegation, so a runtime
     # that cannot show it holds the limits does not quietly become a
-    # single-agent turn: it does not start. Checked here rather than at
-    # assembly, so a plan built anywhere passes the same control.
-    enforcement = plan.delegation_enforcement
+    # single-agent turn: it does not start.
+    #
+    # Resolved from the measurement table and compared whole, the same way
+    # the version record is resolved above. The row travelling on the plan is
+    # a report; a report that disagrees with the measurement is a claim, and
+    # #12 already closed the shape where a caller-supplied flag was accepted
+    # as its own evidence. Comparing the whole mapping also refuses a row
+    # that simply omits an axis — an omission passes any test written as
+    # "no axis says unsupported", because an empty mapping says nothing.
+    measured = REPORTED_ENFORCEMENT.get(plan.provider)
     if (
-        enforcement is None
-        or EnforcementLevel.UNSUPPORTED in enforcement.values()
+        measured is None
+        or plan.delegation_enforcement != measured
+        or set(measured) != DELEGATION_AXES
+        or EnforcementLevel.UNSUPPORTED in measured.values()
     ):
         raise PreStartRefusal(RefusalCode.DELEGATION_UNSUPPORTED)
 

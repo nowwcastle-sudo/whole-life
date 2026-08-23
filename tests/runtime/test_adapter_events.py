@@ -13,13 +13,31 @@ import sys
 import unittest
 from pathlib import Path
 
-from tests.support.launch_fixtures import turn_request
+from tests.support.launch_fixtures import (
+    codex_delegation_measured,
+    turn_request,
+)
 from tests.support.preflight_fixtures import CODEX_HOME, codex_runner
 from whole_life.runtime.codex import CodexRuntime
 from whole_life.runtime.delegation import REPORTED_ENFORCEMENT
 from whole_life.runtime.contract import Provider, RunHandle, RunStatus
 from whole_life.runtime.spawn import SubprocessSpawner
 from whole_life.runtime.streams import StreamFailure
+
+
+#: This module's subject is not delegation capability. See the helper.
+_CODEX_MEASURED = None
+
+
+def setUpModule():
+    global _CODEX_MEASURED
+    _CODEX_MEASURED = codex_delegation_measured()
+    _CODEX_MEASURED.start()
+
+
+def tearDownModule():
+    _CODEX_MEASURED.stop()
+
 
 CLEAN_PARENT_ENV = {"SYSTEMROOT": r"C:\Windows", "PATH": r"C:\Windows\system32"}
 COMPLETED = '{"type":"turn.completed","usage":{"input_tokens":1,"cached_input_tokens":0,"cache_write_input_tokens":0,"output_tokens":1,"reasoning_output_tokens":0}}'
@@ -42,12 +60,6 @@ async def adapter_running(lines, *, exit_code=0):
         parent_env=CLEAN_PARENT_ENV,
         codex_home=CODEX_HOME,
         spawner=SubprocessSpawner(),
-        # This suite's subject is not delegation capability, so the adapter
-        # is given a row it can hold. Codex reports `unsupported` on every
-        # axis until its delegation measurement is made, and a turn from an
-        # unsupported runtime is refused before spawn — which is the control
-        # working, not this test failing.
-        delegation_enforcement=REPORTED_ENFORCEMENT[Provider.CLAUDE],
     )
     await runtime.preflight()
 
@@ -212,7 +224,6 @@ class AdapterEventTests(unittest.IsolatedAsyncioTestCase):
             participant_id="claude-01",
             provider=adapter.provider,
         )
-
         with self.assertRaises(KeyError):
             [event async for event in adapter.events(stranger)]
 

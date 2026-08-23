@@ -28,6 +28,17 @@ BUDGET_EXCEEDED = "DelegationBudgetExceeded"
 DEPTH_EXCEEDED = "DelegationDepthExceeded"
 
 
+#: The three limits section 4 requires to be reported separately. Named once
+#: so a row can be checked for completeness rather than for the absence of
+#: whichever value happens to be unwanted today.
+DELEGATION_AXES = frozenset(
+    {
+        "worker_concurrency_enforcement",
+        "worker_total_start_enforcement",
+        "delegation_depth_enforcement",
+    }
+)
+
 #: What each provider is reported to hold, one entry per limit. Section 4.
 #:
 #: Reported as measured, and `unsupported` where nothing was measured. The

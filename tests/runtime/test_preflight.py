@@ -51,12 +51,6 @@ def codex(runner=None, parent_env=None) -> CodexRuntime:
         runner=runner or codex_runner(),
         parent_env=PARENT_ENV if parent_env is None else parent_env,
         codex_home=CODEX_HOME,
-        # This suite's subject is not delegation capability, so the adapter
-        # is given a row it can hold. Codex reports `unsupported` on every
-        # axis until its delegation measurement is made, and a turn from an
-        # unsupported runtime is refused before spawn — which is the control
-        # working, not this test failing.
-        delegation_enforcement=REPORTED_ENFORCEMENT[Provider.CLAUDE],
     )
 
 
