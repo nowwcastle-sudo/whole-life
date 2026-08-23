@@ -212,6 +212,12 @@ class RunObserver:
         the process can produce anything else, is what makes that race already
         settled by the time the outcome is resolved.
 
+        One exception, and it is not about ordering: line 282. A committed
+        result carries through the cancellation for everything except a native
+        worker that was announced and never announced finished. The provider
+        said the conversation ended; it never said the worker stopped, and the
+        cancellation ends the only stream that could have said so.
+
         Deliberately no `cause`. Spec line 96 signs this as
         `cancel(self, run) -> CancelOutcome`, and none of 268, 278, 279, 484 or
         485 branches on why a run was stopped — user cancellation and the

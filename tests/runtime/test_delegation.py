@@ -46,6 +46,7 @@ from whole_life.runtime.launch import (
     enforce_launch_safety,
 )
 from whole_life.runtime.observe import RunObserver
+from whole_life.runtime.outcome import TerminalEvent
 from whole_life.runtime.spawn import SubprocessSpawner
 from whole_life.runtime.delegation import (
     REPORTED_ENFORCEMENT,
@@ -770,6 +771,119 @@ class ProductionPathTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(RunStatus.UNKNOWN_OUTCOME, outcome.status)
         self.assertEqual("NativeWorkerUnresolved", outcome.diagnostic)
+
+    async def test_a_cancelled_turn_is_unknown_when_a_worker_never_resolved(self):
+        """Spec 282 over 279, through the door the broker uses.
+
+        A terminal result committed before the cancellation survives it — that
+        is 279, and it is why an ordinary post-terminal shutdown is not rewritten
+        into a failure. But 282 names the case where the same terminal result
+        arrives *over an announced worker nobody said stopped*, and there the
+        honest answer is that we do not know. The two are only distinguishable
+        after the terminal event has been consumed and the cancellation has
+        landed on top of it, so this drives the real stream in two phases rather
+        than resolving the outcome directly.
+        """
+        request = turn_request(
+            prompt="hi",
+            delegation_budget=DelegationBudget(
+                max_concurrent_workers=3,
+                max_total_worker_starts=3,
+                max_depth=1,
+            ),
+        )
+        # Lingering on purpose: a child that had already exited would let the
+        # cancellation land on a corpse, and then this test would pass without
+        # the ordering it means to pin.
+        runtime, handle = await self.claude_running(
+            [INIT, started("a"), RESULT], request=request, linger=True
+        )
+        stream = runtime.events(handle)
+        seen = []
+
+        try:
+            # `terminal` is observer bookkeeping and deliberately not on the
+            # contract type, so the consumer's signal that the turn committed
+            # a result is the event kind.
+            async def until_terminal():
+                async for event in stream:
+                    seen.append(event)
+                    if event.kind == "turn.completed":
+                        return
+
+            await asyncio.wait_for(
+                until_terminal(), timeout=OBSERVE_TIMEOUT_SECONDS
+            )
+            self.assertTrue(
+                any(event.kind == "turn.completed" for event in seen),
+                "the turn never committed a terminal result, so there is no "
+                "cancel-after-terminal ordering to test",
+            )
+
+            await runtime.cancel(handle, graceful_wait=0.2)
+
+            async def rest():
+                async for event in stream:
+                    seen.append(event)
+
+            await asyncio.wait_for(rest(), timeout=OBSERVE_TIMEOUT_SECONDS)
+            outcome = await runtime.wait(handle)
+        finally:
+            await runtime.close()
+
+        self.assertEqual(RunStatus.UNKNOWN_OUTCOME, outcome.status)
+        self.assertEqual("NativeWorkerUnresolved", outcome.diagnostic)
+
+    async def test_a_cancelled_turn_with_every_worker_settled_stays_completed(self):
+        """The control for the test above, and the thing #16 is owed.
+
+        Same shape — terminal result, then a cancellation on a child still
+        running — but every worker the provider announced was announced
+        finished. Spec 279 stands here: an ordinary post-terminal shutdown is
+        not a failure and not an unknown. Without this, the test above could be
+        satisfied by deleting the branch it depends on, which would silently
+        rewrite every clean broker shutdown.
+        """
+        request = turn_request(
+            prompt="hi",
+            delegation_budget=DelegationBudget(
+                max_concurrent_workers=3,
+                max_total_worker_starts=3,
+                max_depth=1,
+            ),
+        )
+        runtime, handle = await self.claude_running(
+            [INIT, started("a"), finished("a"), RESULT],
+            request=request,
+            linger=True,
+        )
+        stream = runtime.events(handle)
+        seen = []
+
+        try:
+            async def until_terminal():
+                async for event in stream:
+                    seen.append(event)
+                    if event.kind == "turn.completed":
+                        return
+
+            await asyncio.wait_for(
+                until_terminal(), timeout=OBSERVE_TIMEOUT_SECONDS
+            )
+
+            await runtime.cancel(handle, graceful_wait=0.2)
+
+            async def rest():
+                async for event in stream:
+                    seen.append(event)
+
+            await asyncio.wait_for(rest(), timeout=OBSERVE_TIMEOUT_SECONDS)
+            outcome = await runtime.wait(handle)
+        finally:
+            await runtime.close()
+
+        self.assertEqual(RunStatus.COMPLETED, outcome.status)
+        self.assertIsNone(outcome.diagnostic)
 
 if __name__ == "__main__":
     unittest.main()
