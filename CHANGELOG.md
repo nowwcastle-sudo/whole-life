@@ -53,6 +53,18 @@ issue holds the acceptance criteria; the merge commit holds the reasoning.
 
 ### Fixed
 
+- **A live provider turn that runs to the end** (#32). Two line kinds a real Claude Code turn
+  writes on every run — a top-level rate-limit notice and a `system` thinking-token estimate —
+  were not in the stream allowlist, and the first unrecognised line ended the run. Nothing about
+  this involved delegation: a turn that only says hello died on the rate-limit notice, so no real
+  turn had ever finished. Both are now recognised and passed over. Neither becomes one of the
+  eight canonical events, neither reaches the Journal, and none of what they carry — limit counts,
+  reset times, token estimates — survives normalisation. The evidence is a recorded real turn
+  replayed in the suite rather than a fixture someone wrote from memory, because a hand-written
+  fixture only ever contains lines its author already knew about, which is exactly how a green
+  suite coexisted with an adapter that could not complete a turn. Unknown types and unknown
+  `system` subtypes still fail closed: the allowlist was widened, not removed.
+
 - Four boundary defects in preflight and launch, all reproduced from synthetic input before the
   fix (#12 follow-up). The final gate had trusted a caller-supplied `allowlisted` flag — an
   assertion, not evidence — and now compares the whole record against the canonical supported
