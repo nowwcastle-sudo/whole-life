@@ -34,7 +34,9 @@ Everything the table does not list is filled in progressively, as the flow reach
 
 **Contribution surface.** This file and `SECURITY.md` exist, but the repository stays private until the gates in the README's *Security and policy boundary* clear. No external triage process is in place, and none is created until distribution is unblocked.
 
-**Push is gated.** A project-scoped guardrail blocks `git push` and destructive git operations — force push, `reset --hard`, history rewriting, remote branch deletion. Agents prepare the exact command and a human runs it.
+**Push is allowed; merge is not.** The agent that verified a branch pushes it and opens the pull request. Merging into `main` is a human decision, made on the evidence in that pull request. Destructive git operations — force push, `reset --hard`, history rewriting, remote branch deletion — are never performed by an agent: it stops and reports instead.
+
+A project-scoped guardrail in `.claude/settings.json` blocks those commands for a session whose project directory is this repository. It does not reach an agent working from another directory, so the rule above is the binding one — the guardrail is a backstop, not the boundary.
 
 ## Change standards
 
