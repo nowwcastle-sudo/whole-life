@@ -4,46 +4,70 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>연대기 — whole-life</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root{--ink:#16181d; --dim:#6b7280; --line:#e3e6ec; --paper:#fbfbfa;
-        --amber:#a86a00; --wash:#f2f4f8; --blue:#1d5fb8;}
+  :root{
+    --paper:       #282828;
+    --paper-2:     #32302f;
+    --zone:        #302e2c;
+    --ink:         #ebdbb2;
+    --muted:       #a89984;
+    --soft:        #928374;
+    --rule:        rgba(235,219,178,0.12);
+    --rule-solid:  #504945;
+    --accent:      #fe8019;
+    --accent-tint: rgba(254,128,25,0.12);
+    --link:        #83a598;
+    --green:       #b8bb26;
+    --red:         #fb4934;
+    --yellow:      #fabd2f;
+  }
   *{box-sizing:border-box}
   body{margin:0; background:var(--paper); color:var(--ink);
-       font-family:"Pretendard","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;
+       font-family:"Geist","Pretendard","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;
        line-height:1.75; -webkit-font-smoothing:antialiased;}
-  .wrap{max-width:840px; margin:0 auto; padding:64px 28px 120px}
-  .kicker{font-size:13px; letter-spacing:.14em; color:var(--dim); text-transform:uppercase}
-  h1{font-size:44px; line-height:1.15; margin:14px 0 10px; letter-spacing:-.02em}
-  .sub{font-size:18px; color:var(--dim); margin:0 0 8px}
+  .wrap{max-width:880px; margin:0 auto; padding:64px 28px 120px}
+  .kicker{font-size:13px; letter-spacing:.14em; color:var(--soft); text-transform:uppercase;
+          font-family:"Geist Mono",ui-monospace,"Consolas",monospace}
+  h1{font-family:"Instrument Serif","Malgun Gothic",serif;
+     font-size:52px; line-height:1.15; margin:14px 0 10px; letter-spacing:-.01em; font-weight:400}
+  .sub{font-size:18px; color:var(--muted); margin:0 0 8px}
   p{font-size:17px; margin:0 0 18px}
-  .note{font-size:15px; color:var(--dim)}
-  hr{border:0; border-top:1px solid var(--line); margin:44px 0}
-  code{font-family:ui-monospace,"Consolas",monospace; font-size:.9em;
-       background:var(--wash); padding:1px 6px; border-radius:5px}
+  .note{font-size:15px; color:var(--muted)}
+  hr{border:0; border-top:1px solid var(--rule); margin:44px 0}
+  code{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; font-size:.9em;
+       background:var(--zone); color:var(--ink); padding:1px 6px; border-radius:4px}
 
-  .card{background:#fff; border:1px solid var(--line); border-radius:14px; padding:24px 26px; margin:26px 0}
-  .warn{background:#fff8ec; border-color:#f0dcb4}
-  .warn .tag{color:var(--amber); font-weight:700; font-size:13px; letter-spacing:.1em}
+  .card{background:var(--paper-2); border:1px solid var(--rule-solid); border-radius:8px;
+        padding:24px 26px; margin:26px 0}
+  .warn{border-color:var(--yellow)}
+  .warn .tag{color:var(--yellow); font-weight:600; font-size:13px; letter-spacing:.1em;
+             font-family:"Geist Mono",ui-monospace,monospace}
 
-  h2{font-size:14px; letter-spacing:.16em; color:var(--dim); text-transform:uppercase;
-     margin:56px 0 18px; font-weight:600}
+  h2{font-size:14px; letter-spacing:.16em; color:var(--soft); text-transform:uppercase;
+     margin:56px 0 18px; font-weight:500;
+     font-family:"Geist Mono",ui-monospace,"Consolas",monospace}
+
+  figure{margin:34px 0}
+  figcaption{font-size:14px; color:var(--muted); margin-top:12px; text-align:center; line-height:1.6}
+  svg{display:block; width:100%; height:auto}
 
   .toc{list-style:none; padding:0; margin:0}
-  .toc li{border-top:1px solid var(--line); padding:20px 0 20px 96px; position:relative}
-  .toc li:last-child{border-bottom:1px solid var(--line)}
-  .num{position:absolute; left:0; top:20px; font-family:ui-monospace,"Consolas",monospace;
-       font-size:13px; color:var(--dim); letter-spacing:.06em}
+  .toc li{border-top:1px solid var(--rule); padding:20px 0 20px 96px; position:relative}
+  .toc li:last-child{border-bottom:1px solid var(--rule)}
+  .num{position:absolute; left:0; top:20px; font-family:"Geist Mono",ui-monospace,"Consolas",monospace;
+       font-size:13px; color:var(--soft); letter-spacing:.06em}
   .kind{display:inline-block; font-size:11px; letter-spacing:.12em; text-transform:uppercase;
-        border:1px solid var(--line); border-radius:99px; padding:2px 10px; color:var(--dim);
-        vertical-align:2px; margin-left:8px}
-  .toc a{color:var(--ink); text-decoration:none; font-size:20px; font-weight:700;
-         border-bottom:2px solid var(--line)}
-  .toc a:hover{border-bottom-color:var(--blue); color:var(--blue)}
-  .toc .one{font-size:16px; color:var(--dim); margin:10px 0 0}
-  .toc .date{font-family:ui-monospace,"Consolas",monospace; font-size:13px; color:var(--dim)}
-  .toc li.empty{background:transparent}
-  .toc li.empty .title{font-size:20px; font-weight:700; color:#b3b8c2}
-  .toc li.empty .one{color:#9aa1ad}
+        border:1px solid var(--rule-solid); border-radius:4px; padding:2px 10px; color:var(--soft);
+        vertical-align:2px; margin-left:8px;
+        font-family:"Geist Mono",ui-monospace,monospace}
+  .toc a{color:var(--ink); text-decoration:none; font-size:20px; font-weight:600;
+         border-bottom:2px solid var(--rule-solid)}
+  .toc a:hover{border-bottom-color:var(--link); color:var(--link)}
+  .toc .one{font-size:16px; color:var(--muted); margin:10px 0 0}
+  .toc .date{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; font-size:13px; color:var(--soft)}
+  .toc li.empty .title{font-size:20px; font-weight:600; color:var(--soft)}
+  .toc li.empty .one{color:var(--soft)}
 </style>
 </head>
 <body>
@@ -66,6 +90,79 @@
       원점편은 <b>초안</b>이며 대표 승인을 기다립니다. 승인 뒤에는 고치지 않습니다.
     </p>
   </div>
+
+  <figure>
+    <svg viewBox="0 0 860 440" role="img" aria-labelledby="chronicle-timeline-title chronicle-timeline-desc">
+      <title id="chronicle-timeline-title">whole-life 역사 기록 타임라인</title>
+      <desc id="chronicle-timeline-desc">2026-08-22부터 2026-08-24까지의 시간축 위에, 아직 쓰이지 않은 터닦기편과 아홉 대상의 구간, 그리고 2026-08-24에 함께 나온 원점편과 제11편을 표시한 타임라인.</desc>
+      <rect width="100%" height="100%" fill="var(--paper)"/>
+
+      <text x="40" y="40" font-size="12" fill="var(--soft)" letter-spacing="0.14em"
+            font-family="'Geist Mono',ui-monospace,monospace">2026-08-22  →  2026-08-24</text>
+
+      <!-- 01 터닦기 : 아직 쓰이지 않음 -->
+      <line x1="140" y1="128" x2="140" y2="192" stroke="var(--soft)" stroke-width="1" stroke-dasharray="4,4"/>
+      <rect x="80" y="48" width="280" height="76" rx="8" fill="var(--paper-2)"
+            stroke="var(--rule-solid)" stroke-width="1" stroke-dasharray="4,4"/>
+      <text x="104" y="80" font-size="16" fill="var(--muted)" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">01 터닦기</text>
+      <text x="104" y="104" font-size="12" fill="var(--soft)"
+            font-family="'Geist Mono',ui-monospace,monospace">편 미작성 · 0단계 BST</text>
+
+      <!-- 2026-08-24 : 원점편 + 제11편 -->
+      <line x1="700" y1="164" x2="700" y2="192" stroke="var(--accent)" stroke-width="1"/>
+      <rect x="480" y="48" width="320" height="112" rx="8" fill="var(--accent-tint)"
+            stroke="var(--accent)" stroke-width="1"/>
+      <text x="504" y="80" font-size="12" fill="var(--accent)" letter-spacing="0.08em"
+            font-family="'Geist Mono',ui-monospace,monospace">2026-08-24 · 이 폴더가 열린 날</text>
+      <text x="504" y="116" font-size="16" fill="var(--ink)" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">00 왜 시작했나 · 원점편</text>
+      <text x="504" y="144" font-size="16" fill="var(--ink)" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">11 #17 구현 레그 · 일지편</text>
+
+      <!-- 시간축 -->
+      <line x1="80" y1="200" x2="800" y2="200" stroke="var(--rule-solid)" stroke-width="1"/>
+      <line x1="140" y1="196" x2="140" y2="204" stroke="var(--soft)" stroke-width="1"/>
+      <line x1="420" y1="196" x2="420" y2="204" stroke="var(--soft)" stroke-width="1"/>
+      <line x1="700" y1="196" x2="700" y2="204" stroke="var(--soft)" stroke-width="1"/>
+      <text x="140" y="224" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">2026-08-22</text>
+      <text x="420" y="224" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">2026-08-23</text>
+      <text x="700" y="224" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">2026-08-24</text>
+
+      <circle cx="140" cy="200" r="4" fill="var(--paper)" stroke="var(--muted)" stroke-width="1"/>
+      <circle cx="700" cy="200" r="6" fill="var(--accent)"/>
+
+      <!-- 02–10 : 날짜가 적히지 않은 구간 -->
+      <path d="M180 256 V272 H660 V256" fill="none" stroke="var(--soft)" stroke-width="1" stroke-dasharray="4,4"/>
+      <text x="420" y="300" font-size="16" fill="var(--muted)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">02 – 10  아홉 대상 — 편 미작성</text>
+      <text x="420" y="324" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">PR #19 · #20 · #21 · #23 · #29 · #30 · #31 · #36</text>
+      <text x="420" y="352" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">이 색인에 날짜가 적혀 있지 않아 구간으로 표시</text>
+
+      <!-- 범례 -->
+      <line x1="40" y1="392" x2="820" y2="392" stroke="var(--rule)" stroke-width="1"/>
+      <text x="40" y="420" font-size="12" fill="var(--soft)" letter-spacing="0.14em"
+            font-family="'Geist Mono',ui-monospace,monospace">범례</text>
+      <circle cx="128" cy="416" r="6" fill="var(--accent)"/>
+      <text x="144" y="420" font-size="12" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">쓰인 편</text>
+      <circle cx="284" cy="416" r="4" fill="var(--paper)" stroke="var(--muted)" stroke-width="1"/>
+      <text x="300" y="420" font-size="12" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">아직 쓰이지 않은 편</text>
+      <line x1="484" y1="416" x2="540" y2="416" stroke="var(--soft)" stroke-width="1" stroke-dasharray="4,4"/>
+      <text x="556" y="420" font-size="12" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">날짜가 적히지 않은 구간</text>
+    </svg>
+    <figcaption>
+      <b>가로축은 진짜 날짜입니다.</b> 왼쪽 끝의 터닦기와 가운데 아홉 대상은 <b>일이 일어났는데 편이 없는 자리</b>이고,
+      오른쪽 끝 하루에 두 편이 한꺼번에 나와 있습니다 — 그래서 이 색인은 지금 <b>끝에서부터 채워지는 중</b>입니다.
+    </figcaption>
+  </figure>
 
   <h2>편 목록</h2>
 

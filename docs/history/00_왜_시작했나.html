@@ -4,61 +4,91 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>원점편 — 왜 시작했나</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root{--ink:#16181d; --dim:#6b7280; --line:#e3e6ec; --paper:#fbfbfa;
-        --red:#c8342b; --green:#1f7a4d; --blue:#1d5fb8; --amber:#a86a00; --wash:#f2f4f8;}
+  :root{
+    --paper:       #282828;
+    --paper-2:     #32302f;
+    --zone:        #302e2c;
+    --ink:         #ebdbb2;
+    --muted:       #a89984;
+    --soft:        #928374;
+    --rule:        rgba(235,219,178,0.12);
+    --rule-solid:  #504945;
+    --accent:      #fe8019;
+    --accent-tint: rgba(254,128,25,0.12);
+    --link:        #83a598;
+    --green-tint:  rgba(184,187,38,0.10);
+    --red-tint:    rgba(251,73,52,0.10);
+    --yellow-tint: rgba(250,189,47,0.10);
+    --green:       #b8bb26;
+    --red:         #fb4934;
+    --yellow:      #fabd2f;
+  }
   *{box-sizing:border-box}
   body{margin:0; background:var(--paper); color:var(--ink);
-       font-family:"Pretendard","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;
+       font-family:"Geist","Pretendard","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;
        line-height:1.75; -webkit-font-smoothing:antialiased;}
-  .wrap{max-width:860px; margin:0 auto; padding:64px 28px 120px}
-  .kicker{font-size:13px; letter-spacing:.14em; color:var(--dim); text-transform:uppercase}
-  h1{font-size:46px; line-height:1.15; margin:14px 0 8px; letter-spacing:-.02em}
-  .sub{font-size:18px; color:var(--dim); margin:0 0 8px}
-  .meta{font-size:14px; color:var(--dim); font-family:ui-monospace,"Consolas",monospace}
-  hr{border:0; border-top:1px solid var(--line); margin:48px 0}
-  h2{font-size:14px; letter-spacing:.16em; color:var(--dim); text-transform:uppercase;
-     margin:72px 0 4px; font-weight:600}
-  .q{font-size:29px; line-height:1.35; margin:0 0 26px; font-weight:700; letter-spacing:-.01em}
-  .big{font-size:26px; line-height:1.5; font-weight:600; margin:0 0 18px}
+  .wrap{max-width:880px; margin:0 auto; padding:64px 28px 120px}
+  .kicker{font-size:13px; letter-spacing:.14em; color:var(--soft); text-transform:uppercase;
+          font-family:"Geist Mono",ui-monospace,"Consolas",monospace}
+  h1{font-family:"Instrument Serif","Malgun Gothic",serif;
+     font-size:54px; line-height:1.15; margin:14px 0 8px; letter-spacing:-.01em; font-weight:400}
+  .sub{font-size:18px; color:var(--muted); margin:0 0 8px}
+  .meta{font-size:14px; color:var(--soft); font-family:"Geist Mono",ui-monospace,"Consolas",monospace}
+  hr{border:0; border-top:1px solid var(--rule); margin:48px 0}
+  h2{font-size:14px; letter-spacing:.16em; color:var(--soft); text-transform:uppercase;
+     margin:72px 0 4px; font-weight:500;
+     font-family:"Geist Mono",ui-monospace,"Consolas",monospace}
+  .q{font-family:"Instrument Serif","Malgun Gothic",serif;
+     font-size:34px; line-height:1.35; margin:0 0 26px; font-weight:400; letter-spacing:-.01em}
+  .big{font-size:26px; line-height:1.5; font-weight:500; margin:0 0 18px}
   p{font-size:17px; margin:0 0 18px}
-  .note{font-size:15px; color:var(--dim)}
-  .card{background:#fff; border:1px solid var(--line); border-radius:14px; padding:26px 28px; margin:26px 0}
-  .warn{background:#fff8ec; border-color:#f0dcb4}
-  .warn .tag{color:var(--amber); font-weight:700; font-size:13px; letter-spacing:.1em}
-  .rule{background:#eef4fd; border-color:#cfe0f7}
-  .rule .tag{color:var(--blue); font-weight:700; font-size:13px; letter-spacing:.1em}
+  .note{font-size:15px; color:var(--muted)}
+  .card{background:var(--paper-2); border:1px solid var(--rule-solid); border-radius:8px;
+        padding:26px 28px; margin:26px 0}
+  .warn{border-color:var(--yellow)}
+  .warn .tag{color:var(--yellow); font-weight:600; font-size:13px; letter-spacing:.1em;
+             font-family:"Geist Mono",ui-monospace,monospace}
+  .rule-card{border-color:var(--link)}
+  .rule-card .tag{color:var(--link); font-weight:600; font-size:13px; letter-spacing:.1em;
+                  font-family:"Geist Mono",ui-monospace,monospace}
   figure{margin:34px 0}
-  figcaption{font-size:14px; color:var(--dim); margin-top:12px; text-align:center; line-height:1.6}
+  figcaption{font-size:14px; color:var(--muted); margin-top:12px; text-align:center; line-height:1.6}
   svg{display:block; width:100%; height:auto}
-  code{font-family:ui-monospace,"Consolas",monospace; font-size:.9em;
-       background:var(--wash); padding:1px 6px; border-radius:5px}
-  blockquote{margin:0 0 18px; padding:14px 20px; background:var(--wash);
-             border-left:3px solid var(--line); font-size:16px; line-height:1.7}
+  code{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; font-size:.9em;
+       background:var(--zone); color:var(--ink); padding:1px 6px; border-radius:4px}
+  blockquote{margin:0 0 18px; padding:14px 20px; background:var(--zone);
+             border-left:3px solid var(--link); font-size:16px; line-height:1.7; color:var(--ink)}
   .pain{list-style:none; padding:0; margin:0; counter-reset:p}
-  .pain li{position:relative; padding:18px 0 18px 58px; border-top:1px solid var(--line)}
-  .pain li:last-child{border-bottom:1px solid var(--line)}
+  .pain li{position:relative; padding:18px 0 18px 58px; border-top:1px solid var(--rule)}
+  .pain li:last-child{border-bottom:1px solid var(--rule)}
   .pain li::before{counter-increment:p; content:counter(p);
     position:absolute; left:0; top:20px; width:32px; height:32px; border-radius:50%;
-    background:#fbe9e8; color:var(--red); font-size:14px; font-weight:700;
-    display:flex; align-items:center; justify-content:center;}
+    background:var(--zone); color:var(--red); font-size:14px; font-weight:600;
+    border:1px solid var(--red);
+    display:flex; align-items:center; justify-content:center;
+    font-family:"Geist Mono",ui-monospace,monospace;}
   .pain b{display:block; font-size:19px; margin-bottom:4px}
-  .pain span{font-size:15px; color:var(--dim)}
-  .out{columns:2; column-gap:34px; font-size:16px; padding-left:20px; margin:0}
+  .pain span{font-size:15px; color:var(--muted)}
+  .out{columns:2; column-gap:34px; font-size:16px; padding-left:20px; margin:0; color:var(--ink)}
   .out li{margin-bottom:9px; break-inside:avoid; line-height:1.6}
   @media (max-width:640px){ .out{columns:1} }
   .tbl{width:100%; border-collapse:collapse; font-size:15px}
   .tbl th{text-align:left; font-size:12px; letter-spacing:.1em; text-transform:uppercase;
-          color:var(--dim); font-weight:600; padding:0 14px 10px 0; border-bottom:1px solid var(--line)}
-  .tbl td{padding:14px 14px 14px 0; border-bottom:1px solid var(--line); vertical-align:top; line-height:1.6}
+          color:var(--soft); font-weight:500; padding:0 14px 10px 0; border-bottom:1px solid var(--rule-solid);
+          font-family:"Geist Mono",ui-monospace,monospace}
+  .tbl td{padding:14px 14px 14px 0; border-bottom:1px solid var(--rule); vertical-align:top; line-height:1.6}
   .tbl tr:last-child td{border-bottom:0}
-  .tbl td:first-child{font-weight:700; width:30%}
-  sup a{color:var(--blue); text-decoration:none; font-size:12px; font-weight:700; padding:0 1px}
-  .fn{margin-top:80px; border-top:1px solid var(--line); padding-top:26px}
-  .fn h3{font-size:13px; letter-spacing:.16em; color:var(--dim); text-transform:uppercase; margin:0 0 16px}
+  .tbl td:first-child{font-weight:600; width:30%}
+  sup a{color:var(--link); text-decoration:none; font-size:12px; font-weight:600; padding:0 1px}
+  a{color:var(--link)}
+  .fn{margin-top:80px; border-top:1px solid var(--rule-solid); padding-top:26px}
+  .fn h3{font-size:13px; letter-spacing:.16em; color:var(--soft); text-transform:uppercase; margin:0 0 16px;
+         font-family:"Geist Mono",ui-monospace,monospace; font-weight:500}
   .fn ol{padding-left:24px; margin:0}
-  .fn li{font-size:14px; color:var(--dim); margin-bottom:11px; line-height:1.65}
-  .fn .path{font-family:ui-monospace,"Consolas",monospace; color:var(--ink); font-size:13px}
+  .fn li{font-size:14px; color:var(--muted); margin-bottom:11px; line-height:1.65}
+  .fn .path{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; color:var(--ink); font-size:13px}
   .fn .quote{color:var(--ink)}
 </style>
 </head>
@@ -70,7 +100,7 @@
   <p class="sub">이 폴더의 서문이자, 이후 모든 편이 방향을 재는 <b>자</b>입니다.</p>
   <p class="meta">2026-08-24 작성 · <code>ORD-EDU-origin-premise-check</code> · 대표 승인 대기</p>
 
-  <div class="card rule">
+  <div class="card rule-card">
     <div class="tag">이 편의 용도</div>
     <p style="margin:8px 0 12px">
       「지금 방향이 엇나가지 않았나」를 재려면 <b>잴 자</b>가 있어야 합니다.
@@ -103,42 +133,78 @@
   </blockquote>
 
   <figure>
-    <svg viewBox="0 0 860 300" role="img" aria-label="Claude 와 Codex 가 각자 따로 돌고 그 사이에 공유 상태가 없어 결과가 사람 머릿속에서만 합쳐지는 그림, 그리고 Whole Life 가 그 사이를 채우는 그림">
+    <svg viewBox="0 0 860 400" role="img" aria-labelledby="origin-gap-title origin-gap-desc">
+      <title id="origin-gap-title">두 CLI 사이의 빈 자리</title>
+      <desc id="origin-gap-desc">Claude Code와 Codex CLI가 각자 따로 돌고 그 사이에 공유 상태가 없어 결과가 사람 머릿속에서만 합쳐지는 지금의 모습과, 그 빈 자리를 로컬 broker 하나가 채우는 Whole Life의 목표를 나란히 보여주는 그림.</desc>
       <defs>
-        <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-          <path d="M0 0 L10 5 L0 10 z" fill="#16181d"/>
+        <marker id="origin-gap-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="var(--muted)"/>
+        </marker>
+        <marker id="origin-gap-arrow-green" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="var(--green)"/>
         </marker>
       </defs>
+      <rect width="100%" height="100%" fill="var(--paper)"/>
 
-      <text x="16" y="24" font-size="13" fill="#6b7280" letter-spacing="2">지금 — 따로 돈다</text>
+      <text x="32" y="36" font-size="12" fill="var(--soft)" letter-spacing="0.14em"
+            font-family="'Geist Mono',ui-monospace,monospace">지금 — 따로 돈다</text>
 
-      <rect x="16" y="40" width="180" height="70" rx="12" fill="#fff" stroke="#e3e6ec"/>
-      <text x="106" y="72" font-size="17" text-anchor="middle" font-weight="700">Claude Code</text>
-      <text x="106" y="94" font-size="13" text-anchor="middle" fill="#6b7280">내 구독으로 로그인</text>
+      <!-- 연결선 먼저 -->
+      <line x1="512" y1="142" x2="560" y2="142" stroke="var(--muted)" stroke-width="1"
+            marker-end="url(#origin-gap-arrow)"/>
+      <path d="M404 232 V308" fill="none" stroke="var(--green)" stroke-width="1"
+            stroke-dasharray="5,4" marker-end="url(#origin-gap-arrow-green)"/>
+      <rect x="412" y="256" width="120" height="20" rx="2" fill="var(--paper)"/>
+      <text x="472" y="270" font-size="12" fill="var(--green)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">이 자리를 채운다</text>
 
-      <rect x="16" y="126" width="180" height="70" rx="12" fill="#fff" stroke="#e3e6ec"/>
-      <text x="106" y="158" font-size="17" text-anchor="middle" font-weight="700">Codex CLI</text>
-      <text x="106" y="180" font-size="13" text-anchor="middle" fill="#6b7280">내 구독으로 로그인</text>
+      <!-- 두 CLI -->
+      <rect x="32" y="56" width="200" height="76" rx="6" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="132" y="88" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">Claude Code</text>
+      <text x="132" y="112" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">내 구독으로 로그인</text>
 
-      <rect x="236" y="40" width="196" height="156" rx="12" fill="#fbe9e8" stroke="#f0c9c6" stroke-dasharray="6 6"/>
-      <text x="334" y="105" font-size="16" text-anchor="middle" fill="#c8342b" font-weight="700">여기가 비어 있다</text>
-      <text x="334" y="132" font-size="14" text-anchor="middle" fill="#c8342b">공유 상태 없음</text>
+      <rect x="32" y="152" width="200" height="76" rx="6" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="132" y="184" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">Codex CLI</text>
+      <text x="132" y="208" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">내 구독으로 로그인</text>
 
-      <line x1="436" y1="118" x2="482" y2="118" stroke="#16181d" stroke-width="2" marker-end="url(#ar)"/>
+      <!-- 빈 자리 -->
+      <rect x="296" y="56" width="216" height="172" rx="8" fill="var(--red-tint)"
+            stroke="var(--red)" stroke-width="1" stroke-dasharray="6,5"/>
+      <text x="404" y="132" font-size="20" fill="var(--red)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">여기가 비어 있다</text>
+      <text x="404" y="160" font-size="16" fill="var(--red)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">공유 상태 없음</text>
 
-      <rect x="488" y="76" width="200" height="84" rx="12" fill="#fff" stroke="#e3e6ec"/>
-      <text x="588" y="112" font-size="16" text-anchor="middle" font-weight="700">사람 머릿속에서</text>
-      <text x="588" y="136" font-size="16" text-anchor="middle" font-weight="700">합친다</text>
+      <!-- 사람 -->
+      <rect x="560" y="104" width="240" height="76" rx="6" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="680" y="136" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">사람 머릿속에서</text>
+      <text x="680" y="160" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">합친다</text>
+      <text x="680" y="204" font-size="12" fill="var(--red)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">재생 불가 · 기록 안 남음</text>
 
-      <text x="770" y="106" font-size="14" text-anchor="middle" fill="#c8342b">재생 불가</text>
-      <text x="770" y="130" font-size="14" text-anchor="middle" fill="#c8342b">기록 안 남음</text>
+      <!-- 구분선 -->
+      <line x1="32" y1="264" x2="376" y2="264" stroke="var(--rule)" stroke-width="1"/>
+      <line x1="548" y1="264" x2="828" y2="264" stroke="var(--rule)" stroke-width="1"/>
 
-      <line x1="16" y1="226" x2="844" y2="226" stroke="#e3e6ec"/>
+      <text x="32" y="296" font-size="12" fill="var(--green)" letter-spacing="0.14em"
+            font-family="'Geist Mono',ui-monospace,monospace">Whole Life 가 채우려는 것</text>
 
-      <text x="16" y="254" font-size="13" fill="#1f7a4d" letter-spacing="2">Whole Life 가 채우려는 것</text>
-      <rect x="236" y="262" width="196" height="30" rx="8" fill="#e8f4ed" stroke="#c6e2d2"/>
-      <text x="334" y="283" font-size="14" text-anchor="middle" fill="#1f7a4d" font-weight="700">로컬 broker 하나</text>
-      <text x="452" y="283" font-size="15" fill="#1f7a4d">공유 상태 · 일관된 재생 · 프로세스 정리 · 결정론적 산출물</text>
+      <line x1="512" y1="336" x2="552" y2="336" stroke="var(--green)" stroke-width="1"
+            marker-end="url(#origin-gap-arrow-green)"/>
+      <rect x="296" y="308" width="216" height="56" rx="6" fill="var(--green-tint)"
+            stroke="var(--green)" stroke-width="1"/>
+      <text x="404" y="342" font-size="16" fill="var(--green)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">로컬 broker 하나</text>
+      <text x="568" y="328" font-size="16" fill="var(--green)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">공유 상태 · 일관된 재생</text>
+      <text x="568" y="356" font-size="16" fill="var(--green)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">프로세스 정리 · 결정론적 산출물</text>
     </svg>
     <figcaption>
       <b>둘을 대신 만드는 것이 아닙니다.</b> 이미 내가 로그인해 쓰는 공식 CLI 둘을 그대로 띄우고,
@@ -241,6 +307,98 @@
     범위 밖의 것이 필요해 보일 때 물어야 할 것은 「하면 안 되나」가 아니라
     <b>「그 조건이 왔는가」</b>입니다.
   </p>
+
+  <figure>
+    <svg viewBox="0 0 860 584" role="img" aria-labelledby="origin-ruler-title origin-ruler-desc">
+      <title id="origin-ruler-title">자를 대는 순서</title>
+      <desc id="origin-ruler-desc">범위 밖의 것이 필요해 보일 때 먼저 비목표 목록에 걸리는지 묻고, 걸린다면 그 항목의 뒤집는 조건이 왔는지를 물어 새 ADR로 갈지 하지 않을지를 가르는 갈림길 그림.</desc>
+      <defs>
+        <marker id="origin-ruler-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="var(--muted)"/>
+        </marker>
+      </defs>
+      <rect width="100%" height="100%" fill="var(--paper)"/>
+
+      <!-- 연결선 먼저 -->
+      <path d="M200 76 V120" fill="none" stroke="var(--muted)" stroke-width="1" marker-end="url(#origin-ruler-arrow)"/>
+      <path d="M340 176 H472" fill="none" stroke="var(--muted)" stroke-width="1" marker-end="url(#origin-ruler-arrow)"/>
+      <path d="M200 232 V288" fill="none" stroke="var(--muted)" stroke-width="1" marker-end="url(#origin-ruler-arrow)"/>
+      <path d="M340 344 H472" fill="none" stroke="var(--muted)" stroke-width="1" marker-end="url(#origin-ruler-arrow)"/>
+      <path d="M200 400 V440" fill="none" stroke="var(--muted)" stroke-width="1" marker-end="url(#origin-ruler-arrow)"/>
+
+      <!-- 갈림길 라벨 -->
+      <rect x="380" y="148" width="52" height="20" rx="2" fill="var(--paper)"/>
+      <text x="406" y="163" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">아니오</text>
+      <rect x="208" y="244" width="40" height="20" rx="2" fill="var(--paper)"/>
+      <text x="228" y="259" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">예</text>
+      <rect x="380" y="316" width="40" height="20" rx="2" fill="var(--paper)"/>
+      <text x="400" y="331" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">예</text>
+      <rect x="208" y="412" width="52" height="20" rx="2" fill="var(--paper)"/>
+      <text x="234" y="427" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">아니오</text>
+
+      <!-- 시작 -->
+      <ellipse cx="200" cy="48" rx="160" ry="28" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="200" y="54" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">범위 밖의 것이 필요해 보인다</text>
+
+      <!-- 갈림길 1 -->
+      <path d="M200 120 L340 176 L200 232 L60 176 Z" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="200" y="168" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">「범위 밖」 목록에 걸리나?</text>
+      <text x="200" y="192" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">스펙 §2 · 14개 항목</text>
+
+      <rect x="472" y="144" width="340" height="64" rx="6" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="642" y="170" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">원래 범위 안 — 그냥 한다</text>
+      <text x="642" y="192" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">질문 12에 걸리지 않는다</text>
+
+      <!-- 갈림길 2 : 이 편의 중심 질문 -->
+      <path d="M200 288 L340 344 L200 400 L60 344 Z" fill="var(--accent-tint)" stroke="var(--accent)" stroke-width="1"/>
+      <text x="200" y="336" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">그 뒤집는 조건이 왔나?</text>
+      <text x="200" y="360" font-size="12" fill="var(--accent)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">ADR 0001 이 항목마다 적어 둔 것</text>
+
+      <rect x="472" y="312" width="340" height="64" rx="6" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="642" y="338" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">새 ADR 로 검토한다</text>
+      <text x="642" y="360" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">원점편은 고치지 않는다</text>
+
+      <rect x="40" y="440" width="320" height="64" rx="6" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="200" y="466" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">안 한다</text>
+      <text x="200" y="488" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">여기서 하면 질문 12가 「늘었다」</text>
+
+      <!-- 범례 -->
+      <line x1="40" y1="536" x2="820" y2="536" stroke="var(--rule)" stroke-width="1"/>
+      <text x="40" y="564" font-size="12" fill="var(--soft)" letter-spacing="0.14em"
+            font-family="'Geist Mono',ui-monospace,monospace">범례</text>
+      <ellipse cx="132" cy="560" rx="24" ry="8" fill="none" stroke="var(--muted)" stroke-width="1"/>
+      <text x="168" y="564" font-size="12" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">시작</text>
+      <path d="M264 552 L280 560 L264 568 L248 560 Z" fill="none" stroke="var(--muted)" stroke-width="1"/>
+      <text x="292" y="564" font-size="12" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">갈림길</text>
+      <rect x="392" y="552" width="40" height="16" rx="4" fill="none" stroke="var(--muted)" stroke-width="1"/>
+      <text x="444" y="564" font-size="12" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">행동</text>
+      <path d="M564 552 L580 560 L564 568 L548 560 Z" fill="var(--accent-tint)" stroke="var(--accent)" stroke-width="1"/>
+      <text x="592" y="564" font-size="12" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">이 편의 중심 질문</text>
+    </svg>
+    <figcaption>
+      갈림길이 <b>둘</b>이라는 것이 핵심입니다. 첫 번째만 보면 「걸린다 = 안 된다」로 끝나지만,
+      ADR 0001은 두 번째 갈림길을 함께 적어 두어 <b>「하면 안 되나」가 아니라 「그 조건이 왔는가」</b>를 묻게 만듭니다.<sup><a href="#o3">[3]</a></sup>
+    </figcaption>
+  </figure>
 
   <div class="card">
     <table class="tbl">
