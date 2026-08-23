@@ -16,7 +16,12 @@ consumer slows the reader instead of growing this process.
 import asyncio
 from collections.abc import AsyncIterator
 
-from whole_life.runtime.contract import RunOutcome, RuntimeEvent
+from whole_life.runtime.contract import CancelOutcome, RunOutcome, RuntimeEvent
+from whole_life.runtime.lifecycle import (
+    FORCED_WAIT_SECONDS,
+    GRACEFUL_WAIT_SECONDS,
+    terminate_process_tree,
+)
 from whole_life.runtime.outcome import TerminalEvent, resolve_outcome
 from whole_life.runtime.streams import StderrRing, StreamFailure, read_bounded_lines
 
@@ -56,6 +61,17 @@ class RunObserver:
         #: breaking out, or an exception passing through — leaves it False, and
         #: that is what tells the cleanup to end the child rather than wait.
         self._stream_ended = False
+        #: Set when a cancellation arrives before any terminal event. The
+        #: ordering is recorded once and never revisited: spec 279 makes a
+        #: late clean exit irrelevant, so this cannot be un-set.
+        self._cancelled_before_terminal = False
+        #: Set when a cancellation arrives *after* a terminal result. Then
+        #: the exit status is our own kill, not the provider's verdict.
+        self._cancelled_after_terminal = False
+        #: The drain tasks, held so they can be counted and stopped from
+        #: outside. `close()` has to promise there are none left, and a
+        #: task nobody holds a reference to cannot be counted.
+        self._readers: tuple[asyncio.Task, ...] = ()
 
     def queue_depth(self) -> int:
         return self._queue.qsize()
@@ -136,6 +152,93 @@ class RunObserver:
             except ProcessLookupError:
                 pass
 
+    async def cancel(
+        self,
+        *,
+        graceful_wait: float = GRACEFUL_WAIT_SECONDS,
+        forced_wait: float = FORCED_WAIT_SECONDS,
+    ) -> CancelOutcome:
+        """End this run, gracefully if it will, forcibly if it will not.
+
+        The graceful signal for both CLIs is stdin EOF, which the spawner
+        already delivers when it finishes writing the prompt. Closing again
+        here is idempotent and deliberate: it keeps the contract true for any
+        future provider path that holds stdin open, so the escalation does not
+        silently become "wait, then kill".
+
+        The ordering fact is recorded before anything is ended. Spec 268, 279,
+        484 and 485 decide on which came first — a terminal result already
+        committed survives the cancellation, and a cancellation that came first
+        makes the turn `unknown_outcome` permanently. Recording it here, before
+        the process can produce anything else, is what makes that race already
+        settled by the time the outcome is resolved.
+
+        Deliberately no `cause`. Spec line 96 signs this as
+        `cancel(self, run) -> CancelOutcome`, and none of 268, 278, 279, 484 or
+        485 branches on why a run was stopped — user cancellation and the
+        twenty-minute timeout are one rule, and the diagnostic is
+        `CancelledBeforeTerminal` either way. A cause was carried here for one
+        commit, stored in a field nothing read. When a consumer exists it comes
+        back with the test that reads it.
+        """
+        if self._terminal is TerminalEvent.NONE:
+            self._cancelled_before_terminal = True
+        else:
+            self._cancelled_after_terminal = True
+
+        self._close_stdin()
+
+        try:
+            await asyncio.wait_for(self._process.wait(), timeout=graceful_wait)
+        except (asyncio.TimeoutError, TimeoutError):
+            pass
+        else:
+            return CancelOutcome.GRACEFUL
+
+        # Still alive after the window. `UNKNOWN` rather than `FORCED` when the
+        # tree cannot be confirmed dead: descendants may still be running, and
+        # a tidy report of "forced" would claim the request stopped.
+        ended = await terminate_process_tree(
+            self._process, forced_wait=forced_wait
+        )
+        return CancelOutcome.FORCED if ended else CancelOutcome.UNKNOWN
+
+    def has_child(self) -> bool:
+        """True while this run's process has not been reaped."""
+        return self._process.returncode is None
+
+    def pending_drain_tasks(self) -> int:
+        """How many drain tasks are still running for this run."""
+        return sum(1 for task in self._readers if not task.done())
+
+    async def shutdown(
+        self, *, graceful_wait: float = GRACEFUL_WAIT_SECONDS
+    ) -> CancelOutcome:
+        """End the run and everything this observer owns.
+
+        Cancelling the process is not enough on its own. A consumer that
+        stopped reading leaves the stdout drain task parked on a full queue,
+        and that task will not end just because the child did — so the tasks
+        are cancelled explicitly and awaited, and only then does this return.
+        Whoever calls it can say the count is zero because it was made zero.
+        """
+        outcome = await self.cancel(graceful_wait=graceful_wait)
+
+        for task in self._readers:
+            task.cancel()
+        if self._readers:
+            await asyncio.gather(*self._readers, return_exceptions=True)
+            self._readers = ()
+
+        self._close_transport()
+        return outcome
+
+    def _close_stdin(self) -> None:
+        """Deliver stdin EOF, whether or not the spawner already did."""
+        stdin = getattr(self._process, "stdin", None)
+        if stdin is not None and not stdin.is_closing():
+            stdin.close()
+
     def _close_transport(self) -> None:
         """Close the pipes asyncio opened for this child. Idempotent."""
         transport = getattr(self._process, "_transport", None)
@@ -158,6 +261,7 @@ class RunObserver:
         """
         stdout_task = asyncio.create_task(self._read_stdout())
         stderr_task = asyncio.create_task(self._read_stderr())
+        self._readers = (stdout_task, stderr_task)
 
         try:
             while True:
@@ -179,6 +283,7 @@ class RunObserver:
                 stderr_task.cancel()
 
             await asyncio.gather(stdout_task, stderr_task, return_exceptions=True)
+            self._readers = ()
 
             if aborted:
                 # Measured, not assumed: after an abort the stdout pipe still
@@ -214,4 +319,35 @@ class RunObserver:
 
     async def outcome(self) -> RunOutcome:
         """The resolved outcome. Meaningful only after `events()` completes."""
-        return resolve_outcome(self._terminal, exit_code=self._exit_code)
+        return resolve_outcome(
+            self._terminal,
+            exit_code=self._exit_code,
+            cancelled_before_terminal=self._cancelled_before_terminal,
+            cancelled_after_terminal=self._cancelled_after_terminal,
+        )
+
+
+async def close_all_runs(
+    observers, *, graceful_wait: float = GRACEFUL_WAIT_SECONDS
+) -> None:
+    """Shut down every run this runtime started. Spec 209.
+
+    Concurrently, because each shutdown may spend the graceful window waiting
+    for a child that will not go: run sequentially, a broker with four active
+    runs would wait four times over for the same five seconds.
+
+    Shared by both adapters rather than written twice. The rest of their
+    surfaces are deliberately parallel implementations, but this one carries
+    the promise that nothing is left behind, and two copies of that is two
+    places for it to drift.
+    """
+    if not observers:
+        return
+
+    await asyncio.gather(
+        *(
+            observer.shutdown(graceful_wait=graceful_wait)
+            for observer in observers
+        ),
+        return_exceptions=True,
+    )
