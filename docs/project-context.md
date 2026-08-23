@@ -17,6 +17,8 @@ The architecture is approved for a private, documentation-only repository. No im
 | `docs/adr/0001-local-subscription-v0.md` | `67CF61B8F7AC689237C8ACDB245D3AC4E0D8180BF39E53D469EA7C39C8149BB0` | 92 | 2026-08-23 정정 — 같은 사실 기록을 ADR에도 반영 |
 | `docs/spec/whole-life-v0.md` | `A6765F02B3C31029E5A899778DCF15BCE0F6908D32D23DFE0CD069BD5294BF13` | 607 | 2026-08-23 정정 2 — §12 501행 수용기준을 broker cancel로 |
 | `docs/adr/0001-local-subscription-v0.md` | `54736A276A332552084F6DAF77C3E526D4FF9C86BBFA274B505F5FCBF7AB4FD0` | 92 | 2026-08-23 정정 2 — 「재귀 spawn 미지원」 전제 정정 |
+| `docs/spec/whole-life-v0.md` | `C119A4EF3DE437E9FBF98C72F68E342FF6FCD560CCE1CC0A370F00B004B9C1F0` | 607 | 2026-08-23 정정 3 — §4 Codex 행은 문서 기대치이며 측정 전까지 `unsupported` 보고 |
+| `docs/adr/0001-local-subscription-v0.md` | `ECA77E08C626F6D33454B9BF3CE40CBFA4170DCF86B9AA7D3D81B6F5790BB6EE` | 92 | 2026-08-23 정정 3 — 같은 Codex 정리를 ADR에도 |
 
 The audited baseline row is kept so the 2026-08-20 audit provenance stays verifiable. The last row for each artifact is the current file. Rows are appended, never replaced: a hash that was once approved stays listed so the history of what was approved when remains readable.
 

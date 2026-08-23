@@ -486,9 +486,7 @@ class ClaimedEnforcementTests(unittest.TestCase):
             RefusalCode.DELEGATION_UNSUPPORTED,
             self.refusal(
                 {
-                    "worker_concurrency_enforcement": (
-                        EnforcementLevel.COOPERATIVE
-                    ),
+                    "worker_concurrency_enforcement": EnforcementLevel.COOPERATIVE,
                     "worker_total_start_enforcement": EnforcementLevel.COOPERATIVE,
                     "delegation_depth_enforcement": EnforcementLevel.COOPERATIVE,
                 }

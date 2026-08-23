@@ -1,7 +1,7 @@
 """Holding one turn to its native-worker budget. Normative source: sections 4, 8.
 
-`profile의 turn delegation budget보다 하나 많은 worker start를 관찰하면
-즉시 cancel하고 결과를 unknown_outcome으로 둔다.`
+`profile의 turn delegation budget보다 하나 많은 worker start를 관찰하면 즉시
+cancel하고 결과를 unknown_outcome으로 둔다.`
 
 The counting lives here rather than in the observer because the interesting
 question — is this start one too many? — is arithmetic on what has been seen,
