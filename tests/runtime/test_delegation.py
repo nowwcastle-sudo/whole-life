@@ -14,7 +14,11 @@ import unittest
 from unittest import mock
 from pathlib import Path
 
-from tests.support.launch_fixtures import launch_plan, turn_request
+from tests.support.launch_fixtures import (
+    RecordingSpawner,
+    launch_plan,
+    turn_request,
+)
 from tests.support.preflight_fixtures import (
     CLAUDE_EXECUTABLE,
     CODEX_EXECUTABLE,
@@ -26,14 +30,15 @@ from tests.support.preflight_fixtures import (
 from whole_life.runtime.claude import ClaudeRuntime
 from whole_life.runtime.codex import CodexRuntime
 from whole_life.runtime.contract import (
-    Provider,
     DelegationBudget,
+    Provider,
     EnforcementLevel,
     RunStatus,
 )
 from whole_life.runtime.normalize import normalize_claude_line
 from whole_life.runtime.launch import (
     SUPPORTED_VERSIONS,
+    launch,
     PreStartRefusal,
     RefusalCode,
     enforce_launch_safety,
@@ -199,7 +204,13 @@ def emitting(lines, *, linger):
 
 
 async def observe_claude(lines, *, budget, linger=True):
-    process = await SubprocessSpawner().spawn(emitting(lines, linger=linger))
+    """Start the turn the way production starts one.
+
+    Through `launch`, not straight to the spawner: section 12 asks that the
+    capability check and the budget checks be the same door, and a test that
+    reaches around the door proves nothing about what the door does.
+    """
+    process = await launch(emitting(lines, linger=linger), SubprocessSpawner())
     observer = RunObserver(
         process,
         normalize=normalize_claude_line,
@@ -518,6 +529,35 @@ class ClaimedEnforcementTests(unittest.TestCase):
             turn_request=turn_request(),
             delegation_enforcement=REPORTED_ENFORCEMENT[Provider.CLAUDE],
         )
+
+        self.assertIsNone(enforce_launch_safety(plan))
+
+class OneDoorTests(unittest.IsolatedAsyncioTestCase):
+    """Section 12: capability, budget, excess-cancel and unresolved-worker are
+    checked at one place. The turns in this module all start through `launch`,
+    so a plan the gate refuses never reaches a process."""
+
+    async def test_a_refused_plan_never_reaches_the_spawner(self):
+        spawner = RecordingSpawner()
+        plan = launch_plan(
+            provider=Provider.CODEX,
+            version_conformance=SUPPORTED_VERSIONS[Provider.CODEX]["0.149.0"],
+            turn_request=turn_request(),
+            delegation_enforcement=REPORTED_ENFORCEMENT[Provider.CODEX],
+        )
+
+        with self.assertRaises(PreStartRefusal) as caught:
+            await launch(plan, spawner)
+
+        self.assertEqual(
+            RefusalCode.DELEGATION_UNSUPPORTED, caught.exception.code
+        )
+        self.assertEqual([], spawner.calls)
+
+    async def test_the_budget_turns_above_pass_the_same_gate(self):
+        """The control for the assertion above: the plan those turns use is
+        accepted by the very gate that refuses the one in this test."""
+        plan = emitting([INIT, RESULT], linger=False)
 
         self.assertIsNone(enforce_launch_safety(plan))
 
