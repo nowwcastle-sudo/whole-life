@@ -120,9 +120,16 @@ class SubprocessSpawner:
                 process.stdin, plan.turn_request.prompt.encode("utf-8")
             )
         except BaseException:
-            # Cancellation is the reachable case: a turn cancelled while this
-            # write is still blocked would otherwise leave the child with no
-            # owner, before it ever became a run that could be closed.
+            # Two ways in. One is live today: an error the tolerance above
+            # does not accept — an `OSError` that is not a reader that left —
+            # arrives here on every turn that hits it.
+            #
+            # The other is cancellation while this write is still blocked, and
+            # nothing reaches it yet: `TurnDeadline` has no consumer, and no
+            # caller wraps `start_turn` in a task it could cancel. That window
+            # opens when a broker starts cancelling turns. Guarding it now is
+            # not speculative work — without it the child outlives a spawn that
+            # never returned, which is the one thing this function must not do.
             #
             # The tree, not the process: Windows does not cascade a kill, and a
             # provider that starts a helper before reading its prompt already

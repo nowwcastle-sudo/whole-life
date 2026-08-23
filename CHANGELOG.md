@@ -58,6 +58,13 @@ issue holds the acceptance criteria; the merge commit holds the reasoning.
   assertion, not evidence — and now compares the whole record against the canonical supported
   version table. The forbidden-variable check compared names case-sensitively, so `openai_api_key`
   reached the child on Windows, where environment variable names are case-insensitive.
+- **A prompt handover that leaves nothing running when it fails** (#28). The spawner creates
+  the child before it writes the prompt, so a child that had already stopped reading made that
+  write raise — and because nothing caught it, the handle never reached the caller and a process
+  nobody owned was left behind. A reader that is gone is now an ordinary provider outcome,
+  resolved from the child's exit code and stderr, and any other failure after the child exists
+  ends its whole process tree before the error propagates. A provider binary that exits at once
+  on a rejected flag or a failed sign-in is exactly this path.
 
 ### Documentation
 
