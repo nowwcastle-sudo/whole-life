@@ -8,6 +8,7 @@ early spends a budget the operator paid for; one that cancels one start too late
 has already let the turn exceed it.
 """
 
+import asyncio
 import json
 import sys
 import unittest
@@ -113,8 +114,11 @@ class ConcurrencyBoundaryTests(unittest.TestCase):
         counting it as negative would let a turn buy back concurrency it never
         spent."""
         ledger = DelegationLedger(self.BUDGET)
-        ledger.worker_finished(native_child_id="never-seen")
         ledger.worker_started(native_child_id="a", depth=1)
+        # Arrives while "a" is live. Sent before anything started, it could
+        # not have subtracted a live worker even if the code let it, so the
+        # ordering is what makes this test able to fail.
+        ledger.worker_finished(native_child_id="never-seen")
 
         self.assertEqual(
             "DelegationBudgetExceeded",
@@ -153,6 +157,11 @@ class DepthBoundaryTests(unittest.TestCase):
         self.assertIsNone(
             ledger.worker_started(native_child_id="a", depth=None)
         )
+
+#: Long enough for a real child to be spawned, watched and ended, short
+#: enough that a broken cancellation path is a failure rather than a hang.
+OBSERVE_TIMEOUT_SECONDS = 60
+
 
 def claude_line(**fields):
     return json.dumps(fields)
@@ -217,7 +226,15 @@ async def observe_claude(lines, *, budget, linger=True):
         run_id="run-7",
         delegation_budget=budget,
     )
-    events = [event async for event in observer.events()]
+
+    async def drain():
+        return [event async for event in observer.events()]
+
+    # Bounded on purpose. A child that lingers is ended by the breach path,
+    # so if that path ever stops working the read below waits on an EOF that
+    # never comes. Unbounded, the failure is a hung suite — which reports as
+    # nothing at all; bounded, it is a test that fails and names itself.
+    events = await asyncio.wait_for(drain(), timeout=OBSERVE_TIMEOUT_SECONDS)
     return events, await observer.outcome(), process
 
 
@@ -518,6 +535,57 @@ class ClaimedEnforcementTests(unittest.TestCase):
             self.refusal(
                 {"worker_total_start_enforcement": EnforcementLevel.COOPERATIVE}
             ),
+        )
+
+    def test_a_row_that_disagrees_with_the_measurement_is_refused(self):
+        """The provider here is one whose limits *are* measured, so nothing
+        else in the gate objects. What is refused is the disagreement itself:
+        the plan reports something the measurement does not say. Without this
+        the whole-record comparison could be deleted and every other test
+        would stay green."""
+        plan = launch_plan(
+            provider=Provider.CLAUDE,
+            version_conformance=SUPPORTED_VERSIONS[Provider.CLAUDE]["2.1.240"],
+            turn_request=turn_request(),
+            delegation_enforcement={
+                "worker_concurrency_enforcement": EnforcementLevel.HARD,
+                "worker_total_start_enforcement": EnforcementLevel.HARD,
+                "delegation_depth_enforcement": EnforcementLevel.HARD,
+            },
+        )
+
+        with self.assertRaises(PreStartRefusal) as caught:
+            enforce_launch_safety(plan)
+
+        self.assertEqual(
+            RefusalCode.DELEGATION_UNSUPPORTED, caught.exception.code
+        )
+
+    def test_a_measurement_missing_an_axis_refuses_every_turn(self):
+        """`DELEGATION_AXES` guards the measurement table, not the plan. A row
+        that lost an axis reports nothing about that limit, and a check
+        written as "no axis says unsupported" passes it silently — so the gate
+        asks whether all three are present."""
+        partial = {
+            key: value
+            for key, value in REPORTED_ENFORCEMENT[Provider.CLAUDE].items()
+            if key != "delegation_depth_enforcement"
+        }
+        plan = launch_plan(
+            provider=Provider.CLAUDE,
+            version_conformance=SUPPORTED_VERSIONS[Provider.CLAUDE]["2.1.240"],
+            turn_request=turn_request(),
+            delegation_enforcement=partial,
+        )
+
+        with mock.patch.dict(
+            REPORTED_ENFORCEMENT, {Provider.CLAUDE: partial}
+        ):
+            with self.assertRaises(PreStartRefusal) as caught:
+                enforce_launch_safety(plan)
+
+        self.assertEqual(
+            RefusalCode.DELEGATION_UNSUPPORTED, caught.exception.code
         )
 
     def test_a_measured_provider_still_starts(self):
