@@ -18,7 +18,11 @@ level ahead of the `resume` subcommand, where it parses for both forms.
 import dataclasses
 import unittest
 
-from tests.support.launch_fixtures import RecordingSpawner, turn_request
+from tests.support.launch_fixtures import (
+    codex_delegation_measured,
+    RecordingSpawner,
+    turn_request,
+)
 from tests.support.preflight_fixtures import (
     CLAUDE_EXECUTABLE,
     CODEX_EXECUTABLE,
@@ -28,13 +32,29 @@ from tests.support.preflight_fixtures import (
 )
 from whole_life.runtime.claude import ClaudeRuntime
 from whole_life.runtime.codex import CodexRuntime
-from whole_life.runtime.contract import TurnMode
+from whole_life.runtime.delegation import REPORTED_ENFORCEMENT
+from whole_life.runtime.contract import Provider, TurnMode
 from whole_life.runtime.launch import (
     ActiveNativeSessions,
     PreStartRefusal,
     RefusalCode,
     launch,
 )
+
+
+#: This module's subject is not delegation capability. See the helper.
+_CODEX_MEASURED = None
+
+
+def setUpModule():
+    global _CODEX_MEASURED
+    _CODEX_MEASURED = codex_delegation_measured()
+    _CODEX_MEASURED.start()
+
+
+def tearDownModule():
+    _CODEX_MEASURED.stop()
+
 
 CLEAN_PARENT_ENV = {
     "SYSTEMROOT": r"C:\Windows",
@@ -290,7 +310,6 @@ class NativeSessionIdentifierTests(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual(
                     RefusalCode.TURN_REQUEST_INVALID, caught.exception.code
                 )
-
         self.assertEqual([], spawner.calls)
 
 

@@ -11,6 +11,7 @@ unknown event cannot be handled by passing it along "just in case".
 """
 
 import json
+import re
 import unittest
 from pathlib import Path
 
@@ -595,6 +596,200 @@ class UsageAccountingTests(unittest.TestCase):
                 self.assertEqual("StdoutSchemaMismatch", caught.exception.diagnostic)
 
 
+class ClaudeNativeWorkerTests(unittest.TestCase):
+    """The `Agent` delegation lifecycle. Spec section 4, native delegation.
+
+    Every fixture below is the shape a live Claude Code 2.1.240 turn actually
+    wrote, recorded by running the production argument vector against the
+    operator's own sign-in. The synthetic fixtures this suite started with did
+    not contain these lines at all, which is why a green suite coexisted with a
+    normalizer that rejected most of a real delegating turn.
+    """
+
+    @staticmethod
+    def task_started(**overrides):
+        line = {
+            "type": "system",
+            "subtype": "task_started",
+            "task_id": "a3755a9018fbc95a8",
+            "tool_use_id": "toolu_01A1tLe2g217PHsZYZ2nSxVf",
+            "description": "Return a single word",
+            "subagent_type": "general-purpose",
+            "is_backgrounded": False,
+            "spawn_depth": 1,
+            "task_type": "local_agent",
+            "prompt": "Reply with exactly the word PINEAPPLE7731 and nothing else.",
+            "uuid": "0a7d9c57-d042-4544-b42d-3a3930031566",
+            "session_id": "beb0fa2d-8b57-4457-baca-38f66765c0ef",
+        }
+        line.update(overrides)
+        return json.dumps(line)
+
+    def test_a_task_start_is_a_native_worker_activity(self):
+        (event,) = normalize_claude_line(self.task_started(), run_id=RUN_ID)
+
+        self.assertEqual("runtime.activity.started", event.kind)
+        self.assertEqual("native_worker", event.data["activity_kind"])
+
+    def test_the_worker_carries_the_provider_issued_lifecycle_id(self):
+        """Spec line 118. The broker never invents one, but this build publishes
+        `task_id`, so leaving `native_child_id` empty would discard a real
+        identifier and record less than was observed."""
+        (event,) = normalize_claude_line(
+            self.task_started(task_id="a46dacfacc666a194"), run_id=RUN_ID
+        )
+
+        self.assertEqual("a46dacfacc666a194", event.data["native_child_id"])
+
+    #: Spec line 247 names the whole permitted payload for a native-worker
+    #: activity. `parent_participant_id` belongs to the caller, which knows the
+    #: participant; the normalizer sees one line and cannot supply it.
+    WORKER_PAYLOAD_FIELDS = frozenset(
+        {
+            "activity_kind",
+            "parent_participant_id",
+            "native_child_id",
+            "observability",
+            "status",
+        }
+    )
+
+    def test_the_worker_payload_records_how_much_can_be_seen(self):
+        """Spec line 118 requires `observability` on a worker activity. The
+        provider publishes a lifecycle id, a status and a summary — never the
+        worker's reasoning or tool state — so what is seen is a summary."""
+        (event,) = normalize_claude_line(self.task_started(), run_id=RUN_ID)
+
+        self.assertEqual("summary_only", event.data["observability"])
+
+    def test_the_worker_payload_is_exactly_these_keys(self):
+        """Asserted as a whole set, not as the absence of one name. Spec line
+        247 states a whitelist, and a test that only forbids today's unwanted
+        key lets tomorrow's walk in. `parent_participant_id` is absent because
+        this function sees one line and not the roster; the caller that knows
+        the participant is the one that can add it, and it stays inside the
+        five the specification permits."""
+        (started,) = normalize_claude_line(self.task_started(), run_id=RUN_ID)
+        (finished,) = normalize_claude_line(
+            self.task_notification(), run_id=RUN_ID
+        )
+
+        self.assertEqual(
+            {"activity_kind", "native_child_id", "observability"},
+            set(started.data),
+        )
+        self.assertEqual(
+            {"activity_kind", "native_child_id", "observability", "status"},
+            set(finished.data),
+        )
+        self.assertLessEqual(set(started.data), self.WORKER_PAYLOAD_FIELDS)
+        self.assertLessEqual(set(finished.data), self.WORKER_PAYLOAD_FIELDS)
+
+    @staticmethod
+    def task_notification(**overrides):
+        line = {
+            "type": "system",
+            "subtype": "task_notification",
+            "task_id": "a3755a9018fbc95a8",
+            "tool_use_id": "toolu_01A1tLe2g217PHsZYZ2nSxVf",
+            "status": "completed",
+            "output_file": r"C:\Temp\a3755a9018fbc95a8.output",
+            "summary": "PINEAPPLE7731",
+            "usage": {"total_tokens": 4759, "tool_uses": 0, "duration_ms": 1606},
+            "uuid": "29da1725-bf25-48c8-b0f4-db9e6060af4e",
+            "session_id": "beb0fa2d-8b57-4457-baca-38f66765c0ef",
+        }
+        line.update(overrides)
+        return json.dumps(line)
+
+    def test_a_task_notification_ends_the_same_worker(self):
+        """The provider's published summary boundary. It is where a worker is
+        known to have finished, and the id ties it to the start."""
+        (event,) = normalize_claude_line(self.task_notification(), run_id=RUN_ID)
+
+        self.assertEqual("runtime.activity.finished", event.kind)
+        self.assertEqual("native_worker", event.data["activity_kind"])
+        self.assertEqual("a3755a9018fbc95a8", event.data["native_child_id"])
+
+    def test_the_finish_carries_the_status_the_provider_reported(self):
+        """Spec line 247 permits `status`. A worker that ended is not the same
+        fact as a worker that ended *well*, and the turn gate below needs the
+        difference."""
+        (event,) = normalize_claude_line(
+            self.task_notification(status="completed"), run_id=RUN_ID
+        )
+
+        self.assertEqual("completed", event.data["status"])
+
+    def test_no_worker_prompt_or_summary_survives_normalization(self):
+        """Spec line 247 and AC5. The provider hands us the worker's prompt on
+        the start line and its answer on the finish line; neither is ours to
+        carry into another participant's history."""
+        started = normalize_claude_line(
+            self.task_started(prompt="RAWPROMPT4402", description="RAWDESC4402"),
+            run_id=RUN_ID,
+        )
+        finished = normalize_claude_line(
+            self.task_notification(summary="RAWSUMMARY4402"), run_id=RUN_ID
+        )
+
+        carried = json.dumps(
+            [dict(event.data) for event in (*started, *finished)]
+        )
+        self.assertNotIn("RAWPROMPT4402", carried)
+        self.assertNotIn("RAWDESC4402", carried)
+        self.assertNotIn("RAWSUMMARY4402", carried)
+
+    def test_intermediate_worker_lines_carry_no_canonical_event(self):
+        """`task_updated` and `task_progress` sit between the start and the
+        finish. Section 7 has a started and a finished event and no notion of
+        an update in between — the same answer already given to Codex's
+        `item.updated`. Recognised and skipped, not invented into an event."""
+        updated = json.dumps(
+            {
+                "type": "system",
+                "subtype": "task_updated",
+                "task_id": "a3755a9018fbc95a8",
+                "patch": {"status": "running"},
+                "uuid": "dd0dd3ef-a2ab-4555-aa5a-0163c486066a",
+                "session_id": "beb0fa2d-8b57-4457-baca-38f66765c0ef",
+            }
+        )
+        progress = json.dumps(
+            {
+                "type": "system",
+                "subtype": "task_progress",
+                "task_id": "a3755a9018fbc95a8",
+                "uuid": "1f6a2b19-6f57-4f4e-9a2e-0a4a1f0f2b77",
+                "session_id": "beb0fa2d-8b57-4457-baca-38f66765c0ef",
+            }
+        )
+
+        self.assertEqual([], normalize_claude_line(updated, run_id=RUN_ID))
+        self.assertEqual([], normalize_claude_line(progress, run_id=RUN_ID))
+
+    def test_the_subagent_announcement_is_not_a_participant_message(self):
+        """A live delegating turn writes a `user` line whose blocks are prose,
+        not a tool result — the provider restating the delegated task. Counting
+        it as `message.committed` would file the worker's brief as the
+        participant's own answer, and the worker's lifecycle is already carried
+        by the task lines."""
+        line = json.dumps(
+            {
+                "type": "user",
+                "message": {
+                    "role": "user",
+                    "content": [{"type": "text", "text": "RAWBRIEF4402"}],
+                },
+                "parent_tool_use_id": "toolu_01A1tLe2g217PHsZYZ2nSxVf",
+                "subagent_type": "general-purpose",
+                "task_description": "Return a single word",
+                "session_id": "beb0fa2d-8b57-4457-baca-38f66765c0ef",
+                "uuid": "3b9c1d2e-3f4a-4b5c-8d6e-7f8a9b0c1d2e",
+            }
+        )
+
+        self.assertEqual([], normalize_claude_line(line, run_id=RUN_ID))
 class ClaudeLiveStreamLineTests(unittest.TestCase):
     """A recorded live turn, replayed. Ticket #32.
 
@@ -725,6 +920,163 @@ class ClaudeLiveStreamLineTests(unittest.TestCase):
 
         self.assertEqual("StdoutSchemaMismatch", caught.exception.diagnostic)
 
+
+class ClaudeRecordedDelegationTests(unittest.TestCase):
+    """Two recorded live turns that actually delegated. Ticket #17.
+
+    Same standard as the #32 recording and for the same reason: a fixture
+    written by hand contains only the lines its author already knew about.
+    `claude-2.1.240-delegating-turn.jsonl` is one turn that spawned a single
+    worker; `claude-2.1.240-nested-delegation-turn.jsonl` is one where the
+    worker spawned a worker of its own.
+
+    Redacted the same way, plus the delegation-specific fields: the worker's
+    `prompt`, `description`, `task_description`, `summary` and `output_file`
+    are removed, because specification section 4 keeps a worker's brief and
+    its raw output inside the provider boundary. What is deliberately left in
+    is the sentinel word the worker was asked to return, so a test can show
+    that even an answer sitting in the recording does not reach a normalized
+    event.
+    """
+
+    RECORDINGS = Path(__file__).resolve().parent.parent / "recordings"
+    DELEGATING = RECORDINGS / "claude-2.1.240-delegating-turn.jsonl"
+    NESTED = RECORDINGS / "claude-2.1.240-nested-delegation-turn.jsonl"
+
+    #: The word the worker was told to return, present in the recording.
+    WORKER_ANSWER = "PINEAPPLE7731"
+
+    @staticmethod
+    def replay(path):
+        events = []
+        for line in path.read_text(encoding="utf-8").splitlines():
+            if line.strip():
+                events.extend(normalize_claude_line(line, run_id=RUN_ID))
+        return events
+
+    def test_a_recorded_delegating_turn_normalizes_to_completion(self):
+        events = self.replay(self.DELEGATING)
+
+        self.assertEqual(TerminalEvent.COMPLETED, events[-1].terminal)
+
+    def test_the_recorded_turn_shows_one_worker_starting_and_finishing(self):
+        """The count is the whole point of this slice: a budget cannot be held
+        against activity nobody counted."""
+        events = self.replay(self.DELEGATING)
+        workers = [
+            event
+            for event in events
+            if event.data.get("activity_kind") == "native_worker"
+        ]
+
+        self.assertEqual(
+            ["runtime.activity.started", "runtime.activity.finished"],
+            [event.kind for event in workers],
+        )
+
+    def test_the_worker_identity_comes_from_the_provider(self):
+        """Spec line 118 forbids inventing one. This build issues `task_id`,
+        and the identifier on the event is that value rather than anything
+        this module made up."""
+        recorded = [
+            json.loads(line)
+            for line in self.DELEGATING.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
+        announced = [
+            entry["task_id"]
+            for entry in recorded
+            if entry.get("subtype") in ("task_started", "task_notification")
+        ]
+
+        carried = [
+            event.data["native_child_id"]
+            for event in self.replay(self.DELEGATING)
+            if event.data.get("activity_kind") == "native_worker"
+        ]
+
+        self.assertEqual(announced, carried)
+        self.assertEqual(1, len(set(carried)))
+
+    def test_no_worker_output_survives_the_recorded_turn(self):
+        """The answer is in the recording. It is not in any event."""
+        self.assertIn(
+            self.WORKER_ANSWER, self.DELEGATING.read_text(encoding="utf-8")
+        )
+
+        carried = json.dumps(
+            [dict(event.data) for event in self.replay(self.DELEGATING)]
+        )
+
+        self.assertNotIn(self.WORKER_ANSWER, carried)
+
+    def test_a_recorded_nested_delegation_normalizes_to_completion(self):
+        """The provider did not refuse it — measured, not assumed — so the
+        stream still has to be readable end to end."""
+        events = self.replay(self.NESTED)
+
+        self.assertEqual(TerminalEvent.COMPLETED, events[-1].terminal)
+
+    def test_the_nested_recording_holds_two_workers(self):
+        workers = [
+            event
+            for event in self.replay(self.NESTED)
+            if event.data.get("activity_kind") == "native_worker"
+        ]
+
+        self.assertEqual(4, len(workers))
+        self.assertEqual(
+            2, len({event.data["native_child_id"] for event in workers})
+        )
+
+    def test_worker_depth_reaches_the_caller_without_entering_the_payload(self):
+        """Spec line 247 fixes the payload of a native-worker activity, and
+        depth is not in it — so depth cannot be recorded as Journal content.
+        But delegation depth is a limit somebody has to enforce, and on this
+        build the provider does not: the nested recording completed with a
+        worker at depth 2 and `refused.depth_limit` at zero. The number
+        therefore has to reach the enforcing caller by another route, the way
+        `terminal` already does for the outcome resolver."""
+        starts = [
+            event
+            for event in self.replay(self.NESTED)
+            if event.kind == "runtime.activity.started"
+            and event.data.get("activity_kind") == "native_worker"
+        ]
+
+        self.assertEqual([1, 2], [event.worker_depth for event in starts])
+        for event in starts:
+            self.assertNotIn("spawn_depth", event.data)
+
+    def test_every_recorded_worker_event_keeps_the_exact_payload(self):
+        """The same whole-set check, applied to lines the provider really
+        wrote rather than to fixtures written here."""
+        for path in (self.DELEGATING, self.NESTED):
+            for event in self.replay(path):
+                if event.data.get("activity_kind") != "native_worker":
+                    continue
+                with self.subTest(recording=path.name, kind=event.kind):
+                    expected = {
+                        "activity_kind",
+                        "native_child_id",
+                        "observability",
+                    }
+                    if event.kind == "runtime.activity.finished":
+                        expected.add("status")
+                    self.assertEqual(expected, set(event.data))
+
+    def test_the_delegation_recordings_carry_no_local_identifier(self):
+        for path in (self.DELEGATING, self.NESTED):
+            with self.subTest(recording=path.name):
+                blob = path.read_text(encoding="utf-8")
+
+                # A drive letter, not merely a colon before a backslash: an
+                # escaped newline in recorded prose matches the loose form
+                # and says nothing about paths.
+                self.assertIsNone(re.search(r"[A-Za-z]:\\\\", blob))
+                self.assertNotIn("/Users/", blob)
+                self.assertNotIn("signature", blob)
+                self.assertNotIn("\"prompt\"", blob)
 
 if __name__ == "__main__":
     unittest.main()

@@ -16,7 +16,16 @@ from typing import Protocol
 
 import re
 
-from whole_life.runtime.contract import Provider, TurnMode, TurnRequest
+from whole_life.runtime.delegation import (
+    DELEGATION_AXES,
+    REPORTED_ENFORCEMENT,
+)
+from whole_life.runtime.contract import (
+    EnforcementLevel,
+    Provider,
+    TurnMode,
+    TurnRequest,
+)
 
 #: What a provider-issued session identifier may contain. Deliberately narrow:
 #: the identifiers both CLIs issue are UUIDs, and nothing wider has a reason to
@@ -38,6 +47,7 @@ class RefusalCode(StrEnum):
     EXECUTABLE_UNRESOLVED = "ExecutableUnresolved"
     AUTH_STATUS_UNSUPPORTED = "AuthStatusUnsupported"
     SUBSCRIPTION_AUTH_REQUIRED = "SubscriptionAuthRequired"
+    DELEGATION_UNSUPPORTED = "DelegationUnsupported"
 
 
 class PreStartRefusal(Exception):
@@ -103,6 +113,11 @@ class LaunchPlan:
     child_env: Mapping[str, str]
     version_conformance: VersionConformance
     turn_request: TurnRequest
+    #: What preflight reported this runtime can hold, per limit. `None` means
+    #: no preflight said — which the gate treats the same as `unsupported`,
+    #: because "nobody reported" and "reported as not held" are the same
+    #: amount of evidence.
+    delegation_enforcement: Mapping[str, EnforcementLevel] | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "args", tuple(self.args))
@@ -158,6 +173,33 @@ def enforce_launch_safety(plan: LaunchPlan) -> None:
     )
     if canonical != plan.version_conformance:
         raise PreStartRefusal(RefusalCode.UNSUPPORTED_CLI_VERSION)
+
+    # Spec line 121. Every v0 profile grants native delegation, so a runtime
+    # that cannot show it holds the limits does not quietly become a
+    # single-agent turn: it does not start.
+    #
+    # Resolved from the measurement table and compared whole, the same way
+    # the version record is resolved above. The row travelling on the plan is
+    # a report; a report that disagrees with the measurement is a claim, and
+    # #12 already closed the shape where a caller-supplied flag was accepted
+    # as its own evidence. Comparing the whole mapping also refuses a row
+    # that simply omits an axis — an omission passes any test written as
+    # "no axis says unsupported", because an empty mapping says nothing.
+    # Four separate statements, like the controls above: removing one has to
+    # make exactly one test fail, and a reader stepping through a refusal has
+    # to be able to see which condition stopped it.
+    measured = REPORTED_ENFORCEMENT.get(plan.provider)
+    if measured is None:
+        raise PreStartRefusal(RefusalCode.DELEGATION_UNSUPPORTED)
+
+    if set(measured) != DELEGATION_AXES:
+        raise PreStartRefusal(RefusalCode.DELEGATION_UNSUPPORTED)
+
+    if EnforcementLevel.UNSUPPORTED in measured.values():
+        raise PreStartRefusal(RefusalCode.DELEGATION_UNSUPPORTED)
+
+    if plan.delegation_enforcement != measured:
+        raise PreStartRefusal(RefusalCode.DELEGATION_UNSUPPORTED)
 
     request = plan.turn_request
 

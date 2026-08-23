@@ -17,6 +17,7 @@ import asyncio
 from collections.abc import AsyncIterator
 
 from whole_life.runtime.contract import CancelOutcome, RunOutcome, RuntimeEvent
+from whole_life.runtime.delegation import DelegationLedger
 from whole_life.runtime.lifecycle import (
     FORCED_WAIT_SECONDS,
     GRACEFUL_WAIT_SECONDS,
@@ -48,6 +49,7 @@ class RunObserver:
         normalize,
         run_id: str,
         queue_maxsize: int = DEFAULT_QUEUE_SIZE,
+        delegation_budget=None,
     ) -> None:
         self._process = process
         self._normalize = normalize
@@ -56,6 +58,15 @@ class RunObserver:
         self._stderr = StderrRing()
         self._terminal = TerminalEvent.NONE
         self._failure: StreamFailure | None = None
+        #: Absent when the caller supplied no budget, which is how every run
+        #: that predates delegation keeps behaving exactly as before.
+        self._ledger = (
+            DelegationLedger(delegation_budget)
+            if delegation_budget is not None
+            else None
+        )
+        #: The diagnostic for a turn stopped by its own delegation limits.
+        self._breach: str | None = None
         self._exit_code: int | None = None
         #: False until the stream ends on its own. An early exit — a consumer
         #: breaking out, or an exception passing through — leaves it False, and
@@ -98,6 +109,12 @@ class RunObserver:
                 # `thread.started`. An empty list is "recognised, nothing
                 # canonical", not a gap.
                 for event in self._normalize(line, run_id=self._run_id):
+                    if self._breached(event):
+                        # Recorded before returning, so the ordering is
+                        # already settled when the outcome is resolved — the
+                        # same rule `cancel` follows.
+                        self._cancelled_before_terminal = True
+                        return
                     await self._emit(event)
         except asyncio.CancelledError:
             cancelled = True
@@ -107,6 +124,28 @@ class RunObserver:
         finally:
             if not cancelled:
                 await self._queue.put(_END)
+
+    def _breached(self, event) -> bool:
+        """Charge one event to the budget. True when it broke it.
+
+        Only starts and finishes the provider actually announced are counted.
+        A run without a budget counts nothing, which is what keeps this out of
+        the way of everything that does not delegate.
+        """
+        if self._ledger is None:
+            return False
+        if event.data.get("activity_kind") != "native_worker":
+            return False
+
+        native_child_id = event.data.get("native_child_id")
+        if event.kind == "runtime.activity.finished":
+            self._ledger.worker_finished(native_child_id=native_child_id)
+            return False
+
+        self._breach = self._ledger.worker_started(
+            native_child_id=native_child_id, depth=event.worker_depth
+        )
+        return self._breach is not None
 
     async def _emit(self, event) -> None:
         """Queue one canonical event, unless the turn has already ended."""
@@ -172,6 +211,12 @@ class RunObserver:
         makes the turn `unknown_outcome` permanently. Recording it here, before
         the process can produce anything else, is what makes that race already
         settled by the time the outcome is resolved.
+
+        One exception, and it is not about ordering: line 282. A committed
+        result carries through the cancellation for everything except a native
+        worker that was announced and never announced finished. The provider
+        said the conversation ended; it never said the worker stopped, and the
+        cancellation ends the only stream that could have said so.
 
         Deliberately no `cause`. Spec line 96 signs this as
         `cancel(self, run) -> CancelOutcome`, and none of 268, 278, 279, 484 or
@@ -276,7 +321,11 @@ class RunObserver:
             # reader blocked on a full queue, and the stderr reader waiting for
             # an EOF a live child will not send. Cancelling the readers without
             # ending the child would still leave the child.
-            aborted = self._failure is not None or not self._stream_ended
+            aborted = (
+                self._failure is not None
+                or self._breach is not None
+                or not self._stream_ended
+            )
             if aborted:
                 await self._stop_child()
                 stdout_task.cancel()
@@ -324,6 +373,10 @@ class RunObserver:
             exit_code=self._exit_code,
             cancelled_before_terminal=self._cancelled_before_terminal,
             cancelled_after_terminal=self._cancelled_after_terminal,
+            cancel_diagnostic=self._breach,
+            unresolved_worker=(
+                self._ledger is not None and self._ledger.unresolved
+            ),
         )
 
 

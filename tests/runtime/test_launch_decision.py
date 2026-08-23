@@ -12,7 +12,11 @@ would be a description of an intention, not of an event.
 
 import unittest
 
-from tests.support.launch_fixtures import RecordingSpawner, turn_request
+from tests.support.launch_fixtures import (
+    codex_delegation_measured,
+    RecordingSpawner,
+    turn_request,
+)
 from tests.support.preflight_fixtures import (
     CLAUDE_EXECUTABLE,
     CODEX_EXECUTABLE,
@@ -22,8 +26,24 @@ from tests.support.preflight_fixtures import (
 )
 from whole_life.runtime.claude import ClaudeRuntime
 from whole_life.runtime.codex import CodexRuntime
+from whole_life.runtime.delegation import REPORTED_ENFORCEMENT
 from whole_life.runtime.contract import Provider, TurnMode
 from whole_life.runtime.launch import RecordingJournal, launch
+
+
+#: This module's subject is not delegation capability. See the helper.
+_CODEX_MEASURED = None
+
+
+def setUpModule():
+    global _CODEX_MEASURED
+    _CODEX_MEASURED = codex_delegation_measured()
+    _CODEX_MEASURED.start()
+
+
+def tearDownModule():
+    _CODEX_MEASURED.stop()
+
 
 CLEAN_PARENT_ENV = {"SYSTEMROOT": r"C:\Windows", "PATH": r"C:\Windows\system32"}
 NATIVE_SESSION = "1f0c6d9e-8f2a-4c3b-9d61-2b7a5e4f8c10"
@@ -129,7 +149,6 @@ class BrokerValidationTests(unittest.IsolatedAsyncioTestCase):
                     RecordingSpawner(),
                     journal=journal,
                 )
-
                 (decision,) = journal.decisions
                 self.assertFalse(decision.provider_schema_requested)
                 self.assertTrue(decision.broker_validates_results)

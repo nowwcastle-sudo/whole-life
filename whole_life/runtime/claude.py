@@ -6,6 +6,7 @@ import dataclasses
 from uuid import uuid4
 
 from whole_life.runtime.childenv import build_child_env
+from whole_life.runtime.delegation import REPORTED_ENFORCEMENT
 from whole_life.runtime.contract import (
     CancelOutcome,
     EnforcementLevel,
@@ -124,11 +125,7 @@ class ClaudeRuntime:
         return RuntimeStatus(
             provider=Provider.CLAUDE,
             cli_version=conformance.cli_version,
-            # Documented in spec section 4, not yet measured here. #17 replaces
-            # these with observed values and fails closed where it cannot see.
-            worker_concurrency_enforcement=EnforcementLevel.COOPERATIVE,
-            worker_total_start_enforcement=EnforcementLevel.COOPERATIVE,
-            delegation_depth_enforcement=EnforcementLevel.HARD,
+            **REPORTED_ENFORCEMENT[Provider.CLAUDE],
         )
 
     def assemble_launch_plan(self, request: TurnRequest) -> LaunchPlan:
@@ -158,6 +155,7 @@ class ClaudeRuntime:
             child_env=self.child_env,
             version_conformance=self._conformance,
             turn_request=request,
+            delegation_enforcement=REPORTED_ENFORCEMENT[Provider.CLAUDE],
         )
 
     async def start_turn(self, request: TurnRequest) -> RunHandle:
@@ -183,7 +181,13 @@ class ClaudeRuntime:
         )
         run_id = str(uuid4())
         self._runs[run_id] = RunObserver(
-            process, normalize=normalize_claude_line, run_id=run_id
+            process,
+            normalize=normalize_claude_line,
+            run_id=run_id,
+            # The budget the Broker sent with this turn. Without it the
+            # run counts nothing, and the limits would be a thing this
+            # module defines and never applies.
+            delegation_budget=request.delegation_budget,
         )
         return RunHandle(
             run_id=run_id,

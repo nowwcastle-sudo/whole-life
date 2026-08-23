@@ -17,6 +17,21 @@ issue holds the acceptance criteria; the merge commit holds the reasoning.
 
 ### Added
 
+- **Native-worker limits that are reported honestly and held by the broker** (#17).
+  Each provider now reports concurrency, total starts and delegation depth separately as
+  `hard`, `cooperative` or `unsupported`, and reports them as measured. Claude Code 2.1.240
+  announces every worker start and finish with a provider-issued identifier and a spawn depth,
+  so its limits are observable — and none of them is refused by the provider, including depth,
+  which the specification had recorded as `hard` until a recorded turn ran a worker two levels
+  deep and refused nothing. Codex reports `unsupported` on every axis because its delegation
+  measurement has not been made: the live attempt hit a subscription usage limit before the
+  model ran, so what its stream says about workers is unknown rather than known-absent. A
+  runtime in that state does not quietly become a single-agent turn — it does not start.
+  Worker starts are counted against the turn's budget, the first start past it cancels the turn
+  and leaves it `unknown_outcome`, a worker too deep does the same, and a turn is not completed
+  while a worker it launched has no announced end. What a plan says about its own capability is
+  not evidence: the pre-spawn gate resolves the row from the measurement table and compares it
+  whole, so a claimed row, a row missing an axis, and an empty row are all refused.
 - **A runtime contract, and a safety gate that runs immediately before any process starts** (#11).
   The `AgentRuntime` protocol from specification §4 is checked at runtime, so a participant that
   quietly omits an operation is rejected rather than silently no-op. Every assembled launch plan

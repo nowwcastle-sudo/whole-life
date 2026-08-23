@@ -16,6 +16,20 @@
 
 ### 추가
 
+- **정직하게 보고되고 broker가 지키는 native worker 상한** (#17).
+  이제 각 provider가 동시 실행·총 start·위임 depth를 각각 `hard`·`cooperative`·`unsupported`로
+  나눠 보고하고, **측정된 대로** 보고한다. Claude Code 2.1.240은 worker의 시작과 끝을 provider가
+  발급한 식별자와 spawn depth까지 붙여 알리므로 세 상한이 관측된다 — 그리고 어느 것도 provider가
+  거부하지 않는다. depth도 그렇다. 사양은 그것을 `hard`로 적어 두었지만, 녹화된 turn에서 worker가
+  두 단계 깊이로 돌았고 아무것도 거부되지 않았다. Codex는 세 축 모두 `unsupported`다. 위임 측정이
+  아직 실행되지 않았기 때문이다 — 라이브 시도가 구독 사용량 한도에 걸려 모델이 한 번도 돌지 않아,
+  그 스트림이 worker에 대해 무엇을 알리는지는 **없다고 아는 것이 아니라 모르는 것**이다. 그런 상태의
+  runtime은 조용히 single-agent turn으로 낮아지지 않는다 — 시작하지 않는다.
+  worker start는 turn의 budget에 대고 세며, 한도를 넘는 첫 start가 turn을 취소하고
+  `unknown_outcome`으로 둔다. 너무 깊은 worker도 같다. 그리고 자기가 띄운 worker의 끝이 알려지지
+  않은 turn은 완료로 적지 않는다. plan이 자기 capability에 대해 하는 말은 근거가 아니다 —
+  pre-spawn 게이트가 측정 표에서 행을 찾아 **전체를 대조**하므로, 지어낸 행도 축이 빠진 행도 빈 행도
+  전부 거부된다.
 - **런타임 계약과, 프로세스가 생기기 직전에 지나는 안전 게이트** (#11).
   사양 §4의 `AgentRuntime` 프로토콜을 런타임에 실제로 검사하므로, 연산 하나를 조용히 빠뜨린
   참여자는 no-op으로 넘어가지 않고 거부된다. 조립된 실행 계획은 프로세스가 되기 전에 반드시

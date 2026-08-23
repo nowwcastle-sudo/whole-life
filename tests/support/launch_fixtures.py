@@ -5,7 +5,9 @@ follow: every pre-start refusal must leave ``calls`` empty.
 """
 
 from pathlib import Path
+from unittest import mock
 
+from whole_life.runtime.delegation import REPORTED_ENFORCEMENT
 from whole_life.runtime.contract import (
     BudgetProfile,
     DelegationBudget,
@@ -77,6 +79,31 @@ def launch_plan(**overrides) -> LaunchPlan:
             bare_default=False,
         ),
         "turn_request": turn_request(),
+        # A plan carrying no delegation report is refused by the gate,
+        # which is that control working. Fixtures carry the row a real
+        # Claude preflight reports, so a test has to opt into a refusal.
+        "delegation_enforcement": REPORTED_ENFORCEMENT[Provider.CLAUDE],
     }
     fields.update(overrides)
     return LaunchPlan(**fields)
+
+def codex_delegation_measured():
+    """Stand Codex in as a provider whose delegation limits were measured.
+
+    Codex reports `unsupported` on every axis until its delegation
+    measurement is made, and the pre-spawn gate refuses a turn from a runtime
+    in that state — which is the control working. A module whose subject is
+    something else entirely (streams, cancellation, shutdown) still needs a
+    provider that starts, and Codex is the one those modules were written
+    against.
+
+    The substitution is made in the measurement table rather than passed into
+    the adapter, because the gate resolves the row from that table and must
+    keep doing so: a runtime that could be handed its own capability report
+    would be trusting the caller, which is the defect this arrangement exists
+    to avoid.
+    """
+    return mock.patch.dict(
+        REPORTED_ENFORCEMENT,
+        {Provider.CODEX: REPORTED_ENFORCEMENT[Provider.CLAUDE]},
+    )

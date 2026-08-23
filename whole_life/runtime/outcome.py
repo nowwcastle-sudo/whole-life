@@ -36,6 +36,8 @@ def resolve_outcome(
     exit_code: int | None,
     cancelled_before_terminal: bool = False,
     cancelled_after_terminal: bool = False,
+    cancel_diagnostic: str | None = None,
+    unresolved_worker: bool = False,
 ) -> RunOutcome:
     """Combine the two witnesses into one status.
 
@@ -53,12 +55,24 @@ def resolve_outcome(
     `unknown_outcome` permanently, and a tidy exit arriving afterwards does not
     upgrade it. The caller decides the ordering — by the time this is called the
     race is already settled.
+
+    `unresolved_worker` is the one thing a committed result does not carry
+    through a cancellation (line 282). It is checked twice — inside the
+    post-terminal cancellation branch and again below — because the two paths
+    reach it past different evidence: after a cancellation the exit status is
+    our own signal and must not be read, while on an ordinary ending it is the
+    second witness and must be.
     """
     if cancelled_before_terminal:
+        # `cancel_diagnostic` names *why* when the caller knows. Section 6
+        # treats user cancellation and the twenty-minute timeout as one rule,
+        # so those stay `CancelledBeforeTerminal`; a turn stopped for
+        # overspending its delegation budget is a different fact, and
+        # flattening it would lose the only reason anyone could act on.
         return RunOutcome(
             status=RunStatus.UNKNOWN_OUTCOME,
             exit_code=exit_code,
-            diagnostic="CancelledBeforeTerminal",
+            diagnostic=cancel_diagnostic or "CancelledBeforeTerminal",
         )
 
     if terminal is TerminalEvent.FAILED:
@@ -75,6 +89,20 @@ def resolve_outcome(
         # its result. Reading it as disagreement would rewrite every
         # post-terminal cancellation — including an ordinary broker shutdown —
         # into a failure the provider never had.
+        if unresolved_worker:
+            # Line 282 names this exact case, and it is the one thing a
+            # committed result does not carry through the cancellation: the
+            # provider said the conversation ended, never said the worker it
+            # announced stopped, and we then killed the process it would have
+            # been announced on. Answered here rather than at the check below,
+            # because everything between the two reads the exit status — and
+            # the exit status is our own signal, which is precisely what this
+            # branch exists to stop anyone reading as evidence.
+            return RunOutcome(
+                status=RunStatus.UNKNOWN_OUTCOME,
+                exit_code=exit_code,
+                diagnostic="NativeWorkerUnresolved",
+            )
         return RunOutcome(status=RunStatus.COMPLETED, exit_code=exit_code, diagnostic=None)
 
     if exit_code is None:
@@ -95,6 +123,17 @@ def resolve_outcome(
                 if terminal is TerminalEvent.COMPLETED
                 else "NonZeroExit"
             ),
+        )
+
+    if unresolved_worker:
+        # Spec line 282. The provider said the conversation ended; it did not
+        # say the worker it launched stopped. Reporting the turn complete over
+        # a worker whose end was never announced would claim knowledge of
+        # something nobody reported — and the thing still running is billable.
+        return RunOutcome(
+            status=RunStatus.UNKNOWN_OUTCOME,
+            exit_code=exit_code,
+            diagnostic="NativeWorkerUnresolved",
         )
 
     if terminal is TerminalEvent.NONE:
