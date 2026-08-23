@@ -12,6 +12,7 @@ unknown event cannot be handled by passing it along "just in case".
 
 import json
 import unittest
+from pathlib import Path
 
 from whole_life.runtime.normalize import (
     CANONICAL_EVENT_TYPES,
@@ -770,6 +771,135 @@ class ClaudeNativeWorkerTests(unittest.TestCase):
         )
 
         self.assertEqual([], normalize_claude_line(line, run_id=RUN_ID))
+class ClaudeLiveStreamLineTests(unittest.TestCase):
+    """A recorded live turn, replayed. Ticket #32.
+
+    `tests/recordings/claude-2.1.240-live-turn.jsonl` is one real turn on the
+    pinned Claude Code version, captured by running the production argument
+    vector against the operator's own sign-in. It is a recording rather than a
+    hand-written fixture because hand-written fixtures are what let this
+    defect live: every synthetic line in this suite was one someone already
+    knew about, so the suite stayed green while no real turn could run.
+
+    Redacted before committing, by value and never by silence: `session_id`,
+    `uuid` and `request_id` were replaced with fixed placeholders, and the
+    `system/init` fields that enumerate the operator's machine — `cwd`,
+    `messaging_socket_path`, installed plugins, skills, agents, MCP servers,
+    slash commands, capabilities — were removed, along with the provider's
+    signature over the thinking block. Nothing the normalizer reads was
+    touched, and no stderr was ever captured to this file.
+    """
+
+    RECORDING = (
+        Path(__file__).resolve().parent.parent
+        / "recordings"
+        / "claude-2.1.240-live-turn.jsonl"
+    )
+
+    @classmethod
+    def setUpClass(cls):
+        cls.lines = [
+            line
+            for line in cls.RECORDING.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
+
+    def of_kind(self, kind, subtype=None):
+        for line in self.lines:
+            parsed = json.loads(line)
+            if parsed.get("type") == kind and (
+                subtype is None or parsed.get("subtype") == subtype
+            ):
+                return line
+        raise AssertionError(f"the recording has no {kind}/{subtype} line")
+
+    def test_the_recording_holds_both_lines_this_ticket_is_about(self):
+        """Otherwise the replay below could pass on a recording that never
+        contained the problem — a green test proving nothing, which is the
+        exact failure this ticket exists to correct."""
+        self.of_kind("rate_limit_event")
+        self.of_kind("system", "thinking_tokens")
+
+    def test_a_recorded_live_turn_normalizes_to_completion(self):
+        events = []
+        for line in self.lines:
+            events.extend(normalize_claude_line(line, run_id=RUN_ID))
+
+        self.assertEqual(TerminalEvent.COMPLETED, events[-1].terminal)
+        self.assertEqual("turn.completed", events[-1].kind)
+
+    def test_neither_notice_line_carries_a_canonical_event(self):
+        """Section 7 fixes the canonical set at eight. A notice the provider
+        writes about its own quota or its own token estimate has no place in
+        that set, and adding a ninth would be a specification change rather
+        than a defect fix."""
+        self.assertEqual(
+            [], normalize_claude_line(self.of_kind("rate_limit_event"), run_id=RUN_ID)
+        )
+        self.assertEqual(
+            [],
+            normalize_claude_line(
+                self.of_kind("system", "thinking_tokens"), run_id=RUN_ID
+            ),
+        )
+
+    def test_no_notice_content_survives_normalization(self):
+        """Limit counts, reset times and token estimates are the provider's
+        own accounting. None of it is turn history."""
+        notices = (
+            self.of_kind("rate_limit_event"),
+            self.of_kind("system", "thinking_tokens"),
+        )
+        values = []
+        for line in notices:
+            parsed = json.loads(line)
+            values.append(str(parsed.get("estimated_tokens")))
+            values.append(str((parsed.get("rate_limit_info") or {}).get("resetsAt")))
+
+        carried = json.dumps(
+            [
+                dict(event.data)
+                for line in notices
+                for event in normalize_claude_line(line, run_id=RUN_ID)
+            ]
+        )
+        for value in values:
+            if value != "None":
+                self.assertNotIn(value, carried)
+
+    def test_the_recording_carries_no_local_identifier(self):
+        """The redaction is part of the evidence, so it is checked rather than
+        described. A future recording dropped in beside this one is held to the
+        same rule."""
+        blob = self.RECORDING.read_text(encoding="utf-8")
+
+        self.assertNotIn(":\\", blob)
+        self.assertNotIn("signature", blob)
+        self.assertNotIn("/Users/", blob)
+        self.assertNotIn("/home/", blob)
+        for parsed in (json.loads(line) for line in self.lines):
+            self.assertEqual(
+                "00000000-0000-0000-0000-000000000000", parsed["session_id"]
+            )
+
+    def test_an_unknown_top_level_type_still_fails_closed(self):
+        """This change widens an allowlist. It does not remove one."""
+        line = json.dumps({"type": "something_new", "session_id": "s"})
+
+        with self.assertRaises(StreamFailure) as caught:
+            normalize_claude_line(line, run_id=RUN_ID)
+
+        self.assertEqual("UnknownProviderEvent", caught.exception.diagnostic)
+
+    def test_an_unknown_system_subtype_still_fails_closed(self):
+        line = json.dumps(
+            {"type": "system", "subtype": "something_new", "session_id": "s"}
+        )
+
+        with self.assertRaises(StreamFailure) as caught:
+            normalize_claude_line(line, run_id=RUN_ID)
+
+        self.assertEqual("StdoutSchemaMismatch", caught.exception.diagnostic)
 
 
 if __name__ == "__main__":

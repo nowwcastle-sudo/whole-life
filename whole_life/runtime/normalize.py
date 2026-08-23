@@ -101,12 +101,22 @@ CLAUDE_ASSISTANT_BLOCKS = frozenset(
 #: The documented `system` and `result` subtypes. Closed rather than "any
 #: string": a subtype this build has not evaluated is drift, and accepting it
 #: would make the claim "pinned required shape, checked in full" false.
-#: `task_started` is the provider announcing a native worker. It is listed
-#: here because a live 2.1.240 turn writes it, not because documentation
-#: mentions it.
+#: Every `system` subtype a live 2.1.240 turn writes. Each is listed because a
+#: measured turn produced one, not because documentation mentions it. Widening
+#: this set is how a measured line stops ending the run; the closed-set check
+#: itself stays. `thinking_tokens` is the provider's own estimate; the four
+#: `task_*` subtypes are the native-worker lifecycle.
 CLAUDE_SYSTEM_SUBTYPES = frozenset(
-    {"init", "task_started", "task_updated", "task_progress", "task_notification"}
+    {
+        "init",
+        "thinking_tokens",
+        "task_started",
+        "task_updated",
+        "task_progress",
+        "task_notification",
+    }
 )
+
 #: Spec line 118's one named value. What the provider publishes about a worker
 #: is its lifecycle id, its status and a summary — never the worker's prompt,
 #: reasoning or tool state — so a summary is the whole of what can be seen. The
@@ -379,11 +389,24 @@ def normalize_claude_line(line: str, *, run_id: str) -> list[NormalizedEvent]:
     parsed = _parse(line)
     kind = _typed(parsed.get("type"), str)
 
+    if kind == "rate_limit_event":
+        # The provider's own quota accounting. Section 7 has no event for it,
+        # and its `resetsAt` and overage wording are subscription state rather
+        # than turn history. Recognised so a real turn survives it, and not
+        # recorded.
+        _require(parsed, "session_id", lambda v: _typed(v, str))
+        return []
+
     if kind == "system":
         subtype = _require(
             parsed, "subtype", lambda v: _enum(v, CLAUDE_SYSTEM_SUBTYPES)
         )
         _require(parsed, "session_id", lambda v: _typed(v, str))
+        if subtype == "thinking_tokens":
+            # An estimate *about* reasoning. Section 7 keeps reasoning out, so
+            # this commits nothing — the same answer a thinking block gets.
+            return []
+
         if subtype in ("task_updated", "task_progress"):
             # Between the start and the finish. Section 7 has a started and a
             # finished event and no notion of an update in between — the same
@@ -404,6 +427,7 @@ def normalize_claude_line(line: str, *, run_id: str) -> list[NormalizedEvent]:
                     parsed, run_id, "runtime.activity.finished", status=status
                 )
             ]
+
         return [_event(run_id, "turn.started")]
 
     if kind == "assistant":
