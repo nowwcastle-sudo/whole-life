@@ -11,6 +11,7 @@ unknown event cannot be handled by passing it along "just in case".
 """
 
 import json
+import re
 import unittest
 from pathlib import Path
 
@@ -901,6 +902,127 @@ class ClaudeLiveStreamLineTests(unittest.TestCase):
 
         self.assertEqual("StdoutSchemaMismatch", caught.exception.diagnostic)
 
+
+class ClaudeRecordedDelegationTests(unittest.TestCase):
+    """Two recorded live turns that actually delegated. Ticket #17.
+
+    Same standard as the #32 recording and for the same reason: a fixture
+    written by hand contains only the lines its author already knew about.
+    `claude-2.1.240-delegating-turn.jsonl` is one turn that spawned a single
+    worker; `claude-2.1.240-nested-delegation-turn.jsonl` is one where the
+    worker spawned a worker of its own.
+
+    Redacted the same way, plus the delegation-specific fields: the worker's
+    `prompt`, `description`, `task_description`, `summary` and `output_file`
+    are removed, because specification section 4 keeps a worker's brief and
+    its raw output inside the provider boundary. What is deliberately left in
+    is the sentinel word the worker was asked to return, so a test can show
+    that even an answer sitting in the recording does not reach a normalized
+    event.
+    """
+
+    RECORDINGS = Path(__file__).resolve().parent.parent / "recordings"
+    DELEGATING = RECORDINGS / "claude-2.1.240-delegating-turn.jsonl"
+    NESTED = RECORDINGS / "claude-2.1.240-nested-delegation-turn.jsonl"
+
+    #: The word the worker was told to return, present in the recording.
+    WORKER_ANSWER = "PINEAPPLE7731"
+
+    @staticmethod
+    def replay(path):
+        events = []
+        for line in path.read_text(encoding="utf-8").splitlines():
+            if line.strip():
+                events.extend(normalize_claude_line(line, run_id=RUN_ID))
+        return events
+
+    def test_a_recorded_delegating_turn_normalizes_to_completion(self):
+        events = self.replay(self.DELEGATING)
+
+        self.assertEqual(TerminalEvent.COMPLETED, events[-1].terminal)
+
+    def test_the_recorded_turn_shows_one_worker_starting_and_finishing(self):
+        """The count is the whole point of this slice: a budget cannot be held
+        against activity nobody counted."""
+        events = self.replay(self.DELEGATING)
+        workers = [
+            event
+            for event in events
+            if event.data.get("activity_kind") == "native_worker"
+        ]
+
+        self.assertEqual(
+            ["runtime.activity.started", "runtime.activity.finished"],
+            [event.kind for event in workers],
+        )
+
+    def test_the_worker_identity_comes_from_the_provider(self):
+        """Spec line 118 forbids inventing one. This build issues `task_id`,
+        and the identifier on the event is that value rather than anything
+        this module made up."""
+        recorded = [
+            json.loads(line)
+            for line in self.DELEGATING.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
+        announced = [
+            entry["task_id"]
+            for entry in recorded
+            if entry.get("subtype") in ("task_started", "task_notification")
+        ]
+
+        carried = [
+            event.data["native_child_id"]
+            for event in self.replay(self.DELEGATING)
+            if event.data.get("activity_kind") == "native_worker"
+        ]
+
+        self.assertEqual(announced, carried)
+        self.assertEqual(1, len(set(carried)))
+
+    def test_no_worker_output_survives_the_recorded_turn(self):
+        """The answer is in the recording. It is not in any event."""
+        self.assertIn(
+            self.WORKER_ANSWER, self.DELEGATING.read_text(encoding="utf-8")
+        )
+
+        carried = json.dumps(
+            [dict(event.data) for event in self.replay(self.DELEGATING)]
+        )
+
+        self.assertNotIn(self.WORKER_ANSWER, carried)
+
+    def test_a_recorded_nested_delegation_normalizes_to_completion(self):
+        """The provider did not refuse it — measured, not assumed — so the
+        stream still has to be readable end to end."""
+        events = self.replay(self.NESTED)
+
+        self.assertEqual(TerminalEvent.COMPLETED, events[-1].terminal)
+
+    def test_the_nested_recording_holds_two_workers(self):
+        workers = [
+            event
+            for event in self.replay(self.NESTED)
+            if event.data.get("activity_kind") == "native_worker"
+        ]
+
+        self.assertEqual(4, len(workers))
+        self.assertEqual(
+            2, len({event.data["native_child_id"] for event in workers})
+        )
+
+    def test_the_delegation_recordings_carry_no_local_identifier(self):
+        for path in (self.DELEGATING, self.NESTED):
+            with self.subTest(recording=path.name):
+                blob = path.read_text(encoding="utf-8")
+
+                # A drive letter, not merely a colon before a backslash: an
+                # escaped newline in recorded prose matches the loose form
+                # and says nothing about paths.
+                self.assertIsNone(re.search(r"[A-Za-z]:\\\\", blob))
+                self.assertNotIn("/Users/", blob)
+                self.assertNotIn("signature", blob)
+                self.assertNotIn("\"prompt\"", blob)
 
 if __name__ == "__main__":
     unittest.main()
