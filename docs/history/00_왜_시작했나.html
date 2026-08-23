@@ -53,6 +53,9 @@
   .rule-card{border-color:var(--link)}
   .rule-card .tag{color:var(--link); font-weight:600; font-size:13px; letter-spacing:.1em;
                   font-family:"Geist Mono",ui-monospace,monospace}
+  .verbatim{white-space:pre-wrap; background:var(--zone);
+            border-left:3px solid var(--accent); padding:18px 22px;
+            font-size:17px; line-height:1.85; margin:0 0 18px; color:var(--ink)}
   figure{margin:34px 0}
   figcaption{font-size:14px; color:var(--muted); margin-top:12px; text-align:center; line-height:1.6}
   svg{display:block; width:100%; height:auto}
@@ -95,10 +98,11 @@
 <body>
 <div class="wrap">
 
-  <div class="kicker">제 00 편 · 원점편 · 초안</div>
+  <div class="kicker">제 00 편 · 원점편 · 확정</div>
   <h1>왜 시작했나</h1>
   <p class="sub">이 폴더의 서문이자, 이후 모든 편이 방향을 재는 <b>자</b>입니다.</p>
-  <p class="meta">2026-08-24 작성 · <code>ORD-EDU-origin-premise-check</code> · 대표 승인 대기</p>
+  <p class="meta">2026-08-24 작성 · <code>ORD-EDU-origin-premise-check</code> · <code>ORD-EDU-origin-fill</code><br>
+    대표 승인 <b>2026-08-24 02:17</b> — <b>확정.</b> 이후 고치지 않습니다</p>
 
   <div class="card rule-card">
     <div class="tag">이 편의 용도</div>
@@ -109,7 +113,7 @@
     </p>
     <p style="margin:0" class="note">
       번호는 <b>00</b>이지만 시간상 첫 기록은 아닙니다. 나중에 쓰고 앞에 싣습니다.
-      승인 뒤에는 고치지 않습니다 — 고쳐야 할 만큼 문제 정의가 바뀌었다면
+      <b>이 편은 확정됐습니다.</b> 이후 고치지 않습니다 — 고쳐야 할 만큼 문제 정의가 바뀌었다면
       <b>그 자체가 대표께 올릴 사건</b>입니다.
     </p>
   </div>
@@ -441,27 +445,61 @@
 
   <hr>
 
-  <h2>빈 칸</h2>
-  <div class="q">자료로 채울 수 없는 것 하나</div>
+  <h2>첫 계기</h2>
+  <div class="q">자료로는 채울 수 없던 칸 — 대표가 직접 채웠습니다</div>
 
-  <div class="card warn">
-    <div class="tag">대표만 채울 수 있는 칸</div>
-    <p style="margin:8px 0 12px">
-      저장소 문서는 <b>「무엇이 없어서 만드나」</b>를 충분히 적어 두었습니다.
-      적혀 있지 않은 것은 <b>「어느 순간에 이게 필요하다고 느꼈나」</b> 하나입니다 —
-      대표가 실제로 두 CLI를 따로 돌리다 막혔던 그 장면.
+  <p>
+    저장소 문서는 <b>「무엇이 없어서 만드나」</b>를 충분히 적어 두었습니다.
+    적혀 있지 않은 것은 <b>「어느 순간에 이게 필요하다고 느꼈나」</b> 하나였습니다.
+    <b>아래는 대표의 원문이고, 한 글자도 고치지 않았습니다.</b><sup><a href="#o15">[15]</a></sup>
+  </p>
+
+  <div class="verbatim">코덱스와 클로드를 쓸 때 가끔 하나의 작업을 두 곳에서 돌릴 일이 있어.
+그럴 때 세션 공유가 되면 좋겠다 생각했던 게 첫 번째 이유고,
+사실 이런 이유로 만들어진 오픈소스 프로젝트가 orca라던가 herdr라던가
+존재하는 걸로 아는데, 난 그렇게 워크트리로 분기해서 두 분리된 공간에서
+작업 후에 diff로 합치는 방향이나, 하나의 워크스페이스 안에서 터미널
+멀티플렉서로 각각의 에이전트들의 작업 상황을 효율적으로 관리하는 것보다는
+진정한 의미의 협업툴을 만들고 싶었던거야.</div>
+
+  <p class="note">
+    <b>다듬지 않았습니다.</b> 이 칸의 값은 정확성이 아니라
+    <b>그 사람이 그때 그렇게 느꼈다는 사실</b>에 있습니다.
+    매끄럽게 고치는 순간 「대표가 말한 것」이 아니라 「교육자가 정리한 것」이 되고,
+    <b>자의 눈금이 다시 남의 손을 탑니다.</b>
+  </p>
+
+  <div class="card">
+    <p style="margin:0 0 10px"><b>이 칸이 자에 눈금을 둘 더 새깁니다 — 버린 길 둘입니다.</b></p>
+    <table class="tbl">
+      <tbody>
+        <tr><td>버린 길 1</td><td>워크트리로 분기해 두 분리된 공간에서 작업한 뒤 <b><code>diff</code> 로 합친다</b></td></tr>
+        <tr><td>버린 길 2</td><td>한 워크스페이스 안에서 <b>터미널 멀티플렉서</b>로 각 에이전트의 작업 상황을 관리한다</td></tr>
+        <tr><td>고른 길</td><td><b>「진정한 의미의 협업툴」</b></td></tr>
+      </tbody>
+    </table>
+    <p style="margin:16px 0 0" class="note">
+      <b>이것이 「범위 밖」 목록과 같은 구조입니다.</b> 나중에 누가
+      「워크트리로 분기해서 <code>diff</code> 로 합치면 간단한데요」라고 하면,
+      답은 「안 됩니다」가 아니라 <b>「그건 처음에 보고 버린 길입니다. 무엇이 바뀌었습니까」</b>가 됩니다.
+      <b>버린 것에 이름이 있어야 그 질문이 섭니다.</b>
     </p>
+  </div>
+
+  <div class="card">
+    <p style="margin:0 0 10px"><b>「세션 공유」와 범위 밖의 「플랫폼 간 직접 연결」은 부딪치지 않습니다.</b></p>
     <p style="margin:0" class="note">
-      이것은 <b>비워 둡니다.</b> 없다고 자가 못 쓰이는 것은 아닙니다 —
-      방향을 재는 데는 위의 「문제」와 「범위 밖」이면 충분합니다.
-      대표께서 한 문장 주시면 여기에 넣겠습니다. <b>추측해서 채우지 않습니다.</b>
+      읽다 보면 걸리는 자리라 적어 둡니다. 대표가 원한 것은 <b>두 CLI 가 같은 상태를 본다</b>는 것이고,
+      범위 밖 목록이 막은 것은 <b>두 플랫폼을 서로 직접 잇는 것</b>입니다.
+      저장소가 고른 길은 그 사이입니다 — <b>브로커가 이미 설치된 CLI 를 띄우고 그 출력 스트림을 읽습니다.</b><sup><a href="#o2">[2]</a></sup>
+      <b>상태는 공유되고, 연결은 브로커를 거칩니다.</b>
     </p>
   </div>
 
   <hr>
 
   <h2>이 편의 상태</h2>
-  <div class="q">초안입니다</div>
+  <div class="q">확정입니다</div>
 
   <p>
     이 편은 <b>기획자를 부르지 않고</b> 저장소 문서만으로 썼습니다.
@@ -474,9 +512,18 @@
   </p>
 
   <p class="note">
-    승인 뒤에는 고치지 않습니다. 새 결정을 담지 않았고, 스펙·ADR 파일은 건드리지 않았습니다
-    (승인 기준선이라 해시 행이 걸려 있습니다). 이 편은 <b>기존 문서를 옮겨 엮은 것</b>일 뿐
-    새로 정한 것이 없습니다.
+    <b>2026-08-24 02:17 에 대표 승인을 받았고, 같은 회신에 빈 칸의 원문이 함께 왔습니다.</b><sup><a href="#o15">[15]</a></sup>
+    <b>이제 고치지 않습니다.</b> 새 결정을 담지 않았고, 스펙·ADR 파일은 건드리지 않았습니다
+    (승인 기준선이라 해시 행이 걸려 있습니다). 이 편은 <b>기존 문서를 옮겨 엮은 것</b>에
+    <b>대표의 원문 한 칸</b>을 더한 것일 뿐, 새로 정한 것이 없습니다.
+  </p>
+
+  <p class="note">
+    <b>승인 시점에 대해 한 가지만 밝혀 둡니다.</b> 이 체계는 원점편 확정을
+    <b>G1(스펙 확정) 직후</b>에 받도록 되어 있는데, 실제로는 <b>G4 를 지난 뒤</b>에 받았습니다.
+    <b>늦은 쪽이라 문제가 되지 않습니다</b> — 이르게 동결하면 그 뒤의 「범위 밖」 변경이
+    이후 편에서 <b>질문 12를 「늘었다」로 오탐</b>하게 만드는데, 늦은 승인은 그 위험이 없습니다.
+    <b>다만 이 편이 <code>#11</code>~<code>#17</code> 을 이미 지나온 자로서 확정됐다는 사실은 적어 둡니다.</b>
   </p>
 
   <div class="fn">
@@ -496,6 +543,7 @@
       <li id="o12"><span class="path">docs/adr/0001-local-subscription-v0.md</span> — <span class="quote">「read-only·process 종료·duplicate resume·crash recovery conformance가 통과하고, agent direct edit의 별도 권한모델을 승인할 때 worktree 기능을 새 ADR로 검토한다.」</span></li>
       <li id="o13"><span class="path">docs/adr/0001-local-subscription-v0.md</span> — <span class="quote">「Claude agent teams가 stable이 되고 양 provider가 nested delegation·resume·shutdown·event identity를 동등하게 공식 지원하며 runaway·orphan·권한상속 test를 통과할 때 depth와 peer coordination을 새 ADR로 검토한다.」</span></li>
       <li id="o14"><span class="path">docs/adr/0001-local-subscription-v0.md</span> — <span class="quote">「기술적 subprocess 실행 가능성과 provider 정책상 공개 제품 허용은 다른 명제이고, push·공개는 되돌리기 비용이 크다.」</span> · <span class="quote">「최신 공식 문서 또는 서면 답변, 실제 usage 귀속 smoke test, secret scan이 모두 통과할 때 public 전환 ADR을 새로 쓴다.」</span></li>
+      <li id="o15">채널 <span class="path">whole-life</span> · 대표(nowwcastle) 원문 · 이벤트 <span class="path">089befe6</span> (2026-08-24 02:17), 통치자 Governor 가 <span class="path">e6ef79ab</span> 로 전달 — <span class="quote">「1. 승인할게.」</span> 및 위 「첫 계기」 칸의 일곱 줄 전문.<br><span class="note"><b><code>orca</code> · <code>herdr</code> 는 대표의 기억이며 이 문서를 쓰는 시점에 확인하지 않았습니다.</b> 원문의 <span class="quote">「존재하는 걸로 아는데」</span>라는 유보를 <b>그대로 살려 둡니다</b> — 그 유보를 지우고 「이런 프로젝트가 있다」로 적으면 확인 안 된 것이 영구 문서에 사실로 박힙니다. <b>원점편이 「무엇이 없어서 만들었나」를 재는 자인 만큼, 그 「없음」의 근거가 미확인 기억이라는 것 자체가 눈금의 일부입니다.</b> 나중에 확인되면 이 각주를 고칩니다.</span></li>
     </ol>
     <p class="note" style="margin-top:20px">
       각주에 줄 번호를 쓰지 않습니다. 파일이 바뀌면 줄 번호는 조용히 다른 곳을 가리키지만,
