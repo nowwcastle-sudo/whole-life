@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>연대기 — whole-life</title>
+<style>
+  :root{--ink:#16181d; --dim:#6b7280; --line:#e3e6ec; --paper:#fbfbfa;
+        --amber:#a86a00; --wash:#f2f4f8; --blue:#1d5fb8;}
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--paper); color:var(--ink);
+       font-family:"Pretendard","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;
+       line-height:1.75; -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:840px; margin:0 auto; padding:64px 28px 120px}
+  .kicker{font-size:13px; letter-spacing:.14em; color:var(--dim); text-transform:uppercase}
+  h1{font-size:44px; line-height:1.15; margin:14px 0 10px; letter-spacing:-.02em}
+  .sub{font-size:18px; color:var(--dim); margin:0 0 8px}
+  p{font-size:17px; margin:0 0 18px}
+  .note{font-size:15px; color:var(--dim)}
+  hr{border:0; border-top:1px solid var(--line); margin:44px 0}
+  code{font-family:ui-monospace,"Consolas",monospace; font-size:.9em;
+       background:var(--wash); padding:1px 6px; border-radius:5px}
+
+  .card{background:#fff; border:1px solid var(--line); border-radius:14px; padding:24px 26px; margin:26px 0}
+  .warn{background:#fff8ec; border-color:#f0dcb4}
+  .warn .tag{color:var(--amber); font-weight:700; font-size:13px; letter-spacing:.1em}
+
+  h2{font-size:14px; letter-spacing:.16em; color:var(--dim); text-transform:uppercase;
+     margin:56px 0 18px; font-weight:600}
+
+  .toc{list-style:none; padding:0; margin:0}
+  .toc li{border-top:1px solid var(--line); padding:20px 0 20px 96px; position:relative}
+  .toc li:last-child{border-bottom:1px solid var(--line)}
+  .num{position:absolute; left:0; top:20px; font-family:ui-monospace,"Consolas",monospace;
+       font-size:13px; color:var(--dim); letter-spacing:.06em}
+  .kind{display:inline-block; font-size:11px; letter-spacing:.12em; text-transform:uppercase;
+        border:1px solid var(--line); border-radius:99px; padding:2px 10px; color:var(--dim);
+        vertical-align:2px; margin-left:8px}
+  .toc a{color:var(--ink); text-decoration:none; font-size:20px; font-weight:700;
+         border-bottom:2px solid var(--line)}
+  .toc a:hover{border-bottom-color:var(--blue); color:var(--blue)}
+  .toc .one{font-size:16px; color:var(--dim); margin:10px 0 0}
+  .toc .date{font-family:ui-monospace,"Consolas",monospace; font-size:13px; color:var(--dim)}
+  .toc li.empty{background:transparent}
+  .toc li.empty .title{font-size:20px; font-weight:700; color:#b3b8c2}
+  .toc li.empty .one{color:#9aa1ad}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kicker">whole-life · 역사 기록</div>
+  <h1>연대기</h1>
+  <p class="sub">이 폴더를 위에서 아래로 읽으면, 이 프로젝트를 모르는 사람도<br>시작부터 지금까지 어떻게 왔는지 알 수 있게 하는 것이 목표입니다.</p>
+
+  <div class="card warn">
+    <div class="tag">지금 이 색인의 상태</div>
+    <p style="margin:8px 0 12px">
+      <b>이 폴더는 프로젝트가 한참 진행된 뒤인 2026-08-24에 처음 만들어졌습니다.</b>
+      그래서 앞쪽이 비어 있습니다 — 서문에 해당하는 <b>원점편</b>과 첫 편인 <b>터닦기편</b>,
+      그리고 먼저 지나간 아홉 대상의 편이 아직 쓰이지 않았습니다.
+    </p>
+    <p style="margin:0" class="note">
+      <b>이것이 왜 문제인가</b> — 원점편은 「지금 방향이 엇나가지 않았나」를 재는 <b>자</b>입니다.
+      자가 없으면 이후 모든 편의 질문 11(원점에 비춰 그쪽으로 갔나)을 임시 기준으로만 답할 수 있습니다.
+      제11편은 저장소의 <code>docs/project-context.md</code> v0 불변식을 임시 자로 삼았고,
+      그 사실을 편 머리에 밝혀 두었습니다.
+    </p>
+  </div>
+
+  <h2>편 목록</h2>
+
+  <ol class="toc">
+    <li class="empty">
+      <span class="num">00</span>
+      <span class="title">왜 시작했나</span><span class="kind">원점편</span>
+      <p class="one">아직 쓰이지 않음. 기획자가 스펙의 「문제」·「범위 밖」 칸을 채운 뒤에 쓸 수 있고,
+        확정 승인은 G1(스펙 확정) 직후에 받습니다.</p>
+    </li>
+
+    <li class="empty">
+      <span class="num">01</span>
+      <span class="title">터닦기</span><span class="kind">터닦기편</span>
+      <p class="one">아직 쓰이지 않음. 0단계 BST(터잡이) 작업 —
+        원본은 <code>WORK_LOGS/2026-08-22_bootstrapper_whole-life_지반1차.md</code>.</p>
+    </li>
+
+    <li class="empty">
+      <span class="num">02 – 10</span>
+      <span class="title">아홉 대상 — #11 · #12 · #13 · #14 · #15 · #16 · #28 · #31 · #32</span><span class="kind">일지편 자리</span>
+      <p class="one">아직 쓰이지 않음. 전부 병합돼 종료된 대상들입니다(PR #19 · #20 · #21 · #23 · #29 · #30 · #31 · #36).
+        번호를 비워 둔 것은 나중에 채울 자리를 남기기 위해서입니다.</p>
+    </li>
+
+    <li>
+      <span class="num">11</span>
+      <a href="11_2026-08-24_%ED%8B%B0%EC%BC%9317_%EB%84%A4%EC%9D%B4%ED%8B%B0%EB%B8%8C%EC%9B%8C%EC%BB%A4%EA%B0%95%EC%A0%9C.html">#17 네이티브 워커 강제 — 구현 레그</a><span class="kind">일지편</span>
+      <p class="one">안전장치를 만들어 붙였는데 전선을 잇지 않아 실제 제품에서는 꺼져 있었고,
+        테스트가 그 전선을 건너뛰고 장치만 따로 만져 보는 바람에 전부 초록불이었다.
+        리뷰어가 이것을 잡아 되돌렸고, 구현자가 전선을 잇고 전선을 끊으면 반드시 빨개지는 테스트까지 세워 통과했다.</p>
+      <p class="date">2026-08-24 · <code>feat/17-native-worker-enforcement</code> @ <code>25a0dfe</code> · <code>ORD-EDU-IMP-17</code></p>
+    </li>
+  </ol>
+
+  <hr>
+
+  <h2>이 폴더를 읽는 법</h2>
+
+  <p>
+    편은 다섯 종류입니다.
+    <b>원점편</b>(프로젝트당 한 번 · 왜 시작했나) ·
+    <b>터닦기편</b>(0단계) ·
+    <b>일지편</b>(대상 하나마다) ·
+    <b>기편</b>(게이트 G1~G6 통과마다) ·
+    <b>요청편</b>(대표가 부를 때).
+  </p>
+
+  <p>
+    <b>일지편의 단위는 「지시 하나」가 아니라 「대상 하나」입니다.</b>
+    한 티켓이 구현 → 리뷰 → 되돌림 → 재구현을 거쳐도 편은 하나이고, 회차마다 그 편에 이어 붙습니다.
+    지시마다 새 편을 만들면 티켓 스무 개짜리 프로젝트가 백 편이 되어 아무도 통독하지 못합니다.
+  </p>
+
+  <p>
+    <b>모든 사실 진술에는 각주가 붙고, 각주는 「경로 + 인용문」입니다.</b>
+    줄 번호는 쓰지 않습니다 — 파일이 바뀌면 줄 번호는 조용히 다른 곳을 가리키지만,
+    인용문은 <code>grep</code>으로 찾히고 사라졌으면 사라졌다는 사실 자체가 신호가 됩니다.
+  </p>
+
+  <p class="note">
+    이 폴더는 교육자(사관)만 씁니다. 기록하되 판정하지 않습니다 —
+    방향이 어긋나 보이면 편을 만들고 통치자에게 알리는 데까지가 몫입니다.
+  </p>
+
+</div>
+</body>
+</html>
