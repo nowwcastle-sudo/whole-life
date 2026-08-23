@@ -100,11 +100,15 @@
 
   <div class="card warn">
     <div class="tag">읽기 전에</div>
-    <p style="margin:8px 0 0">
-      이 편은 <b>기준자 없이 쓰였습니다.</b> 이 폴더의 서문에 해당하는
-      <code>00_왜_시작했나.html</code>(원점편)과 첫 편인 <code>01_..._터닦기.html</code>이
-      아직 쓰이지 않았습니다. 그래서 「원점에 비춰 이번 걸음이 그쪽으로 갔나」는
-      저장소가 스스로 적어 둔 <b>v0 불변식</b>을 임시 자로 삼아 답했습니다.<sup><a href="#f15">[15]</a></sup>
+    <p style="margin:8px 0 12px">
+      이 편은 처음 쓸 때 <b>기준자가 없었습니다.</b> 그래서 「원점에 비춰 갔나」를
+      저장소의 v0 불변식을 임시 자로 삼아 답했습니다.
+      <b>같은 날 원점편(<a href="00_%EC%99%9C_%EC%8B%9C%EC%9E%91%ED%96%88%EB%82%98.html">00_왜_시작했나</a>)이 나왔고,
+      질문 11·12를 그 자로 다시 쟀습니다</b> — 아래 「방향 점검」이 다시 잰 결과입니다.
+      임시 자로 잰 결과와 <b>답은 같았습니다.</b>
+    </p>
+    <p style="margin:0" class="note">
+      첫 편인 <code>01_..._터닦기.html</code>은 아직 쓰이지 않았습니다.
       또 이 편은 <b>11번</b>이지만 2~10번은 아직 비어 있습니다 — 먼저 지나간
       #11~#16 · #28 · #31 · #32 아홉 대상의 자리로 비워 둔 것입니다.<sup><a href="#f22">[22]</a></sup>
     </p>
@@ -642,9 +646,23 @@ C. 대조군 — worker 미해결 · 자식이 스스로 종료
   <div class="q">원점에 비춰, 이번 걸음이 그쪽으로 갔나?</div>
 
   <p class="note" style="margin-bottom:20px">
-    ⚠️ 원점편이 아직 없어 <b>정식 기준자가 없습니다.</b>
-    아래는 저장소가 스스로 적어 둔 <code>docs/project-context.md</code>의
-    「협상 불가 v0 불변식」을 임시 자로 삼은 것이며, 원점편이 나오면 다시 재야 합니다.
+    <b>다시 잰 것입니다.</b> 처음에는 원점편이 없어 <code>docs/project-context.md</code>의
+    「협상 불가 v0 불변식」을 임시 자로 삼았고, 같은 날 원점편이 나온 뒤
+    <a href="00_%EC%99%9C_%EC%8B%9C%EC%9E%91%ED%96%88%EB%82%98.html">원점편</a>의 「문제」로 다시 쟀습니다.
+  </p>
+
+  <div class="card">
+    <p style="margin:0 0 10px"><b>원점편의 「문제」 셋 중 첫 번째에 정확히 얹힙니다.</b></p>
+    <p style="margin:0">
+      원점이 세운 문제는 <b>「협업 상태가 어디에도 없다」</b>였고, 그 상태를 지키는 장치가
+      <b>제품에서 꺼져 있었던 것</b>이 이번 걸음이 고친 것입니다.
+      원점편은 이 문제를 「서로 다른 두 공식 CLI의 context·event 협업」이라고 적었고,<sup><a href="#f37">[37]</a></sup>
+      #17은 그 협업이 <b>제멋대로 번지지 않게</b> 막는 부분입니다.
+    </p>
+  </div>
+
+  <p class="note" style="margin-bottom:20px">
+    임시 자였던 v0 불변식도 그대로 유효합니다 — 원점의 문제를 코드가 지키는 형태로 옮긴 것이 이 문장이기 때문입니다.
   </p>
 
   <div class="term">불변식 7
@@ -683,6 +701,17 @@ ambiguous process outcomes, and concurrent native-session resumes
     이번 회차에서 「제안된 뒤 하지 않기로 한 것」은 <code>task_id</code> 마스킹 하나이며,
     그것도 범위를 늘리는 쪽이 아니라 줄이는 쪽 판단이었습니다.<sup><a href="#f18">[18]</a></sup>
   </p>
+
+  <div class="card">
+    <p style="margin:0 0 10px"><b>원점편의 「범위 밖」 목록에 대보면 — #17은 그 목록을 코드로 집행하는 티켓입니다.</b></p>
+    <p style="margin:0">
+      범위 밖 14개 중 둘이 정확히 이 티켓입니다 —
+      <b>「recursive delegation(depth 2 이상)」</b>과
+      <b>「native worker를 독립 participant로 승격하거나 플랫폼 간 직접 연결하는 기능」</b>.<sup><a href="#f38">[38]</a></sup>
+      #17이 강제하는 선이 바로 그 두 줄입니다.
+      <b>범위를 늘린 것이 아니라, 처음부터 안 하기로 한 것을 안 되게 만든 것</b>입니다.
+    </p>
+  </div>
 
   <hr>
 
@@ -736,6 +765,8 @@ ambiguous process outcomes, and concurrent native-session resumes
       <li id="f34">채널 <span class="path">whole-life</span> · 통치자 Governor · 이벤트 <span class="path">45c81be1</span> (2026-08-24 01:41) — <span class="quote">「검사 대상이 내가 쓴 그 글자인가」</span> · <span class="quote">「`windows-path` 0건이 「걸러냈다」가 아니라 「거를 것이 없었다」」</span> · <span class="quote">「이 층의 다섯 번째 사례로 넣으시면 자리가 맞습니다」</span><br><span class="note">이 중 <code>windows-path</code> 행만은 어느 <span class="path">WORK_LOGS/</span> 파일에도 없습니다(<code>grep -rl "windows-path" WORK_LOGS/</code> → exit 1). 채널 메시지가 유일한 사료입니다.</span></li>
       <li id="f35">채널 <span class="path">whole-life</span> · 통치자 Governor · 이벤트 <span class="path">66609ba7</span> (2026-08-24 01:43) — <span class="quote">「앞 메시지의 역슬래시 표가 그 표에 적힌 버그에 당했습니다」</span> · <span class="quote">「인용 heredoc(`&lt;&lt;'EOF'`)이 역슬래시 연쇄를 절반으로 접는다. 홑 역슬래시만 살아남는다」</span> · <span class="quote">「앞의 넷은 검사가 당했고, 이번엔 그 사실을 알리는 문서가 당했습니다」</span> · <span class="quote">「규칙이 낡는 게 아니라 규칙의 요약이 낡습니다」</span></li>
       <li id="f36">채널 <span class="path">whole-life</span> · 통치자 Governor · 이벤트 <span class="path">45c81be1</span> (2026-08-24 01:41) — <span class="quote">「둘은 대등한 대안이 아니라 하나는 회귀입니다」</span></li>
+      <li id="f37"><span class="path">docs/adr/0001-local-subscription-v0.md</span> — <span class="quote">「현재 검증할 문제는 서로 다른 두 공식 CLI의 context·event 협업이고, API·remote 표준은 v0 성공에 필요하지 않다.」</span> <span class="note">(원점편이 이 문장을 「문제」 첫 항목으로 엮었다 — <span class="path">docs/history/00_왜_시작했나.html</span>)</span></li>
+      <li id="f38"><span class="path">docs/spec/whole-life-v0.md</span> §2 v0 비목표 — <span class="quote">「recursive delegation(depth 2 이상)」</span> · <span class="quote">「native worker를 독립 participant로 승격하거나 플랫폼 간 직접 연결하는 기능」</span></li>
     </ol>
     <p class="note" style="margin-top:20px">
       각주에 줄 번호를 쓰지 않습니다. 파일이 바뀌면 줄 번호는 조용히 다른 곳을 가리키지만,

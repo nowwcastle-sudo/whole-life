@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>원점편 — 왜 시작했나</title>
+<style>
+  :root{--ink:#16181d; --dim:#6b7280; --line:#e3e6ec; --paper:#fbfbfa;
+        --red:#c8342b; --green:#1f7a4d; --blue:#1d5fb8; --amber:#a86a00; --wash:#f2f4f8;}
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--paper); color:var(--ink);
+       font-family:"Pretendard","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;
+       line-height:1.75; -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:860px; margin:0 auto; padding:64px 28px 120px}
+  .kicker{font-size:13px; letter-spacing:.14em; color:var(--dim); text-transform:uppercase}
+  h1{font-size:46px; line-height:1.15; margin:14px 0 8px; letter-spacing:-.02em}
+  .sub{font-size:18px; color:var(--dim); margin:0 0 8px}
+  .meta{font-size:14px; color:var(--dim); font-family:ui-monospace,"Consolas",monospace}
+  hr{border:0; border-top:1px solid var(--line); margin:48px 0}
+  h2{font-size:14px; letter-spacing:.16em; color:var(--dim); text-transform:uppercase;
+     margin:72px 0 4px; font-weight:600}
+  .q{font-size:29px; line-height:1.35; margin:0 0 26px; font-weight:700; letter-spacing:-.01em}
+  .big{font-size:26px; line-height:1.5; font-weight:600; margin:0 0 18px}
+  p{font-size:17px; margin:0 0 18px}
+  .note{font-size:15px; color:var(--dim)}
+  .card{background:#fff; border:1px solid var(--line); border-radius:14px; padding:26px 28px; margin:26px 0}
+  .warn{background:#fff8ec; border-color:#f0dcb4}
+  .warn .tag{color:var(--amber); font-weight:700; font-size:13px; letter-spacing:.1em}
+  .rule{background:#eef4fd; border-color:#cfe0f7}
+  .rule .tag{color:var(--blue); font-weight:700; font-size:13px; letter-spacing:.1em}
+  figure{margin:34px 0}
+  figcaption{font-size:14px; color:var(--dim); margin-top:12px; text-align:center; line-height:1.6}
+  svg{display:block; width:100%; height:auto}
+  code{font-family:ui-monospace,"Consolas",monospace; font-size:.9em;
+       background:var(--wash); padding:1px 6px; border-radius:5px}
+  blockquote{margin:0 0 18px; padding:14px 20px; background:var(--wash);
+             border-left:3px solid var(--line); font-size:16px; line-height:1.7}
+  .pain{list-style:none; padding:0; margin:0; counter-reset:p}
+  .pain li{position:relative; padding:18px 0 18px 58px; border-top:1px solid var(--line)}
+  .pain li:last-child{border-bottom:1px solid var(--line)}
+  .pain li::before{counter-increment:p; content:counter(p);
+    position:absolute; left:0; top:20px; width:32px; height:32px; border-radius:50%;
+    background:#fbe9e8; color:var(--red); font-size:14px; font-weight:700;
+    display:flex; align-items:center; justify-content:center;}
+  .pain b{display:block; font-size:19px; margin-bottom:4px}
+  .pain span{font-size:15px; color:var(--dim)}
+  .out{columns:2; column-gap:34px; font-size:16px; padding-left:20px; margin:0}
+  .out li{margin-bottom:9px; break-inside:avoid; line-height:1.6}
+  @media (max-width:640px){ .out{columns:1} }
+  .tbl{width:100%; border-collapse:collapse; font-size:15px}
+  .tbl th{text-align:left; font-size:12px; letter-spacing:.1em; text-transform:uppercase;
+          color:var(--dim); font-weight:600; padding:0 14px 10px 0; border-bottom:1px solid var(--line)}
+  .tbl td{padding:14px 14px 14px 0; border-bottom:1px solid var(--line); vertical-align:top; line-height:1.6}
+  .tbl tr:last-child td{border-bottom:0}
+  .tbl td:first-child{font-weight:700; width:30%}
+  sup a{color:var(--blue); text-decoration:none; font-size:12px; font-weight:700; padding:0 1px}
+  .fn{margin-top:80px; border-top:1px solid var(--line); padding-top:26px}
+  .fn h3{font-size:13px; letter-spacing:.16em; color:var(--dim); text-transform:uppercase; margin:0 0 16px}
+  .fn ol{padding-left:24px; margin:0}
+  .fn li{font-size:14px; color:var(--dim); margin-bottom:11px; line-height:1.65}
+  .fn .path{font-family:ui-monospace,"Consolas",monospace; color:var(--ink); font-size:13px}
+  .fn .quote{color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kicker">제 00 편 · 원점편 · 초안</div>
+  <h1>왜 시작했나</h1>
+  <p class="sub">이 폴더의 서문이자, 이후 모든 편이 방향을 재는 <b>자</b>입니다.</p>
+  <p class="meta">2026-08-24 작성 · <code>ORD-EDU-origin-premise-check</code> · 대표 승인 대기</p>
+
+  <div class="card rule">
+    <div class="tag">이 편의 용도</div>
+    <p style="margin:8px 0 12px">
+      「지금 방향이 엇나가지 않았나」를 재려면 <b>잴 자</b>가 있어야 합니다.
+      이 편이 그 자이고, 이후 모든 편의 <b>질문 11</b>(원점에 비춰 그쪽으로 갔나)과
+      <b>질문 12</b>(처음 범위에서 새로 늘어난 것이 있나)가 여기에 대봅니다.
+    </p>
+    <p style="margin:0" class="note">
+      번호는 <b>00</b>이지만 시간상 첫 기록은 아닙니다. 나중에 쓰고 앞에 싣습니다.
+      승인 뒤에는 고치지 않습니다 — 고쳐야 할 만큼 문제 정의가 바뀌었다면
+      <b>그 자체가 대표께 올릴 사건</b>입니다.
+    </p>
+  </div>
+
+  <hr>
+
+  <h2>무엇이 없어서</h2>
+  <div class="q">문제 — 도구는 다 있는데, 그것들 사이가 비어 있다</div>
+
+  <p class="big">
+    이벤트를 흘려보내고, 세션을 이어 붙이고, 새끼 작업자를 부리는 도구는
+    <b>이미 여럿 있습니다.</b> 없는 것은 그 도구들 <b>사이</b>입니다 —
+    서로 다른 회사의 AI 둘이 <b>같은 상태를 공유하며</b> 협업하고,
+    그 협업이 <b>다시 재생되고 남는</b> 자리.
+  </p>
+
+  <blockquote>
+    「Current agent tools can stream events, resume sessions, and invoke subagents.
+    <b>We are not aware of one that also provides a shared cross-provider collaboration state</b>
+    with consistent replay, process cleanup, context boundaries, and deterministic output.」<sup><a href="#o1">[1]</a></sup>
+  </blockquote>
+
+  <figure>
+    <svg viewBox="0 0 860 300" role="img" aria-label="Claude 와 Codex 가 각자 따로 돌고 그 사이에 공유 상태가 없어 결과가 사람 머릿속에서만 합쳐지는 그림, 그리고 Whole Life 가 그 사이를 채우는 그림">
+      <defs>
+        <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M0 0 L10 5 L0 10 z" fill="#16181d"/>
+        </marker>
+      </defs>
+
+      <text x="16" y="24" font-size="13" fill="#6b7280" letter-spacing="2">지금 — 따로 돈다</text>
+
+      <rect x="16" y="40" width="180" height="70" rx="12" fill="#fff" stroke="#e3e6ec"/>
+      <text x="106" y="72" font-size="17" text-anchor="middle" font-weight="700">Claude Code</text>
+      <text x="106" y="94" font-size="13" text-anchor="middle" fill="#6b7280">내 구독으로 로그인</text>
+
+      <rect x="16" y="126" width="180" height="70" rx="12" fill="#fff" stroke="#e3e6ec"/>
+      <text x="106" y="158" font-size="17" text-anchor="middle" font-weight="700">Codex CLI</text>
+      <text x="106" y="180" font-size="13" text-anchor="middle" fill="#6b7280">내 구독으로 로그인</text>
+
+      <rect x="236" y="40" width="196" height="156" rx="12" fill="#fbe9e8" stroke="#f0c9c6" stroke-dasharray="6 6"/>
+      <text x="334" y="105" font-size="16" text-anchor="middle" fill="#c8342b" font-weight="700">여기가 비어 있다</text>
+      <text x="334" y="132" font-size="14" text-anchor="middle" fill="#c8342b">공유 상태 없음</text>
+
+      <line x1="436" y1="118" x2="482" y2="118" stroke="#16181d" stroke-width="2" marker-end="url(#ar)"/>
+
+      <rect x="488" y="76" width="200" height="84" rx="12" fill="#fff" stroke="#e3e6ec"/>
+      <text x="588" y="112" font-size="16" text-anchor="middle" font-weight="700">사람 머릿속에서</text>
+      <text x="588" y="136" font-size="16" text-anchor="middle" font-weight="700">합친다</text>
+
+      <text x="770" y="106" font-size="14" text-anchor="middle" fill="#c8342b">재생 불가</text>
+      <text x="770" y="130" font-size="14" text-anchor="middle" fill="#c8342b">기록 안 남음</text>
+
+      <line x1="16" y1="226" x2="844" y2="226" stroke="#e3e6ec"/>
+
+      <text x="16" y="254" font-size="13" fill="#1f7a4d" letter-spacing="2">Whole Life 가 채우려는 것</text>
+      <rect x="236" y="262" width="196" height="30" rx="8" fill="#e8f4ed" stroke="#c6e2d2"/>
+      <text x="334" y="283" font-size="14" text-anchor="middle" fill="#1f7a4d" font-weight="700">로컬 broker 하나</text>
+      <text x="452" y="283" font-size="15" fill="#1f7a4d">공유 상태 · 일관된 재생 · 프로세스 정리 · 결정론적 산출물</text>
+    </svg>
+    <figcaption>
+      <b>둘을 대신 만드는 것이 아닙니다.</b> 이미 내가 로그인해 쓰는 공식 CLI 둘을 그대로 띄우고,
+      <b>그 사이의 빈 자리</b>만 채웁니다.<sup><a href="#o2">[2]</a></sup>
+    </figcaption>
+  </figure>
+
+  <p><b>구체적인 아픔은 셋입니다.</b> 전부 저장소가 스스로 적어 둔 것입니다.</p>
+
+  <ol class="pain">
+    <li>
+      <b>협업 상태가 어디에도 없다</b>
+      <span>ADR — <b>「현재 검증할 문제는 서로 다른 두 공식 CLI의 context·event 협업이고」</b>.
+        API도 remote 표준도 이 문제를 푸는 데 필요하지 않다고 못박았습니다.<sup><a href="#o3">[3]</a></sup></span>
+    </li>
+    <li>
+      <b>합치면 반대 의견이 조용히 사라진다</b>
+      <span>ADR — <b>「합성은 반대 의견과 근거를 조용히 없앨 수 있다」</b>.
+        그래서 세 번째 AI가 최종답을 만들지 않고, 원문·합의·<b>충돌</b>·출처를 고정 순서로 보존합니다.<sup><a href="#o4">[4]</a></sup></span>
+    </li>
+    <li>
+      <b>에이전트를 늘리면 사용량이 곱해져 터진다</b>
+      <span>ADR — <b>「agent 수·round 수·native worker 수·상호 원문 길이는 서로 곱해져 사용량을 폭증시킨다」</b>.
+        그래서 원문 전체가 아니라 크기가 제한된 capsule만 오갑니다.<sup><a href="#o5">[5]</a></sup></span>
+    </li>
+  </ol>
+
+  <hr>
+
+  <h2>누가 · 언제</h2>
+  <div class="q">매일 쓰는 물건이 아닙니다</div>
+
+  <blockquote>
+    「Someone who already uses Claude Code and Codex CLI separately and holds a subscription to each.
+    They reach for Whole Life when a piece of work is long enough that they judge it needs several
+    agents collaborating - <b>not daily, but for a long sitting once opened.</b>」<sup><a href="#o6">[6]</a></sup>
+  </blockquote>
+
+  <p>
+    쓰는 사람은 <b>이미 두 CLI를 각각 쓰고 있고 양쪽 구독을 다 가진 한 사람</b>입니다.
+    그래서 <b>여러 사람의 로그인을 중계하지 않습니다</b> — 「단 한 사람의 도구이며
+    로그인을 사람 사이에 넘기거나 모으거나 공유하지 않는다」가 첫 문단에 박혀 있습니다.<sup><a href="#o7">[7]</a></sup>
+  </p>
+
+  <div class="card">
+    <p style="margin:0 0 10px"><b>무엇이 성공인가 — 한 문장으로 적혀 있습니다.</b></p>
+    <p class="big" style="margin:0">
+      「Success is that the operator can see what is happening —
+      and <b>above all, see the collaboration itself.</b>」<sup><a href="#o8">[8]</a></sup>
+    </p>
+  </div>
+
+  <hr>
+
+  <h2>범위 밖</h2>
+  <div class="q">무엇을 <b>안 하기로</b> 했나</div>
+
+  <p class="big">
+    자의 눈금은 여기입니다. 질문 12(범위가 늘었나)는 <b>이 목록에 걸리는가</b>로 잽니다.
+  </p>
+
+  <p class="note">스펙 §2 「v0 비목표」 14개 항목 그대로입니다.<sup><a href="#o9">[9]</a></sup></p>
+
+  <ul class="out">
+    <li>여러 사용자의 계정·구독 credential을 중계하는 서비스</li>
+    <li>mid-turn context push, running session attach, checkpoint, approval callback</li>
+    <li>AI가 파일을 직접 수정하는 worktree 협업</li>
+    <li><b>native worker를 독립 participant로 승격</b>하거나 플랫폼 간 직접 연결하는 기능</li>
+    <li><b>recursive delegation(depth 2 이상)</b></li>
+    <li>Claude experimental agent teams와 그 shared task list·peer messaging</li>
+    <li>native tool 실행을 broker가 사전 승인했다는 보장</li>
+    <li>remote agent, multi-node, multi-process writer, web UI</li>
+    <li>A2A, MCP orchestration, AG-UI, CloudEvents SDK</li>
+    <li>FastAPI, Redis, NATS, Kafka, transactional outbox, CRDT, lease/fencing</li>
+    <li>ULID와 동적 plugin/adapter registry</li>
+    <li>AI가 최종답을 다시 합성하는 별도 judge turn</li>
+    <li>provider 구독 quota나 청구액을 토큰 수만으로 정확히 예측·우회하는 기능</li>
+    <li>unrelated task 사이에서 native session history를 재사용해 context를 무한 누적하는 기능</li>
+  </ul>
+
+  <div class="card">
+    <p style="margin:0 0 10px"><b>구조를 늘리는 것도 범위 밖입니다.</b></p>
+    <p style="margin:0" class="note">
+      「Add a seam only after a second real implementation or process makes the existing concrete
+      module leak complexity to callers.」<sup><a href="#o10">[10]</a></sup>
+      — <b>쓸모가 생기기 전에 자리를 만들지 않는다</b>는 뜻입니다.
+      깊게 만들 모듈은 넷으로 못박혀 있고, 나머지는 「삭제해도 복잡성이 호출자에게 재등장하지 않는
+      가상 seam」이라 버렸습니다.<sup><a href="#o11">[11]</a></sup>
+    </p>
+  </div>
+
+  <hr>
+
+  <h2>자를 쓰는 법</h2>
+  <div class="q">「늘었다」와 「원래 그러기로 했다」를 가르는 것</div>
+
+  <p>
+    범위 밖 목록만 있으면 <b>「늘었다」는 판정은 되는데 「그럼 어떻게 하나」가 안 나옵니다.</b>
+    ADR 0001은 버린 것마다 <b>「뒤집는 조건」</b>을 함께 적어 두었습니다.
+    범위 밖의 것이 필요해 보일 때 물어야 할 것은 「하면 안 되나」가 아니라
+    <b>「그 조건이 왔는가」</b>입니다.
+  </p>
+
+  <div class="card">
+    <table class="tbl">
+      <thead><tr><th>버린 것</th><th>뒤집는 조건 (요약 — 원문은 각주)</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>API·remote 구조<br><span class="note">멀티유저 중계</span></td>
+          <td>multi-user 제품화·remote agent·제3 provider가 <b>실제 요구</b>가 되거나,
+            provider 정책이 local subscription mode를 허용하지 않을 때<sup><a href="#o3">[3]</a></sup></td>
+        </tr>
+        <tr>
+          <td>AI가 파일을 직접 쓰는 worktree</td>
+          <td>read-only·프로세스 종료·중복 resume·crash recovery conformance가 <b>통과하고</b>,
+            별도 권한모델을 승인할 때<sup><a href="#o12">[12]</a></sup></td>
+        </tr>
+        <tr>
+          <td>delegation depth 2 이상<br><span class="note">= #17이 지키는 선</span></td>
+          <td>양 provider가 nested delegation·resume·shutdown·event identity를
+            <b>동등하게 공식 지원</b>하고 runaway·orphan·권한상속 test를 통과할 때<sup><a href="#o13">[13]</a></sup></td>
+        </tr>
+        <tr>
+          <td>추상 seam·프레임워크</td>
+          <td>두 번째 <b>실제</b> implementation이나 process writer 요구가 나타나
+            deletion test에서 복잡성이 호출자에게 번질 때만<sup><a href="#o11">[11]</a></sup></td>
+        </tr>
+        <tr>
+          <td>즉시 public 공개</td>
+          <td>최신 공식 문서 또는 서면 답변 · 실제 usage 귀속 smoke test · secret scan이
+            <b>모두</b> 통과할 때<sup><a href="#o14">[14]</a></sup></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="note">
+    맨 아래 줄은 왜 그렇게까지 조심하는지도 한 문장으로 적어 두었습니다 —
+    「기술적 subprocess 실행 가능성과 provider 정책상 공개 제품 허용은 <b>다른 명제</b>이고,
+    push·공개는 되돌리기 비용이 크다.」<sup><a href="#o14">[14]</a></sup>
+  </p>
+
+  <hr>
+
+  <h2>빈 칸</h2>
+  <div class="q">자료로 채울 수 없는 것 하나</div>
+
+  <div class="card warn">
+    <div class="tag">대표만 채울 수 있는 칸</div>
+    <p style="margin:8px 0 12px">
+      저장소 문서는 <b>「무엇이 없어서 만드나」</b>를 충분히 적어 두었습니다.
+      적혀 있지 않은 것은 <b>「어느 순간에 이게 필요하다고 느꼈나」</b> 하나입니다 —
+      대표가 실제로 두 CLI를 따로 돌리다 막혔던 그 장면.
+    </p>
+    <p style="margin:0" class="note">
+      이것은 <b>비워 둡니다.</b> 없다고 자가 못 쓰이는 것은 아닙니다 —
+      방향을 재는 데는 위의 「문제」와 「범위 밖」이면 충분합니다.
+      대표께서 한 문장 주시면 여기에 넣겠습니다. <b>추측해서 채우지 않습니다.</b>
+    </p>
+  </div>
+
+  <hr>
+
+  <h2>이 편의 상태</h2>
+  <div class="q">초안입니다</div>
+
+  <p>
+    이 편은 <b>기획자를 부르지 않고</b> 저장소 문서만으로 썼습니다.
+    통치자가 「기획자를 부르기 전에 전제부터 확인하라」고 물었고,
+    확인 결과 <b>「문제」와 「범위 밖」 두 칸이 이미 차 있었기</b> 때문입니다.
+    다만 <b>「문제」는 스펙 §2에 있지 않습니다</b> — §2 「목표」는 <b>무엇을 만드나</b>를 적은
+    해법 서술이고, <b>왜 필요한가</b>는 <code>README.md</code>의
+    「Why this project exists」와 <code>PRODUCT.md</code>, 그리고 ADR 0001의
+    「왜」 항목들에 있습니다.
+  </p>
+
+  <p class="note">
+    승인 뒤에는 고치지 않습니다. 새 결정을 담지 않았고, 스펙·ADR 파일은 건드리지 않았습니다
+    (승인 기준선이라 해시 행이 걸려 있습니다). 이 편은 <b>기존 문서를 옮겨 엮은 것</b>일 뿐
+    새로 정한 것이 없습니다.
+  </p>
+
+  <div class="fn">
+    <h3>각주 — 사료 출처</h3>
+    <ol>
+      <li id="o1"><span class="path">README.md</span> — <span class="quote">「Current agent tools can stream events, resume sessions, and invoke subagents. We are not aware of one that also provides a shared cross-provider collaboration state with consistent replay, process cleanup, context boundaries, and deterministic output.」</span> (절 제목 <span class="quote">「Why this project exists」</span>)</li>
+      <li id="o2"><span class="path">README.md</span> — <span class="quote">「The broker launches the CLIs already installed on the machine and reads their output streams」</span></li>
+      <li id="o3"><span class="path">docs/adr/0001-local-subscription-v0.md</span> — <span class="quote">「현재 검증할 문제는 서로 다른 두 공식 CLI의 context·event 협업이고, API·remote 표준은 v0 성공에 필요하지 않다.」</span> · 뒤집는 조건 <span class="quote">「multi-user 제품화, remote agent, 제3 provider가 실제 요구가 되거나 provider 정책이 local subscription mode를 허용하지 않을 때」</span></li>
+      <li id="o4"><span class="path">docs/adr/0001-local-subscription-v0.md</span> — <span class="quote">「합성은 반대 의견과 근거를 조용히 없앨 수 있다.」</span></li>
+      <li id="o5"><span class="path">docs/adr/0001-local-subscription-v0.md</span> — <span class="quote">「agent 수·round 수·native worker 수·상호 원문 길이는 서로 곱해져 사용량을 폭증시킨다.」</span></li>
+      <li id="o6"><span class="path">PRODUCT.md</span> — <span class="quote">「They reach for Whole Life when a piece of work is long enough that they judge it needs several agents collaborating - not daily, but for a long sitting once opened.」</span></li>
+      <li id="o7"><span class="path">README.md</span> — <span class="quote">「It is a single-user tool: it never relays, pools, or shares a sign-in between people.」</span></li>
+      <li id="o8"><span class="path">PRODUCT.md</span> — <span class="quote">「Success is that the operator can see what is happening - and above all, see the collaboration itself.」</span></li>
+      <li id="o9"><span class="path">docs/spec/whole-life-v0.md</span> — <span class="quote">「### v0 비목표」</span> 절의 14개 항목. 본문 목록은 그 절에서 그대로 옮겼다.</li>
+      <li id="o10"><span class="path">docs/project-context.md</span> — <span class="quote">「Add a seam only after a second real implementation or process makes the existing concrete module leak complexity to callers.」</span></li>
+      <li id="o11"><span class="path">docs/adr/0001-local-subscription-v0.md</span> — <span class="quote">「나머지는 삭제해도 현재 복잡성이 호출자에게 재등장하지 않는 가상 seam이다.」</span> · <span class="quote">「두 번째 실제 implementation·process writer·web 사용자 요구가 나타나 deletion test에서 복잡성이 호출자에게 번질 때만 해당 seam을 추출한다.」</span></li>
+      <li id="o12"><span class="path">docs/adr/0001-local-subscription-v0.md</span> — <span class="quote">「read-only·process 종료·duplicate resume·crash recovery conformance가 통과하고, agent direct edit의 별도 권한모델을 승인할 때 worktree 기능을 새 ADR로 검토한다.」</span></li>
+      <li id="o13"><span class="path">docs/adr/0001-local-subscription-v0.md</span> — <span class="quote">「Claude agent teams가 stable이 되고 양 provider가 nested delegation·resume·shutdown·event identity를 동등하게 공식 지원하며 runaway·orphan·권한상속 test를 통과할 때 depth와 peer coordination을 새 ADR로 검토한다.」</span></li>
+      <li id="o14"><span class="path">docs/adr/0001-local-subscription-v0.md</span> — <span class="quote">「기술적 subprocess 실행 가능성과 provider 정책상 공개 제품 허용은 다른 명제이고, push·공개는 되돌리기 비용이 크다.」</span> · <span class="quote">「최신 공식 문서 또는 서면 답변, 실제 usage 귀속 smoke test, secret scan이 모두 통과할 때 public 전환 ADR을 새로 쓴다.」</span></li>
+    </ol>
+    <p class="note" style="margin-top:20px">
+      각주에 줄 번호를 쓰지 않습니다. 파일이 바뀌면 줄 번호는 조용히 다른 곳을 가리키지만,
+      인용문은 <code>grep</code>으로 찾히고 사라졌으면 <b>사라졌다는 사실 자체가 신호</b>가 됩니다.
+      여기 경로는 전부 <b>저장소 기준</b>입니다.
+    </p>
+    <p class="note">
+      영어 인용문 일부(<code>PRODUCT.md</code>)는 <b>원문이 줄바꿈으로 접혀 있어</b>
+      한 줄로 <code>grep</code> 하면 안 잡힙니다. 문장은 그대로이며 <b>공백만 다릅니다</b> —
+      찾으실 때는 짧은 조각으로 찾거나 공백을 하나로 눌러 대조하십시오.
+    </p>
+  </div>
+
+</div>
+</body>
+</html>
