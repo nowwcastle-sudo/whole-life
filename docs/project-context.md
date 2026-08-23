@@ -13,8 +13,10 @@ The architecture is approved for a private, documentation-only repository. No im
 | `docs/spec/whole-life-v0.md` | `A48270E57CE1D106910A8C50443331B6973ED7F1746A6362FF8008988EF835F0` | 574 | 2026-08-20 audited baseline |
 | `docs/spec/whole-life-v0.md` | `E8C6EA089A16A99106CF1C3C85D454FAF0F885E9091BD7E1CFB7EABCCE4E691C` | 607 | 2026-08-22 revision — §5 bare mode gate, §12 authentication conformance, §13 F-16 |
 | `docs/adr/0001-local-subscription-v0.md` | `123BAFBDE315B7BA237E25731F78AF1E56BFBBD6A872CD2CD3F5FBC06BAE10C5` | 91 | unchanged |
+| `docs/spec/whole-life-v0.md` | `C8904FF4FA0B1FCAF4662F0AA18ECE74C30EE89876F2F3CCDDDED80D56E65E2B` | 607 | 2026-08-23 정정 — §4 Claude delegation depth `hard`→`cooperative`, 실측 반영 |
+| `docs/adr/0001-local-subscription-v0.md` | `67CF61B8F7AC689237C8ACDB245D3AC4E0D8180BF39E53D469EA7C39C8149BB0` | 92 | 2026-08-23 정정 — 같은 사실 기록을 ADR에도 반영 |
 
-The audited baseline row is kept so the 2026-08-20 audit provenance stays verifiable. The revision row is the current file.
+The audited baseline row is kept so the 2026-08-20 audit provenance stays verifiable. The last row for each artifact is the current file. Rows are appended, never replaced: a hash that was once approved stays listed so the history of what was approved when remains readable.
 
 Hashes are taken over the stored Git blob (LF line endings), reproducible with `git show HEAD:<path> | sha256sum`. Do not hash the working-tree file on a checkout with `core.autocrlf=true` — it will differ.
 

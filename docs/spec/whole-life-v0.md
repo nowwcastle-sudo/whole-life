@@ -45,7 +45,7 @@
 - `economy`와 `balanced`는 roster의 첫 Claude·첫 Codex participant를 seed로 실행한다. 나머지는 ordered standby다. `deep`만 roster 전체를 처음부터 active로 실행한다.
 - 동시에 실행하는 participant turn은 profile과 관계없이 최대 4개다. 나머지는 broker queue에서 기다린다.
 - native worker budget은 profile·round가 정한다. provider가 total-start hard cap을 제공하지 않으면 prompt policy와 stream 관찰에 의한 `cooperative` enforcement로 기록하고, 초과 활동을 관찰하면 cancel한다.
-- v0 native delegation depth는 1이다. participant는 worker를 만들 수 있지만 worker는 다시 worker를 만들 권한이 없다.
+- v0 native delegation depth는 1이다. participant는 worker를 만들 수 있지만 worker는 다시 worker를 만들 권한이 없다. 이 상한은 broker가 지킨다. 2.1.240 실측에서 Claude는 worker가 만든 worker를 거부하지 않았으므로, broker가 `spawn_depth` 관찰로 위반을 감지하고 cancel한다.
 - 모든 participant turn은 broker wall-clock 20분 hard timeout을 가진다. cooperative budget 초과 활동을 관찰하면 즉시 cancel하고 결과를 `unknown_outcome`으로 둔다.
 - roster·profile별 active turn·worker·round·output·capsule·projection·timeout 수치는 runaway process·구독 사용량·context 폭증을 막는 v0 고정 상한이다. 임의 세부 설정으로 일반화하지 않고 실제 conformance 측정 뒤 ADR과 test를 함께 바꾼다.
 
@@ -114,7 +114,7 @@ class AgentRuntime(Protocol):
 - Claude participant에는 `Agent` 도구를 허용한다. Claude subagent는 parent context와 분리되고 결과를 parent에게 반환한다. v0는 experimental agent teams를 활성화하지 않는다.
 - Codex participant에는 current release의 subagent workflow를 활성화하고 profile의 turn budget과 무관하게 안전 상한 `agents.max_concurrent_threads_per_session = 3`을 inline config로 고정한다. participant의 read-only sandbox를 spawned agent가 상속해야 한다.
 - adapter는 native worker의 세부 reasoning이나 tool state를 완전하게 공유한다고 주장하지 않는다. provider stream이 공개하는 spawn·finish·summary metadata만 `runtime.activity.*`로 정규화한다.
-- `RuntimeStatus`는 `worker_concurrency_enforcement`, `worker_total_start_enforcement`, `delegation_depth_enforcement`를 각각 `hard`, `cooperative`, `unsupported` 중 하나로 보고한다. v0 문서 기준 Codex는 concurrency `hard`·total starts `cooperative`·depth `cooperative`, Claude는 concurrency `cooperative`·total starts `cooperative`·depth `hard`다. 구현 smoke test가 다르게 나오면 성공으로 추정하지 않고 사양·ADR을 먼저 갱신한다.
+- `RuntimeStatus`는 `worker_concurrency_enforcement`, `worker_total_start_enforcement`, `delegation_depth_enforcement`를 각각 `hard`, `cooperative`, `unsupported` 중 하나로 보고한다. v0 문서 기준 Codex는 concurrency `hard`·total starts `cooperative`·depth `cooperative`, Claude는 concurrency `cooperative`·total starts `cooperative`·depth `cooperative`다. depth는 2026-08-23 실측으로 정정했다 — worker가 다시 worker를 띄운 turn이 거부 없이 성공했고 `subagent_stats.refused.depth_limit`이 0이었다. `spawn_depth`로 관측은 되므로 `unsupported`가 아니라 `cooperative`이며, depth 1은 broker가 지킨다. 구현 smoke test가 다르게 나오면 성공으로 추정하지 않고 사양·ADR을 먼저 갱신한다.
 - provider가 native worker lifecycle 식별자를 공개하지 않으면 `native_child_id`는 비워 두고 `observability=summary_only`로 기록한다. broker가 임의 ID를 provider ID인 것처럼 만들지 않는다.
 - provider stream에서 worker start 누계를 profile budget 위반 전에 셀 수 없으면 `worker_total_start_enforcement=unsupported`다. v0의 세 profile은 모두 native delegation 권한을 포함하므로 해당 runtime을 fail-closed하고 “상한을 지켰다”고 추정하지 않는다.
 - participant의 `message.committed` 중 검증된 `handoff_capsule`만 다른 participant의 다음 round projection에 들어간다. `full_answer`와 native worker raw output은 플랫폼 간 prompt로 재주입하지 않는다.
