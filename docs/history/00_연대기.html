@@ -82,7 +82,8 @@
     <p style="margin:8px 0 12px">
       <b>이 폴더는 프로젝트가 한참 진행된 뒤인 2026-08-24에 처음 만들어졌습니다.</b>
       같은 날 <b>원점편</b>이 나와 <b>자는 섰습니다.</b>
-      아직 비어 있는 것은 첫 편인 <b>터닦기편</b>과, 먼저 지나간 아홉 대상의 편입니다.
+      <b>터닦기편(01)도 뒤늦게 씌어 이제 앞이 이어집니다.</b>
+      아직 비어 있는 것은 <b>먼저 지나간 아홉 대상(02–10)의 편</b>뿐입니다.
     </p>
     <p style="margin:0 0 12px" class="note">
       <b>제11편은 세 회차가 이어 붙은 편입니다</b> — 구현 · 리뷰 · 완결.
@@ -101,20 +102,20 @@
   <figure>
     <svg viewBox="0 0 860 440" role="img" aria-labelledby="chronicle-timeline-title chronicle-timeline-desc">
       <title id="chronicle-timeline-title">whole-life 역사 기록 타임라인</title>
-      <desc id="chronicle-timeline-desc">2026-08-22부터 2026-08-24까지의 시간축 위에, 아직 쓰이지 않은 터닦기편과 아홉 대상의 구간, 그리고 2026-08-24에 함께 나온 원점편·제11편·제12편을 표시한 타임라인.</desc>
+      <desc id="chronicle-timeline-desc">2026-08-22부터 2026-08-24까지의 시간축 위에, 0단계 터닦기편과 아직 쓰이지 않은 아홉 대상의 구간, 그리고 2026-08-24에 함께 나온 원점편·제11편·제12편을 표시한 타임라인.</desc>
       <rect width="100%" height="100%" fill="var(--paper)"/>
 
       <text x="40" y="40" font-size="12" fill="var(--soft)" letter-spacing="0.14em"
             font-family="'Geist Mono',ui-monospace,monospace">2026-08-22  →  2026-08-24</text>
 
       <!-- 01 터닦기 : 아직 쓰이지 않음 -->
-      <line x1="140" y1="128" x2="140" y2="192" stroke="var(--soft)" stroke-width="1" stroke-dasharray="4,4"/>
+      <line x1="140" y1="128" x2="140" y2="192" stroke="var(--muted)" stroke-width="1"/>
       <rect x="80" y="48" width="280" height="76" rx="8" fill="var(--paper-2)"
-            stroke="var(--rule-solid)" stroke-width="1" stroke-dasharray="4,4"/>
-      <text x="104" y="80" font-size="16" fill="var(--muted)" font-weight="600"
-            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">01 터닦기</text>
+            stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="104" y="80" font-size="16" fill="var(--ink)" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">01 터닦기 · 터닦기편</text>
       <text x="104" y="104" font-size="12" fill="var(--soft)"
-            font-family="'Geist Mono',ui-monospace,monospace">편 미작성 · 0단계 BST</text>
+            font-family="'Geist Mono',ui-monospace,monospace">0단계 · 커밋 12개 · 2026-08-24 에 씀</text>
 
       <!-- 2026-08-24 : 원점편 + 제11편 -->
       <line x1="700" y1="164" x2="700" y2="192" stroke="var(--accent)" stroke-width="1"/>
@@ -139,7 +140,7 @@
       <text x="700" y="224" font-size="12" fill="var(--soft)" text-anchor="middle"
             font-family="'Geist Mono',ui-monospace,monospace">2026-08-24</text>
 
-      <circle cx="140" cy="200" r="4" fill="var(--paper)" stroke="var(--muted)" stroke-width="1"/>
+      <circle cx="140" cy="200" r="4" fill="var(--ink)"/>
       <circle cx="700" cy="200" r="6" fill="var(--accent)"/>
 
       <!-- 02–10 : 날짜가 적히지 않은 구간 -->
@@ -157,9 +158,12 @@
             font-family="'Geist Mono',ui-monospace,monospace">범례</text>
       <circle cx="128" cy="416" r="6" fill="var(--accent)"/>
       <text x="144" y="420" font-size="12" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">이 폴더가 열린 날</text>
+      <circle cx="272" cy="416" r="4" fill="var(--ink)"/>
+      <text x="288" y="420" font-size="12" fill="var(--muted)"
             font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">쓰인 편</text>
-      <circle cx="284" cy="416" r="4" fill="var(--paper)" stroke="var(--muted)" stroke-width="1"/>
-      <text x="300" y="420" font-size="12" fill="var(--muted)"
+      <circle cx="380" cy="416" r="4" fill="var(--paper)" stroke="var(--muted)" stroke-width="1"/>
+      <text x="396" y="420" font-size="12" fill="var(--muted)"
             font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">아직 쓰이지 않은 편</text>
       <line x1="484" y1="416" x2="540" y2="416" stroke="var(--soft)" stroke-width="1" stroke-dasharray="4,4"/>
       <text x="556" y="420" font-size="12" fill="var(--muted)"
@@ -185,11 +189,14 @@
         <b>대표 승인 02:17 · 확정</b> · <code>ORD-EDU-origin-fill</code></p>
     </li>
 
-    <li class="empty">
+    <li>
       <span class="num">01</span>
-      <span class="title">터닦기</span><span class="kind">터닦기편</span>
-      <p class="one">아직 쓰이지 않음. 0단계 BST(터잡이) 작업 —
-        원본은 <code>WORK_LOGS/2026-08-22_bootstrapper_whole-life_지반1차.md</code>.</p>
+      <a href="01_2026-08-22_%ED%84%B0%EB%8B%A6%EA%B8%B0.html">터닦기 — 0단계</a><span class="kind">터닦기편</span>
+      <p class="one">코드가 한 줄도 없는 상태에서 스펙과 문(門)부터 세웠다. 사람 앞의 문과 문서의 문 둘을 세웠고,
+        코드의 문은 코드가 없어 못 세웠으며, 착지의 문(<code>main</code> 분기 보호)은 끝내 세우지 않았다 —
+        그리고 세운 문 하나가 그 구간 안에서 병합 순서에 조용히 덮여 별도 PR 로 되살려야 했다.</p>
+      <p class="date">2026-08-20 ~ 08-22 · 커밋 12개 · <code>4e38cee</code> → <code>35ecb97</code> ·
+        2026-08-24 에 뒤늦게 씀 · <code>ORD-EDU-gate-0</code></p>
     </li>
 
     <li class="empty">
