@@ -195,9 +195,35 @@ e84ccc1  #13  Enforce Claude bare mode at the final pre-spawn gate       <span c
     </p>
 
     <p style="margin:0 0 12px">
-      <b>③ 그래서 PR 이 그 자체로 게이트였습니다.</b>
-      <b>PR 이 있으면 CI 가 착지 <b>전</b>에 돌고, 없으면 착지 <b>뒤</b>에 돕니다.</b>
-      늦게 도는 검사는 <b>알려 주기는 해도 막지는 못합니다.</b>
+      <b>③ 그런데 PR 도 게이트는 아니었습니다.</b>
+      <code>main</code> 에 <b>분기 보호가 없습니다.</b><sup><a href="#g10">[10]</a></sup>
+      required status checks 도 없습니다 — <b>빨간 PR 도 병합 버튼이 눌립니다.</b>
+    </p>
+
+    <div class="term"><span class="d">$ gh api repos/{owner}/{repo}/branches/main --jq '{protected:.protected}'</span>
+{"protected": <span class="r">false</span>}
+
+<span class="d">$ gh api repos/{owner}/{repo}/branches/main/protection</span>
+404  <span class="r">"Branch not protected"</span>   <span class="d">(미끼: 없는 브랜치는 "Branch not found" — 두 404 는 구별된다)</span></div>
+
+    <p style="margin:16px 0 12px">
+      <b>정확히 적으면 이렇습니다.</b>
+    </p>
+
+    <div class="term"><span class="d">PR 이 주는 것</span>     CI 가 «병합 결정 전»에 돈다 + 리뷰·봇이 볼 표면이 생긴다   <span class="g">→ 알려 준다</span>
+<span class="d">PR 이 안 주는 것</span>  빨간 것을 «막는다»                                      <span class="r">→ 아무도 안 막는다</span>
+<span class="d">실제로 막은 것</span>    <span class="g">사람.</span> 완결자가 빨간 커밋 위에서 병합을 거부했다</div>
+
+    <p style="margin:16px 0 12px">
+      <b>「늦게 도는 검사는 알려 주기는 해도 막지 못한다」는 그대로 섭니다.</b>
+      다만 한 겹 더 있습니다 — <b>여기서는 제때 도는 검사도 막지 못합니다.</b>
+      <b>막는 장치가 아예 없습니다.</b>
+    </p>
+
+    <p style="margin:0" class="note">
+      <b>이 저장소에서 빨간 것을 막은 것은 언제나 사람이었습니다.</b>
+      오늘 <code>#38</code> 을 막은 것도 GitHub 이 아니라 <b>완결자가 <code>do-not-merge</code> 라벨을 걸고
+      안 누른 것</b>이었습니다.
     </p>
 
     <p style="margin:0" class="note">
@@ -539,8 +565,9 @@ e84ccc1  #13  Enforce Claude bare mode at the final pre-spawn gate       <span c
   <div class="card">
     <p style="margin:0 0 10px"><b>같은 구조가 하나 더 있습니다 — 그리고 이쪽은 아직 안 옮겨졌습니다.</b></p>
     <p style="margin:0">
-      <b>PR 은 그 자체로 게이트였는데, 「모든 티켓은 PR 을 거친다」는 규칙이 저장소에 없습니다.</b>
+      <b>「모든 티켓은 PR 을 거친다」는 규칙이 저장소에 없습니다.</b>
       <code>#16</code> 이후로는 <b>습관으로</b> 지켜졌을 뿐입니다.
+      <b>그리고 PR 을 거쳐도 기계가 막지는 않습니다</b> — <code>main</code> 이 보호돼 있지 않습니다.<sup><a href="#g10">[10]</a></sup>
       오늘 승인된 「완결자는 리뷰 통과 뒤에 PR 을 연다」는 <b>언제 여는지만 정하고 반드시 여는지는 안 정합니다.</b>
       <b>이 구간의 결함들이 「규칙이 기준으로 안 걸려서」였다면, 이것은 아예 규칙이 없는 자리</b>입니다.
       통치자가 명문화를 대표께 올렸고, <b>이 편은 그 결정을 기다리는 상태로 적습니다.</b>
@@ -686,6 +713,7 @@ e84ccc1  #13  Enforce Claude bare mode at the final pre-spawn gate       <span c
       <li id="g7"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — <span class="quote">「공통형: **「정의·테스트는 있는데 실제 조립 경로에서 도달하지 않는다」.**」</span> · <span class="quote">「#14·#15·#17×2 로 네 번 반복된 결함형」</span> · <span class="quote">「수용기준은 조립 경로(`start_turn`→`wait`)로 증명한다」</span> · <span class="quote">「이 티켓부터 게이트로 건다」</span></li>
       <li id="g8">조회 — <span class="path">gh api repos/{owner}/{repo}/commits/&lt;SHA&gt;/check-runs</span> (2026-08-24 08:19). <span class="quote">「9e4c076 → unit-tests=failure · docs-checks=success」</span> · <span class="quote">「4a2fe80 → unit-tests=success」</span> · <span class="quote">「73f3b31 → unit-tests=success」</span> · <span class="quote">「4808bc1 → unit-tests=success · docs-checks=success」</span> · <span class="quote">「e84ccc1(PR #23) → claude=skipped」</span> · <span class="quote">「8fb9aa4(PR #29) → claude=skipped」</span><br><span class="note">파일 사료가 아니라 <b>GitHub 조회 결과</b>다. 조회 시점을 함께 적는다 — 되풀어 재려면 같은 명령을 다시 돌려야 하고, 값이 달라지면 그 사이에 무언가 다시 돌았다는 뜻이다.</span></li>
       <li id="g9"><span class="path">WORK_LOGS/REV_14_SAFE_TURN_START.md</span> (16,221 B) · <span class="path">WORK_LOGS/CLS_14_SAFE_TURN_START.md</span> (4,636 B) · <span class="path">WORK_LOGS/REV_15_BOUNDED_STREAMS.md</span> (13,613 B) · <span class="path">WORK_LOGS/CLS_15_BOUNDED_STREAMS.md</span> (4,881 B)<br><span class="note">넷 다 존재한다 — <b>「PR 이 없었다」와 「리뷰가 없었다」는 다르다.</b> 크기는 2026-08-24 08:19 시점 값이다.</span></li>
+      <li id="g10">조회 — <span class="path">gh api repos/{owner}/{repo}/branches/main</span> · <span class="path">.../branches/main/protection</span> (2026-08-24 08:26). <span class="quote">「{"protected": false}」</span> · <span class="quote">「404 "Branch not protected"」</span><br><span class="note">음성 대조로 없는 브랜치를 조회하면 <span class="quote">「404 "Branch not found"」</span> 가 온다 — <b>두 404 는 메시지가 달라 구별된다.</b> 그래도 판정의 정본은 <code>protected</code> 플래그로 삼는다. <b>이것도 파일이 아니라 원격 조회라 시점을 함께 적는다.</b></span></li>
     </ol>
 
     <p class="note" style="margin-top:20px">
