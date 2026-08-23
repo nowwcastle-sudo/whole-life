@@ -78,12 +78,13 @@ Technical feasibility is not the same as provider-policy approval. The public-re
 - [Domain glossary](CONTEXT.md)
 - [Project context — baseline, invariants, release gate](docs/project-context.md)
 - [Agent configuration](AGENTS.md)
+- [Changelog](CHANGELOG.md)
 - [Security policy](SECURITY.md)
 - [Contributing](CONTRIBUTING.md)
 
 ## How this repository is developed
 
-Work is carried out by a fixed team of eight AI agents in a dedicated project channel, following an eleven-stage flow with an explicit gate at each stage. Pre-existing files are extended, never replaced, and `git push` is gated behind a human.
+Work is carried out by a fixed team of eight AI agents in a dedicated project channel, following an eleven-stage flow with an explicit gate at each stage. Pre-existing files are extended, never replaced. A branch is pushed by the agent that verified it; **merging into `main` is a human decision**, and destructive git operations stay with a human as well.
 
 [`AGENTS.md`](AGENTS.md) tells an agent where this repository keeps its issue tracker and domain docs; the details sit in [`docs/agents/`](docs/agents/). The working agreement — what is already established, what is deliberately absent, and how agents are expected to behave here — is in [CONTRIBUTING.md](CONTRIBUTING.md).
 
