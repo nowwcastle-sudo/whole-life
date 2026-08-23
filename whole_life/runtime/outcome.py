@@ -36,6 +36,7 @@ def resolve_outcome(
     exit_code: int | None,
     cancelled_before_terminal: bool = False,
     cancelled_after_terminal: bool = False,
+    cancel_diagnostic: str | None = None,
 ) -> RunOutcome:
     """Combine the two witnesses into one status.
 
@@ -55,10 +56,15 @@ def resolve_outcome(
     race is already settled.
     """
     if cancelled_before_terminal:
+        # `cancel_diagnostic` names *why* when the caller knows. Section 6
+        # treats user cancellation and the twenty-minute timeout as one rule,
+        # so those stay `CancelledBeforeTerminal`; a turn stopped for
+        # overspending its delegation budget is a different fact, and
+        # flattening it would lose the only reason anyone could act on.
         return RunOutcome(
             status=RunStatus.UNKNOWN_OUTCOME,
             exit_code=exit_code,
-            diagnostic="CancelledBeforeTerminal",
+            diagnostic=cancel_diagnostic or "CancelledBeforeTerminal",
         )
 
     if terminal is TerminalEvent.FAILED:

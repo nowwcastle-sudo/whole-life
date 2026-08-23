@@ -8,9 +8,16 @@ early spends a budget the operator paid for; one that cancels one start too late
 has already let the turn exceed it.
 """
 
+import json
+import sys
 import unittest
+from pathlib import Path
 
-from whole_life.runtime.contract import DelegationBudget
+from tests.support.launch_fixtures import launch_plan, turn_request
+from whole_life.runtime.contract import DelegationBudget, RunStatus
+from whole_life.runtime.normalize import normalize_claude_line
+from whole_life.runtime.observe import RunObserver
+from whole_life.runtime.spawn import SubprocessSpawner
 from whole_life.runtime.delegation import DelegationLedger
 
 BUDGET = DelegationBudget(
@@ -116,6 +123,109 @@ class DepthBoundaryTests(unittest.TestCase):
         self.assertIsNone(
             ledger.worker_started(native_child_id="a", depth=None)
         )
+
+def claude_line(**fields):
+    return json.dumps(fields)
+
+
+INIT = claude_line(type="system", subtype="init", session_id="s")
+RESULT = claude_line(type="result", subtype="success", is_error=False)
+
+
+def started(task_id, depth=1):
+    return claude_line(
+        type="system",
+        subtype="task_started",
+        task_id=task_id,
+        spawn_depth=depth,
+        session_id="s",
+    )
+
+
+def emitting(lines, *, linger):
+    """A child that writes `lines`, then either exits or waits to be stopped.
+
+    `linger=True` is how a cancellation gets something to prove: a child that
+    had already exited would make the cancellation look like it worked when it
+    did nothing. `linger=False` is for the turns that are supposed to end on
+    their own — a lingering child there would just hang the reader waiting for
+    an EOF that never comes."""
+    body = "import sys, time" + chr(10)
+    for line in lines:
+        body += f"sys.stdout.write({line!r} + chr(10))" + chr(10)
+    body += "sys.stdout.flush()" + chr(10)
+    if linger:
+        body += "time.sleep(300)" + chr(10)
+    return launch_plan(
+        executable=Path(sys.executable),
+        args=("-c", body),
+        turn_request=turn_request(prompt=""),
+    )
+
+
+async def observe_claude(lines, *, budget, linger=True):
+    process = await SubprocessSpawner().spawn(emitting(lines, linger=linger))
+    observer = RunObserver(
+        process,
+        normalize=normalize_claude_line,
+        run_id="run-7",
+        delegation_budget=budget,
+    )
+    events = [event async for event in observer.events()]
+    return events, await observer.outcome(), process
+
+
+class BudgetEnforcementTests(unittest.IsolatedAsyncioTestCase):
+    """The whole point of counting: what happens at the boundary."""
+
+    ONE_START = DelegationBudget(
+        max_concurrent_workers=3, max_total_worker_starts=1, max_depth=1
+    )
+
+    async def test_a_turn_inside_its_budget_is_not_disturbed(self):
+        """The at-limit case. One start against a budget of one is spending
+        the budget, not exceeding it."""
+        events, outcome, process = await observe_claude(
+            [INIT, started("a"), RESULT],
+            budget=self.ONE_START,
+            linger=False,
+        )
+
+        self.assertEqual(RunStatus.COMPLETED, outcome.status)
+        self.assertIn(
+            "turn.completed", [event.kind for event in events]
+        )
+
+    async def test_the_start_past_the_budget_cancels_the_turn(self):
+        events, outcome, process = await observe_claude(
+            [INIT, started("a"), started("b"), RESULT],
+            budget=self.ONE_START,
+        )
+
+        self.assertEqual(RunStatus.UNKNOWN_OUTCOME, outcome.status)
+        self.assertEqual("DelegationBudgetExceeded", outcome.diagnostic)
+
+    async def test_the_cancelled_turn_leaves_no_child_running(self):
+        """`unknown_outcome` is about not knowing what the turn did, not about
+        leaving it running while we wonder."""
+        _events, _outcome, process = await observe_claude(
+            [INIT, started("a"), started("b"), RESULT],
+            budget=self.ONE_START,
+        )
+
+        self.assertIsNotNone(process.returncode)
+
+    async def test_a_worker_too_deep_cancels_the_turn(self):
+        """Measured on 2.1.240: the provider does not refuse this."""
+        _events, outcome, _process = await observe_claude(
+            [INIT, started("a", depth=2), RESULT],
+            budget=DelegationBudget(
+                max_concurrent_workers=3, max_total_worker_starts=4, max_depth=1
+            ),
+        )
+
+        self.assertEqual(RunStatus.UNKNOWN_OUTCOME, outcome.status)
+        self.assertEqual("DelegationDepthExceeded", outcome.diagnostic)
 
 if __name__ == "__main__":
     unittest.main()
