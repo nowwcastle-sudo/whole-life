@@ -30,7 +30,13 @@ class TerminalEvent(StrEnum):
     NONE = "none"
 
 
-def resolve_outcome(terminal: TerminalEvent, *, exit_code: int | None) -> RunOutcome:
+def resolve_outcome(
+    terminal: TerminalEvent,
+    *,
+    exit_code: int | None,
+    cancelled_before_terminal: bool = False,
+    cancelled_after_terminal: bool = False,
+) -> RunOutcome:
     """Combine the two witnesses into one status.
 
     Ordered so the failure evidence is consulted before the success evidence.
@@ -38,13 +44,38 @@ def resolve_outcome(terminal: TerminalEvent, *, exit_code: int | None) -> RunOut
     exited, and a process that exited nonzero is failure regardless of what the
     provider announced beforehand — announcing completion and then exiting
     nonzero disowns the announcement.
+
+    `cancelled_before_terminal` is consulted first because it is a fact about
+    *ordering*, and ordering is what spec 268, 279, 484 and 485 decide on. User
+    cancellation and the broker's twenty-minute timeout are one rule under two
+    names: whichever came first wins. A terminal result committed before the
+    cancellation stands; a cancellation that came first leaves the turn
+    `unknown_outcome` permanently, and a tidy exit arriving afterwards does not
+    upgrade it. The caller decides the ordering — by the time this is called the
+    race is already settled.
     """
+    if cancelled_before_terminal:
+        return RunOutcome(
+            status=RunStatus.UNKNOWN_OUTCOME,
+            exit_code=exit_code,
+            diagnostic="CancelledBeforeTerminal",
+        )
+
     if terminal is TerminalEvent.FAILED:
         return RunOutcome(
             status=RunStatus.FAILED,
             exit_code=exit_code,
             diagnostic="ProviderReportedFailure",
         )
+
+    if cancelled_after_terminal and terminal is TerminalEvent.COMPLETED:
+        # The one place the two-witness rule stops applying, because the second
+        # witness stopped being independent: this exit status is the sound of
+        # our own `taskkill`, issued after the provider had already committed
+        # its result. Reading it as disagreement would rewrite every
+        # post-terminal cancellation — including an ordinary broker shutdown —
+        # into a failure the provider never had.
+        return RunOutcome(status=RunStatus.COMPLETED, exit_code=exit_code, diagnostic=None)
 
     if exit_code is None:
         # The process outcome was never observed. Half of the evidence is not

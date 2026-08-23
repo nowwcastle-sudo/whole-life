@@ -24,8 +24,9 @@ from whole_life.runtime.launch import (
     VersionConformance,
     launch,
 )
+from whole_life.runtime.lifecycle import GRACEFUL_WAIT_SECONDS, CancelCause
 from whole_life.runtime.normalize import normalize_claude_line
-from whole_life.runtime.observe import RunObserver
+from whole_life.runtime.observe import RunObserver, close_all_runs
 from whole_life.runtime.preflight import (
     CommandRunner,
     conformance_for,
@@ -199,12 +200,38 @@ class ClaudeRuntime:
         """
         return self._runs[run.run_id].events()
 
-    async def cancel(self, run: RunHandle) -> CancelOutcome:
-        raise NotImplementedError(f"cancel {_LATER_SLICE}")
+    async def cancel(
+        self,
+        run: RunHandle,
+        cause: CancelCause = CancelCause.USER,
+        *,
+        graceful_wait: float = GRACEFUL_WAIT_SECONDS,
+    ) -> CancelOutcome:
+        """End one run. A handle this adapter never issued is an error."""
+        return await self._runs[run.run_id].cancel(cause, graceful_wait=graceful_wait)
+
+    def active_child_count(self) -> int:
+        """Child processes this runtime started that are not yet reaped."""
+        return sum(1 for observer in self._runs.values() if observer.has_child())
+
+    def drain_task_count(self) -> int:
+        """Stdout/stderr drain tasks still running across every run."""
+        return sum(
+            observer.pending_drain_tasks() for observer in self._runs.values()
+        )
 
     async def wait(self, run: RunHandle) -> RunOutcome:
         """The resolved outcome. Meaningful once `events` has finished."""
         return await self._runs[run.run_id].outcome()
 
-    async def close(self) -> None:
-        raise NotImplementedError(f"close {_LATER_SLICE}")
+    async def close(
+        self, *, graceful_wait: float = GRACEFUL_WAIT_SECONDS
+    ) -> None:
+        """Cancel every active run and return only once nothing is left.
+
+        Idempotent: a second call finds nothing to do, which matters because
+        shutdown paths are exactly where a close gets called twice.
+        """
+        await close_all_runs(
+            list(self._runs.values()), graceful_wait=graceful_wait
+        )

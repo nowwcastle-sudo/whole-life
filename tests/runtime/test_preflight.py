@@ -24,7 +24,12 @@ from tests.support.preflight_fixtures import (
 from whole_life.runtime.childenv import FORBIDDEN_VARIABLES, build_child_env
 from whole_life.runtime.claude import ClaudeRuntime
 from whole_life.runtime.codex import CodexRuntime
-from whole_life.runtime.contract import AgentRuntime, EnforcementLevel, Provider
+from whole_life.runtime.contract import (
+    AgentRuntime,
+    EnforcementLevel,
+    Provider,
+    RunHandle,
+)
 from whole_life.runtime.launch import PreStartRefusal, RefusalCode
 
 CLAUDE_AUTH_ARGS = ("auth", "status", "--json")
@@ -48,24 +53,40 @@ def codex(runner=None, parent_env=None) -> CodexRuntime:
     )
 
 
+
+def _stranger_handle(adapter):
+    """A handle from nowhere — never issued by the adapter under test."""
+    return RunHandle(
+        run_id="never-started",
+        participant_id="claude-01",
+        provider=adapter.provider,
+    )
+
+
 class AdapterContractTests(unittest.TestCase):
     def test_exactly_two_adapters_satisfy_the_runtime_contract(self):
         self.assertIsInstance(claude(), AgentRuntime)
         self.assertIsInstance(codex(), AgentRuntime)
 
-    def test_operations_that_arrive_in_later_slices_fail_loudly(self):
-        """`cancel` and `close` are #16's. `events` and `wait` landed with #15.
+    def test_no_contract_operation_is_left_unimplemented(self):
+        """With #16 there are no later slices — the surface is complete.
 
-        The point of this test is that an unfinished operation raises rather
-        than returning something empty and plausible, so it tracks whichever
-        operations are still unfinished.
+        This test previously asserted the opposite: that `cancel` and `close`
+        raised `NotImplementedError`, tracking whichever operations were still
+        unfinished. Nothing is now, so it asserts completeness instead. The
+        underlying point is unchanged — an operation must not return something
+        empty and plausible in place of doing its job.
         """
         for adapter in (claude(), codex()):
             with self.subTest(provider=adapter.provider):
-                with self.assertRaises(NotImplementedError):
-                    asyncio.run(adapter.cancel(run=None))
-                with self.assertRaises(NotImplementedError):
-                    asyncio.run(adapter.close())
+                # Nothing was started, so this has nothing to stop — and must
+                # say so by returning, not by raising.
+                asyncio.run(adapter.close())
+
+                # A handle this adapter never issued stays a programming error
+                # rather than becoming a quiet no-op.
+                with self.assertRaises(KeyError):
+                    asyncio.run(adapter.cancel(_stranger_handle(adapter)))
 
 
 class ChildEnvironmentReuseTests(unittest.IsolatedAsyncioTestCase):
