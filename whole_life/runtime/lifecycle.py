@@ -19,7 +19,6 @@ a success we cannot believe.
 
 import asyncio
 import os
-from enum import StrEnum
 from pathlib import Path
 
 #: Spec 207. Conformance fixtures, not tuning knobs (spec 212): a longer
@@ -34,20 +33,6 @@ HARD_TIMEOUT_SECONDS = 20 * 60
 
 class LifecycleFailure(RuntimeError):
     """A shutdown step could not be completed, so nothing may be claimed."""
-
-
-class CancelCause(StrEnum):
-    """Why a run was cancelled.
-
-    The outcome rule does not branch on this — spec 268, 279, 484 and 485 give
-    user cancellation and the hard timeout the same answer, deciding on
-    ordering instead. The cause survives only as a diagnostic, so an operator
-    reading a dossier can tell a deadline from a decision.
-    """
-
-    USER = "user"
-    TIMEOUT = "timeout"
-    SHUTDOWN = "shutdown"
 
 
 def system_taskkill(environ=None) -> Path:

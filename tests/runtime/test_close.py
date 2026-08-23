@@ -31,7 +31,6 @@ from whole_life.runtime.launch import (
     PreStartRefusal,
     RefusalCode,
 )
-from whole_life.runtime.lifecycle import CancelCause
 from whole_life.runtime.normalize import normalize_codex_line
 from whole_life.runtime.observe import RunObserver
 from whole_life.runtime.spawn import SubprocessSpawner
@@ -352,7 +351,7 @@ class UnresolvedTerminationTests(unittest.IsolatedAsyncioTestCase):
         )
 
         result = await observer.cancel(
-            CancelCause.USER, graceful_wait=0.05, forced_wait=0.05
+            graceful_wait=0.05, forced_wait=0.05
         )
 
         self.assertEqual(CancelOutcome.UNKNOWN, result)

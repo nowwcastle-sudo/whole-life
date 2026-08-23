@@ -20,7 +20,7 @@ from pathlib import Path
 from tests.runtime.test_lifecycle import SPAWNS_A_GRANDCHILD, still_running
 from tests.support.launch_fixtures import launch_plan, turn_request
 from whole_life.runtime.contract import CancelOutcome, RunStatus
-from whole_life.runtime.lifecycle import GRACEFUL_WAIT_SECONDS, CancelCause
+from whole_life.runtime.lifecycle import GRACEFUL_WAIT_SECONDS
 from whole_life.runtime.normalize import normalize_codex_line
 from whole_life.runtime.observe import RunObserver
 from whole_life.runtime.spawn import SubprocessSpawner
@@ -50,7 +50,7 @@ class GracefulPathTests(unittest.IsolatedAsyncioTestCase):
     async def test_a_child_that_ends_within_the_window_ends_gracefully(self):
         process, observer = await observer_for("import sys\nsys.exit(0)\n")
 
-        outcome = await observer.cancel(CancelCause.USER)
+        outcome = await observer.cancel()
 
         self.assertEqual(CancelOutcome.GRACEFUL, outcome)
         self.assertEqual(0, process.returncode)
@@ -70,7 +70,7 @@ class EscalationTests(unittest.IsolatedAsyncioTestCase):
     async def test_an_unresponsive_child_is_tree_killed(self):
         process, observer = await observer_for(UNRESPONSIVE)
 
-        outcome = await observer.cancel(CancelCause.USER, graceful_wait=0.2)
+        outcome = await observer.cancel(graceful_wait=0.2)
 
         self.assertEqual(CancelOutcome.FORCED, outcome)
         self.assertIsNotNone(process.returncode)
@@ -81,7 +81,7 @@ class EscalationTests(unittest.IsolatedAsyncioTestCase):
         grandchild = int((await process.stdout.readline()).strip())
         self.assertTrue(still_running(grandchild), "the fixture never started")
 
-        outcome = await observer.cancel(CancelCause.USER, graceful_wait=0.2)
+        outcome = await observer.cancel(graceful_wait=0.2)
 
         self.assertEqual(CancelOutcome.FORCED, outcome)
         self.assertFalse(still_running(grandchild))
@@ -92,7 +92,7 @@ class EscalationTests(unittest.IsolatedAsyncioTestCase):
         loop = asyncio.get_running_loop()
 
         started = loop.time()
-        outcome = await observer.cancel(CancelCause.TIMEOUT)
+        outcome = await observer.cancel()
         elapsed = loop.time() - started
 
         self.assertEqual(CancelOutcome.FORCED, outcome)
@@ -104,7 +104,7 @@ class CancelledOutcomeTests(unittest.IsolatedAsyncioTestCase):
     async def test_a_cancel_before_any_terminal_leaves_the_run_unknown(self):
         _process, observer = await observer_for(UNRESPONSIVE)
 
-        await observer.cancel(CancelCause.USER, graceful_wait=0.2)
+        await observer.cancel(graceful_wait=0.2)
         outcome = await observer.outcome()
 
         self.assertEqual(RunStatus.UNKNOWN_OUTCOME, outcome.status)
@@ -122,7 +122,7 @@ class CancelledOutcomeTests(unittest.IsolatedAsyncioTestCase):
             break
         self.assertEqual(["turn.completed"], kinds)
 
-        await observer.cancel(CancelCause.USER, graceful_wait=0.2)
+        await observer.cancel(graceful_wait=0.2)
         await stream.aclose()
         outcome = await observer.outcome()
 
@@ -131,14 +131,15 @@ class CancelledOutcomeTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(RunStatus.COMPLETED, outcome.status)
         self.assertNotEqual(0, outcome.exit_code)
 
-    async def test_a_timeout_cancel_is_also_unknown(self):
-        """Spec 279: the deadline decides, whatever arrives afterwards."""
-        _process, observer = await observer_for(UNRESPONSIVE)
-
-        await observer.cancel(CancelCause.TIMEOUT, graceful_wait=0.2)
-        outcome = await observer.outcome()
-
-        self.assertEqual(RunStatus.UNKNOWN_OUTCOME, outcome.status)
+    # `test_a_timeout_cancel_is_also_unknown` lived here. Its whole content was
+    # passing `CancelCause.TIMEOUT` instead of `USER` and expecting the same
+    # answer — which was the point while a cause existed. With the parameter
+    # gone it became a character-for-character duplicate of the first test in
+    # this class, so it is removed rather than kept as a second name for one
+    # assertion. What it was really guarding — spec 279, that the deadline
+    # decides whatever arrives afterwards — is held by
+    # `test_a_late_clean_exit_does_not_upgrade_a_cancelled_run` in
+    # tests/runtime/test_outcome.py, which exercises the ordering directly.
 
 
 class NoResidueTests(unittest.IsolatedAsyncioTestCase):
@@ -152,7 +153,7 @@ class NoResidueTests(unittest.IsolatedAsyncioTestCase):
         process, observer = await observer_for(UNRESPONSIVE)
 
         outcome = await asyncio.wait_for(
-            observer.cancel(CancelCause.SHUTDOWN, graceful_wait=0.2), timeout=20
+            observer.cancel(graceful_wait=0.2), timeout=20
         )
 
         self.assertEqual(CancelOutcome.FORCED, outcome)

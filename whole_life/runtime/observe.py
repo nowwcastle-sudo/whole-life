@@ -20,7 +20,6 @@ from whole_life.runtime.contract import CancelOutcome, RunOutcome, RuntimeEvent
 from whole_life.runtime.lifecycle import (
     FORCED_WAIT_SECONDS,
     GRACEFUL_WAIT_SECONDS,
-    CancelCause,
     terminate_process_tree,
 )
 from whole_life.runtime.outcome import TerminalEvent, resolve_outcome
@@ -69,7 +68,6 @@ class RunObserver:
         #: Set when a cancellation arrives *after* a terminal result. Then
         #: the exit status is our own kill, not the provider's verdict.
         self._cancelled_after_terminal = False
-        self._cancel_cause: CancelCause | None = None
         #: The drain tasks, held so they can be counted and stopped from
         #: outside. `close()` has to promise there are none left, and a
         #: task nobody holds a reference to cannot be counted.
@@ -156,7 +154,6 @@ class RunObserver:
 
     async def cancel(
         self,
-        cause: CancelCause = CancelCause.USER,
         *,
         graceful_wait: float = GRACEFUL_WAIT_SECONDS,
         forced_wait: float = FORCED_WAIT_SECONDS,
@@ -175,12 +172,19 @@ class RunObserver:
         makes the turn `unknown_outcome` permanently. Recording it here, before
         the process can produce anything else, is what makes that race already
         settled by the time the outcome is resolved.
+
+        Deliberately no `cause`. Spec line 96 signs this as
+        `cancel(self, run) -> CancelOutcome`, and none of 268, 278, 279, 484 or
+        485 branches on why a run was stopped — user cancellation and the
+        twenty-minute timeout are one rule, and the diagnostic is
+        `CancelledBeforeTerminal` either way. A cause was carried here for one
+        commit, stored in a field nothing read. When a consumer exists it comes
+        back with the test that reads it.
         """
         if self._terminal is TerminalEvent.NONE:
             self._cancelled_before_terminal = True
         else:
             self._cancelled_after_terminal = True
-        self._cancel_cause = cause
 
         self._close_stdin()
 
@@ -208,10 +212,7 @@ class RunObserver:
         return sum(1 for task in self._readers if not task.done())
 
     async def shutdown(
-        self,
-        cause: CancelCause = CancelCause.SHUTDOWN,
-        *,
-        graceful_wait: float = GRACEFUL_WAIT_SECONDS,
+        self, *, graceful_wait: float = GRACEFUL_WAIT_SECONDS
     ) -> CancelOutcome:
         """End the run and everything this observer owns.
 
@@ -221,7 +222,7 @@ class RunObserver:
         are cancelled explicitly and awaited, and only then does this return.
         Whoever calls it can say the count is zero because it was made zero.
         """
-        outcome = await self.cancel(cause, graceful_wait=graceful_wait)
+        outcome = await self.cancel(graceful_wait=graceful_wait)
 
         for task in self._readers:
             task.cancel()

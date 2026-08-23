@@ -24,7 +24,7 @@ from whole_life.runtime.launch import (
     VersionConformance,
     launch,
 )
-from whole_life.runtime.lifecycle import GRACEFUL_WAIT_SECONDS, CancelCause
+from whole_life.runtime.lifecycle import GRACEFUL_WAIT_SECONDS
 from whole_life.runtime.normalize import normalize_claude_line
 from whole_life.runtime.observe import RunObserver, close_all_runs
 from whole_life.runtime.preflight import (
@@ -201,14 +201,10 @@ class ClaudeRuntime:
         return self._runs[run.run_id].events()
 
     async def cancel(
-        self,
-        run: RunHandle,
-        cause: CancelCause = CancelCause.USER,
-        *,
-        graceful_wait: float = GRACEFUL_WAIT_SECONDS,
+        self, run: RunHandle, *, graceful_wait: float = GRACEFUL_WAIT_SECONDS
     ) -> CancelOutcome:
         """End one run. A handle this adapter never issued is an error."""
-        return await self._runs[run.run_id].cancel(cause, graceful_wait=graceful_wait)
+        return await self._runs[run.run_id].cancel(graceful_wait=graceful_wait)
 
     def active_child_count(self) -> int:
         """Child processes this runtime started that are not yet reaped."""
