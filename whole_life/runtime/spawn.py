@@ -18,6 +18,7 @@ import shutil
 from pathlib import Path
 
 from whole_life.runtime.launch import LaunchPlan, PreStartRefusal, RefusalCode
+from whole_life.runtime.lifecycle import terminate_process_tree
 
 #: Only a real image. Spec line 132 permits `.cmd` or `.exe` and line 202
 #: requires shell=False with split argv — and a `.cmd` cannot deliver the
@@ -62,6 +63,33 @@ def resolve_executable(name, *, which=shutil.which) -> Path:
     return resolved
 
 
+async def hand_over_prompt(writer, prompt: bytes) -> None:
+    """Give the child its prompt and end the pipe.
+
+    Written and closed here rather than left to the caller: a child that reads
+    instructions from stdin waits forever if the pipe never ends, and that hang
+    would look like a slow model rather than a bug.
+
+    A child that has stopped reading is an ordinary provider outcome rather than
+    a transport fault — a binary that rejects a flag or fails to authenticate
+    exits immediately, and spec section 11 already resolves a provider that ends
+    early from its exit code and stderr. Raising here instead would discard the
+    handle for a process that is already running.
+
+    The two errors below are how Windows reports a read end that is gone, and
+    which one arrives is not stable: the same scenario produced `BrokenPipeError`
+    on one machine and `ConnectionResetError` on another. Nothing wider is
+    tolerated — both are `OSError` subclasses, and catching the base class would
+    turn a real I/O fault into a child that silently never got its prompt.
+    """
+    try:
+        writer.write(prompt)
+        await writer.drain()
+        writer.close()
+    except (BrokenPipeError, ConnectionResetError):
+        pass
+
+
 class SubprocessSpawner:
     """Starts the planned process and hands the prompt over on stdin.
 
@@ -85,11 +113,30 @@ class SubprocessSpawner:
             env=dict(plan.child_env),
         )
 
-        # Written and closed here rather than left to the caller: a child that
-        # reads instructions from stdin waits forever if the pipe never ends,
-        # and that hang would look like a slow model rather than a bug.
-        process.stdin.write(plan.turn_request.prompt.encode("utf-8"))
-        await process.stdin.drain()
-        process.stdin.close()
+        # From here on a process exists, so every way out of this function has
+        # to leave either a handle with the caller or nothing running at all.
+        try:
+            await hand_over_prompt(
+                process.stdin, plan.turn_request.prompt.encode("utf-8")
+            )
+        except BaseException:
+            # Two ways in. One is live today: an error the tolerance above
+            # does not accept — an `OSError` that is not a reader that left —
+            # arrives here on every turn that hits it.
+            #
+            # The other is cancellation while this write is still blocked, and
+            # nothing reaches it yet: `TurnDeadline` has no consumer, and no
+            # caller wraps `start_turn` in a task it could cancel. That window
+            # opens when a broker starts cancelling turns. Guarding it now is
+            # not speculative work — without it the child outlives a spawn that
+            # never returned, which is the one thing this function must not do.
+            #
+            # The tree, not the process: Windows does not cascade a kill, and a
+            # provider that starts a helper before reading its prompt already
+            # has a descendant by the time this window opens. The result is
+            # deliberately not inspected — the exception on its way out is the
+            # finding, and replacing it with a lifecycle error would lose it.
+            await terminate_process_tree(process)
+            raise
 
         return process

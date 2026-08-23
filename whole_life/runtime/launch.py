@@ -303,8 +303,14 @@ async def launch(
 
     The reservation is taken *after* the safety gate, so a plan the gate refuses
     never holds a session it was never going to run. If the spawner itself
-    fails, the reservation is handed back — a process that did not start is not
-    a run in flight.
+    fails, the reservation is handed back — nothing is left running to hold it.
+
+    That last clause used to read "a process that did not start is not a run in
+    flight", which was the one thing this path could not promise: the spawner
+    creates the child before it writes the prompt, so a failure during the
+    handover left a process running that no caller had ever received. Releasing
+    here is correct because the spawner now guarantees the weaker and true
+    statement — it either returns a handle or leaves nothing alive.
     """
     enforce_launch_safety(plan)
 
