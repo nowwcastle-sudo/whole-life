@@ -6,6 +6,7 @@ import dataclasses
 from uuid import uuid4
 
 from whole_life.runtime.childenv import build_child_env
+from whole_life.runtime.delegation import REPORTED_ENFORCEMENT
 from whole_life.runtime.contract import (
     CancelOutcome,
     EnforcementLevel,
@@ -83,6 +84,7 @@ class CodexRuntime:
         spawner=None,
         sessions=None,
         journal=None,
+        delegation_enforcement=None,
     ) -> None:
         self._executable = executable
         self._runner = runner
@@ -90,6 +92,16 @@ class CodexRuntime:
             parent_env, extra={"CODEX_HOME": str(codex_home)}
         )
         self._conformance: VersionConformance | None = None
+        #: What this runtime reports it can hold, per limit. Injected like
+        #: the runner and the spawner are, and defaulting to what the
+        #: measurement table says — so production never chooses it, and a
+        #: test whose subject is not delegation can say so out loud rather
+        #: than be refused by a control it is not exercising.
+        self._delegation_enforcement = (
+            delegation_enforcement
+            if delegation_enforcement is not None
+            else REPORTED_ENFORCEMENT[Provider.CODEX]
+        )
         #: Injected so a turn can be started without a real process, and so the
         #: registry and journal are owned by the caller rather than this module.
         self._spawner = spawner
@@ -123,11 +135,7 @@ class CodexRuntime:
         return RuntimeStatus(
             provider=Provider.CODEX,
             cli_version=conformance.cli_version,
-            # Documented in spec section 4, not yet measured here. #17 replaces
-            # these with observed values and fails closed where it cannot see.
-            worker_concurrency_enforcement=EnforcementLevel.HARD,
-            worker_total_start_enforcement=EnforcementLevel.COOPERATIVE,
-            delegation_depth_enforcement=EnforcementLevel.COOPERATIVE,
+            **self._delegation_enforcement,
         )
 
     def assemble_launch_plan(self, request: TurnRequest) -> LaunchPlan:
@@ -152,6 +160,7 @@ class CodexRuntime:
             child_env=self.child_env,
             version_conformance=self._conformance,
             turn_request=request,
+            delegation_enforcement=self._delegation_enforcement,
         )
 
     async def start_turn(self, request: TurnRequest) -> RunHandle:

@@ -6,6 +6,7 @@ follow: every pre-start refusal must leave ``calls`` empty.
 
 from pathlib import Path
 
+from whole_life.runtime.delegation import REPORTED_ENFORCEMENT
 from whole_life.runtime.contract import (
     BudgetProfile,
     DelegationBudget,
@@ -77,6 +78,10 @@ def launch_plan(**overrides) -> LaunchPlan:
             bare_default=False,
         ),
         "turn_request": turn_request(),
+        # A plan carrying no delegation report is refused by the gate,
+        # which is that control working. Fixtures carry the row a real
+        # Claude preflight reports, so a test has to opt into a refusal.
+        "delegation_enforcement": REPORTED_ENFORCEMENT[Provider.CLAUDE],
     }
     fields.update(overrides)
     return LaunchPlan(**fields)

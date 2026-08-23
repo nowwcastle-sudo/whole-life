@@ -22,6 +22,7 @@ from tests.support.preflight_fixtures import (
 )
 from whole_life.runtime.claude import ClaudeRuntime
 from whole_life.runtime.codex import CodexRuntime
+from whole_life.runtime.delegation import REPORTED_ENFORCEMENT
 from whole_life.runtime.contract import Provider, TurnMode
 from whole_life.runtime.launch import RecordingJournal, launch
 
@@ -45,6 +46,12 @@ async def codex_adapter():
         runner=codex_runner(),
         parent_env=CLEAN_PARENT_ENV,
         codex_home=CODEX_HOME,
+        # This suite's subject is not delegation capability, so the adapter
+        # is given a row it can hold. Codex reports `unsupported` on every
+        # axis until its delegation measurement is made, and a turn from an
+        # unsupported runtime is refused before spawn — which is the control
+        # working, not this test failing.
+        delegation_enforcement=REPORTED_ENFORCEMENT[Provider.CLAUDE],
     )
     await runtime.preflight()
     return runtime

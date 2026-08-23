@@ -16,7 +16,12 @@ from typing import Protocol
 
 import re
 
-from whole_life.runtime.contract import Provider, TurnMode, TurnRequest
+from whole_life.runtime.contract import (
+    EnforcementLevel,
+    Provider,
+    TurnMode,
+    TurnRequest,
+)
 
 #: What a provider-issued session identifier may contain. Deliberately narrow:
 #: the identifiers both CLIs issue are UUIDs, and nothing wider has a reason to
@@ -38,6 +43,7 @@ class RefusalCode(StrEnum):
     EXECUTABLE_UNRESOLVED = "ExecutableUnresolved"
     AUTH_STATUS_UNSUPPORTED = "AuthStatusUnsupported"
     SUBSCRIPTION_AUTH_REQUIRED = "SubscriptionAuthRequired"
+    DELEGATION_UNSUPPORTED = "DelegationUnsupported"
 
 
 class PreStartRefusal(Exception):
@@ -103,6 +109,11 @@ class LaunchPlan:
     child_env: Mapping[str, str]
     version_conformance: VersionConformance
     turn_request: TurnRequest
+    #: What preflight reported this runtime can hold, per limit. `None` means
+    #: no preflight said — which the gate treats the same as `unsupported`,
+    #: because "nobody reported" and "reported as not held" are the same
+    #: amount of evidence.
+    delegation_enforcement: Mapping[str, EnforcementLevel] | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "args", tuple(self.args))
@@ -158,6 +169,17 @@ def enforce_launch_safety(plan: LaunchPlan) -> None:
     )
     if canonical != plan.version_conformance:
         raise PreStartRefusal(RefusalCode.UNSUPPORTED_CLI_VERSION)
+
+    # Spec line 121. Every v0 profile grants native delegation, so a runtime
+    # that cannot show it holds the limits does not quietly become a
+    # single-agent turn: it does not start. Checked here rather than at
+    # assembly, so a plan built anywhere passes the same control.
+    enforcement = plan.delegation_enforcement
+    if (
+        enforcement is None
+        or EnforcementLevel.UNSUPPORTED in enforcement.values()
+    ):
+        raise PreStartRefusal(RefusalCode.DELEGATION_UNSUPPORTED)
 
     request = plan.turn_request
 

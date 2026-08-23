@@ -14,8 +14,27 @@ import unittest
 from pathlib import Path
 
 from tests.support.launch_fixtures import launch_plan, turn_request
-from whole_life.runtime.contract import DelegationBudget, RunStatus
+from tests.support.preflight_fixtures import (
+    CLAUDE_EXECUTABLE,
+    CODEX_EXECUTABLE,
+    CODEX_HOME,
+    PARENT_ENV,
+    claude_runner,
+    codex_runner,
+)
+from whole_life.runtime.claude import ClaudeRuntime
+from whole_life.runtime.codex import CodexRuntime
+from whole_life.runtime.contract import (
+    DelegationBudget,
+    EnforcementLevel,
+    RunStatus,
+)
 from whole_life.runtime.normalize import normalize_claude_line
+from whole_life.runtime.launch import (
+    PreStartRefusal,
+    RefusalCode,
+    enforce_launch_safety,
+)
 from whole_life.runtime.observe import RunObserver
 from whole_life.runtime.spawn import SubprocessSpawner
 from whole_life.runtime.delegation import DelegationLedger
@@ -291,6 +310,138 @@ class UnresolvedWorkerTests(unittest.IsolatedAsyncioTestCase):
         )
 
         self.assertEqual(RunStatus.COMPLETED, outcome.status)
+
+class ReportedEnforcementTests(unittest.IsolatedAsyncioTestCase):
+    """What each provider can honestly hold, reported per limit. Spec §4.
+
+    Reported as measured. An `unsupported` that is quietly reported as
+    `cooperative` is the failure this whole slice exists to prevent: it reads
+    as a bound being held by something that is not holding it."""
+
+    async def test_claude_reports_depth_as_cooperative_not_hard(self):
+        """Corrected from the specification's original `hard` by measurement:
+        a recorded 2.1.240 turn ran a worker at depth 2, finished successfully,
+        and refused nothing."""
+        runtime = ClaudeRuntime(
+            executable=CLAUDE_EXECUTABLE,
+            runner=claude_runner(),
+            parent_env=PARENT_ENV,
+        )
+
+        status = await runtime.preflight()
+
+        self.assertEqual(
+            EnforcementLevel.COOPERATIVE, status.delegation_depth_enforcement
+        )
+
+    async def test_the_three_limits_are_reported_separately(self):
+        """One field per limit, because a provider can hold one and not
+        another. Codex holds concurrency; nothing else is a hard cap."""
+        runtime = ClaudeRuntime(
+            executable=CLAUDE_EXECUTABLE,
+            runner=claude_runner(),
+            parent_env=PARENT_ENV,
+        )
+
+        status = await runtime.preflight()
+
+        self.assertEqual(
+            EnforcementLevel.COOPERATIVE,
+            status.worker_concurrency_enforcement,
+        )
+        self.assertEqual(
+            EnforcementLevel.COOPERATIVE,
+            status.worker_total_start_enforcement,
+        )
+
+    async def test_codex_total_starts_are_unsupported_until_measured(self):
+        """Spec line 119: a runtime whose worker starts cannot be counted
+        before the budget is broken reports `unsupported`. The 0.149.0 stream
+        has no worker lifecycle item, and the live re-measurement is blocked
+        until the subscription window reopens — so this is what is known, not
+        what is hoped."""
+        runtime = CodexRuntime(
+            executable=CODEX_EXECUTABLE,
+            runner=codex_runner(),
+            parent_env=PARENT_ENV,
+            codex_home=CODEX_HOME,
+        )
+
+        status = await runtime.preflight()
+
+        self.assertEqual(
+            {
+                EnforcementLevel.UNSUPPORTED: 3,
+            },
+            {
+                EnforcementLevel.UNSUPPORTED: [
+                    status.worker_concurrency_enforcement,
+                    status.worker_total_start_enforcement,
+                    status.delegation_depth_enforcement,
+                ].count(EnforcementLevel.UNSUPPORTED)
+            },
+        )
+
+    async def test_no_axis_is_reported_as_held_by_an_unmeasured_provider(self):
+        """The inline concurrency cap is configuration this project sets, not
+        an enforcement anyone watched happen. Reporting it as `hard` would be
+        the exact substitution this table exists to refuse — a claim standing
+        in for a measurement."""
+        runtime = CodexRuntime(
+            executable=CODEX_EXECUTABLE,
+            runner=codex_runner(),
+            parent_env=PARENT_ENV,
+            codex_home=CODEX_HOME,
+        )
+
+        status = await runtime.preflight()
+
+        self.assertNotIn(
+            EnforcementLevel.HARD,
+            (
+                status.worker_concurrency_enforcement,
+                status.worker_total_start_enforcement,
+                status.delegation_depth_enforcement,
+            ),
+        )
+
+class FailClosedCapabilityTests(unittest.IsolatedAsyncioTestCase):
+    """Spec line 121: delegation capability that preflight could not confirm
+    refuses the turn. Every v0 profile grants delegation, so a runtime that
+    cannot show it holds the limits is not quietly demoted to a single-agent
+    turn — it does not run."""
+
+    async def test_a_runtime_that_cannot_show_its_limits_refuses_before_spawn(
+        self,
+    ):
+        runtime = CodexRuntime(
+            executable=CODEX_EXECUTABLE,
+            runner=codex_runner(),
+            parent_env=PARENT_ENV,
+            codex_home=CODEX_HOME,
+        )
+        await runtime.preflight()
+
+        plan = runtime.assemble_launch_plan(turn_request(prompt="hi"))
+
+        with self.assertRaises(PreStartRefusal) as caught:
+            enforce_launch_safety(plan)
+
+        self.assertEqual(
+            RefusalCode.DELEGATION_UNSUPPORTED, caught.exception.code
+        )
+
+    async def test_a_runtime_that_can_show_them_assembles_normally(self):
+        runtime = ClaudeRuntime(
+            executable=CLAUDE_EXECUTABLE,
+            runner=claude_runner(),
+            parent_env=PARENT_ENV,
+        )
+        await runtime.preflight()
+
+        plan = runtime.assemble_launch_plan(turn_request(prompt="hi"))
+
+        self.assertIsNone(enforce_launch_safety(plan))
 
 if __name__ == "__main__":
     unittest.main()

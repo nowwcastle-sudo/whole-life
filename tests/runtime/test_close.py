@@ -20,7 +20,9 @@ from pathlib import Path
 from tests.support.launch_fixtures import launch_plan, turn_request
 from tests.support.preflight_fixtures import CODEX_HOME, codex_runner
 from whole_life.runtime.codex import CodexRuntime
+from whole_life.runtime.delegation import REPORTED_ENFORCEMENT
 from whole_life.runtime.contract import (
+    Provider,
     CancelOutcome,
     RunHandle,
     RunStatus,
@@ -59,6 +61,12 @@ async def adapter(script, *, sessions=None):
         codex_home=CODEX_HOME,
         spawner=SubprocessSpawner(),
         sessions=sessions,
+        # This suite's subject is not delegation capability, so the adapter
+        # is given a row it can hold. Codex reports `unsupported` on every
+        # axis until its delegation measurement is made, and a turn from an
+        # unsupported runtime is refused before spawn — which is the control
+        # working, not this test failing.
+        delegation_enforcement=REPORTED_ENFORCEMENT[Provider.CLAUDE],
     )
     await runtime.preflight()
     runtime.turn_args_override = ("-c", script)

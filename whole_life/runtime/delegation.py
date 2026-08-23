@@ -11,7 +11,11 @@ Nothing here cancels anything. It reports a breach and the caller, which owns
 the child, is the one that can end it.
 """
 
-from whole_life.runtime.contract import DelegationBudget
+from whole_life.runtime.contract import (
+    DelegationBudget,
+    EnforcementLevel,
+    Provider,
+)
 
 #: The allowlisted diagnostic for a turn stopped by its delegation budget.
 #: Section 7 keeps provider prose out of diagnostics; this is a code.
@@ -23,6 +27,38 @@ BUDGET_EXCEEDED = "DelegationBudgetExceeded"
 #: not to stop it.
 DEPTH_EXCEEDED = "DelegationDepthExceeded"
 
+
+#: What each provider is reported to hold, one entry per limit. Section 4.
+#:
+#: Reported as measured, and `unsupported` where nothing was measured. The
+#: failure this table exists to prevent is a bound that reads as held by
+#: something which is not holding it.
+#:
+#: Claude 2.1.240 announces every worker start and finish with a lifecycle id
+#: and a `spawn_depth`, so all three limits are observable — and none of them
+#: is refused by the provider, which is what `cooperative` means. Depth was
+#: documented as `hard` until a recorded turn ran a worker at depth 2 and
+#: refused nothing.
+#:
+#: Codex 0.149.0 is `unsupported` on all three because the delegation
+#: measurement has not been made: the live attempt hit a subscription usage
+#: limit before the model ran, so what the stream announces about workers is
+#: unknown rather than known-absent. Spec line 119 turns an uncountable start
+#: into `unsupported`, and section 12 turns `unsupported` into a refusal. The
+#: concurrency cap set by inline config is not listed as `hard` either: a cap
+#: nobody has watched being enforced is a claim, not a measurement.
+REPORTED_ENFORCEMENT = {
+    Provider.CLAUDE: {
+        "worker_concurrency_enforcement": EnforcementLevel.COOPERATIVE,
+        "worker_total_start_enforcement": EnforcementLevel.COOPERATIVE,
+        "delegation_depth_enforcement": EnforcementLevel.COOPERATIVE,
+    },
+    Provider.CODEX: {
+        "worker_concurrency_enforcement": EnforcementLevel.UNSUPPORTED,
+        "worker_total_start_enforcement": EnforcementLevel.UNSUPPORTED,
+        "delegation_depth_enforcement": EnforcementLevel.UNSUPPORTED,
+    },
+}
 
 class DelegationLedger:
     """What one turn has spent on native workers so far.
