@@ -498,7 +498,7 @@ file rename 뒤 DB commit 전 crash가 나면 orphan file만 남는다. startup 
 - Claude `Agent` worker와 Codex subagent가 parent read-only 권한을 넘어설 수 없음
 - Claude subagent와 Codex subagent의 tool output·conversation이 parent prompt에 raw transcript로 합쳐지지 않고 provider가 공개한 result/summary 경계로만 돌아옴
 - input의 `AGENTS.md`·CLAUDE.md·plugin·hook·MCP 설정이 runtime control instruction으로 로드되지 않음
-- Claude depth 2 시도가 hard 거부되고, Codex nested spawn이 관찰되면 즉시 cancel·`unknown_outcome` 처리
+- Claude depth 2 시도가 관찰되면 broker가 즉시 cancel·`unknown_outcome` 처리한다. provider가 hard로 거부해 줄 것으로 기대하지 않는다 — 2.1.240 실측에서 거부되지 않았다. Codex nested spawn도 관찰되면 같은 처리
 - native delegation capability 미지원 시 silent downgrade가 아니라 `DelegationUnsupported`
 
 ### Journal·artifact

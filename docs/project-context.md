@@ -15,6 +15,8 @@ The architecture is approved for a private, documentation-only repository. No im
 | `docs/adr/0001-local-subscription-v0.md` | `123BAFBDE315B7BA237E25731F78AF1E56BFBBD6A872CD2CD3F5FBC06BAE10C5` | 91 | unchanged |
 | `docs/spec/whole-life-v0.md` | `C8904FF4FA0B1FCAF4662F0AA18ECE74C30EE89876F2F3CCDDDED80D56E65E2B` | 607 | 2026-08-23 정정 — §4 Claude delegation depth `hard`→`cooperative`, 실측 반영 |
 | `docs/adr/0001-local-subscription-v0.md` | `67CF61B8F7AC689237C8ACDB245D3AC4E0D8180BF39E53D469EA7C39C8149BB0` | 92 | 2026-08-23 정정 — 같은 사실 기록을 ADR에도 반영 |
+| `docs/spec/whole-life-v0.md` | `A6765F02B3C31029E5A899778DCF15BCE0F6908D32D23DFE0CD069BD5294BF13` | 607 | 2026-08-23 정정 2 — §12 501행 수용기준을 broker cancel로 |
+| `docs/adr/0001-local-subscription-v0.md` | `54736A276A332552084F6DAF77C3E526D4FF9C86BBFA274B505F5FCBF7AB4FD0` | 92 | 2026-08-23 정정 2 — 「재귀 spawn 미지원」 전제 정정 |
 
 The audited baseline row is kept so the 2026-08-20 audit provenance stays verifiable. The last row for each artifact is the current file. Rows are appended, never replaced: a hash that was once approved stays listed so the history of what was approved when remains readable.
 
