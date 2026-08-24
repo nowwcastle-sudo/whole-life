@@ -55,6 +55,7 @@
   .term .g{color:var(--green)}
   .term .d{color:var(--soft)}
   .term .r{color:var(--red)}
+  .term .y{color:var(--yellow)}
   .word{background:var(--zone); border-left:3px solid var(--link); padding:12px 16px;
         font-size:15px; margin:0 0 18px}
   blockquote{margin:0 0 18px; padding:14px 20px; background:var(--zone);
@@ -557,6 +558,28 @@ S-J1  수집기 shell=True vs no-shell runner
       <b>런타임 계약을 도우미까지 밀어 내릴 수도 있고, 부르는 쪽에서 감쌀 수도 있습니다.</b>
       <b>어느 쪽이 될지는 <code>#34</code> 의 편이 씁니다.</b>
       여기 적는 것은 <b>「#13 에서 시작한 실이 아직 끊기지 않았다」</b>는 사실 하나뿐입니다.
+    </p>
+  </div>
+
+  <div class="card good">
+    <span class="tag" style="color:var(--green);font-weight:600">뒷날 붙임 (2026-08-24) — 결말이 났습니다</span>
+    <p style="margin:12px 0 0">
+      <b><code>#34</code> 가 <code>98ee8bc</code> 로 병합됐습니다.</b>
+      위에서 갈래를 둘로 적었는데 — <b>「런타임 계약을 도우미까지 밀어 내리거나, 부르는 쪽에서 감싸거나」</b> —
+      <b>«뒤엣것»으로 갔고, 한 곳이 아니라 «두 곳» 다였습니다.</b>
+      전모는 <a href="13_2026-08-24_%ED%8B%B0%EC%BC%9334_%EC%B7%A8%EC%86%8C%EC%82%AC%EC%9C%A0%EB%A5%BC%EB%8D%AE%EC%9D%80%EC%A0%95%EB%A6%AC%EC%8B%A4%ED%8C%A8.html">제13편</a>에 있습니다.
+    </p>
+    <div class="term" style="margin-top:14px"><span class="d">병합된 main 에서 (조회로 확인)</span>
+lifecycle.py:43·49   <span class="y">raise LifecycleFailure</span>       <span class="d">도우미는 «그대로» 올린다</span>
+lifecycle.py:99      <span class="y">as False rather than raised</span>  <span class="d">계약 문장도 «그대로»</span>
+spawn.py:152         <span class="g">except LifecycleFailure</span>      <span class="d">부르는 쪽이 잡는다</span>
+observe.py:257       <span class="g">except LifecycleFailure</span>      <span class="d">부르는 쪽이 잡는다</span></div>
+    <p style="margin:14px 0 0" class="note">
+      <b>그래서 이 편이 짚은 이음매는 «없어지지 않았습니다».</b>
+      도우미는 지금도 「올린다」쪽 계약을 들고 있고, 그것을 부르는 함수의 docstring 은 지금도 「안 올린다」고 적혀 있습니다.
+      <b><code>#34</code> 가 한 것은 그 어긋남이 «해를 끼치던 두 자리»를 막은 것</b>이고,
+      <b>어긋남 자체를 없앤 것이 아닙니다.</b>
+      <b>이 편은 어느 쪽이 나은지 정하지 않습니다</b> — 다만 <b>「고쳤다」가 「어긋남이 사라졌다」는 뜻이 아니라는 것</b>은 적어 둡니다.
     </p>
   </div>
 

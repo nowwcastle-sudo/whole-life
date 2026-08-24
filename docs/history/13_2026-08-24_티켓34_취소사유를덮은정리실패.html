@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>제13편 · 일지 — #34 취소 사유를 덮은 정리 실패</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#282828; --paper-2:#32302f; --zone:#302e2c; --ink:#ebdbb2;
+    --muted:#a89984; --soft:#928374;
+    --rule:rgba(235,219,178,0.12); --rule-solid:#504945;
+    --accent:#fe8019; --accent-tint:rgba(254,128,25,0.12); --link:#83a598;
+    --green-tint:rgba(184,187,38,0.10); --red-tint:rgba(251,73,52,0.10);
+    --yellow-tint:rgba(250,189,47,0.10);
+    --green:#b8bb26; --red:#fb4934; --yellow:#fabd2f;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Geist","Pretendard","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;
+    line-height:1.75; -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:880px; margin:0 auto; padding:64px 28px 120px}
+  .kicker{font-size:13px; letter-spacing:.14em; color:var(--soft); text-transform:uppercase;
+          font-family:"Geist Mono",ui-monospace,"Consolas",monospace}
+  h1{font-family:"Instrument Serif","Malgun Gothic",serif;
+     font-size:52px; line-height:1.2; margin:14px 0 6px; letter-spacing:-.01em; font-weight:400}
+  .sub{font-size:17px; color:var(--muted); margin:0 0 8px}
+  .meta{font-size:14px; color:var(--soft); font-family:"Geist Mono",ui-monospace,"Consolas",monospace}
+  hr{border:0; border-top:1px solid var(--rule); margin:48px 0}
+  h2{font-size:14px; letter-spacing:.16em; color:var(--soft); text-transform:uppercase;
+     margin:72px 0 4px; font-weight:500;
+     font-family:"Geist Mono",ui-monospace,"Consolas",monospace}
+  h3{font-size:19px; margin:34px 0 12px; font-weight:600}
+  .q{font-family:"Instrument Serif","Malgun Gothic",serif;
+     font-size:34px; line-height:1.35; margin:0 0 26px; font-weight:400; letter-spacing:-.01em}
+  .big{font-size:26px; line-height:1.5; font-weight:500; margin:0 0 18px}
+  p{font-size:17px; margin:0 0 18px}
+  .note{font-size:15px; color:var(--muted)}
+  a{color:var(--link); text-underline-offset:3px; text-decoration-thickness:1px}
+  .card{background:var(--paper-2); border:1px solid var(--rule-solid); border-radius:8px;
+        padding:26px 28px; margin:26px 0}
+  .warn{border-color:var(--yellow)}
+  .warn .tag{color:var(--yellow); font-weight:600}
+  .good{border-color:var(--green)}
+  .good .tag{color:var(--green); font-weight:600}
+  .tag{font-size:13px; letter-spacing:.1em; color:var(--soft);
+       font-family:"Geist Mono",ui-monospace,monospace}
+  figure{margin:34px 0}
+  figcaption{font-size:14px; color:var(--muted); margin-top:12px; text-align:center; line-height:1.6}
+  svg{display:block; width:100%; height:auto}
+  code{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; font-size:.9em;
+       background:var(--zone); color:var(--ink); padding:1px 6px; border-radius:4px}
+  .term{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; font-size:14px; line-height:1.7;
+        background:var(--zone); color:var(--ink); border:1px solid var(--rule-solid);
+        border-radius:8px; padding:20px 22px; overflow-x:auto; white-space:pre-wrap}
+  .term .g{color:var(--green)}
+  .term .d{color:var(--soft)}
+  .term .r{color:var(--red)}
+  .term .y{color:var(--yellow)}
+  blockquote{margin:0 0 18px; padding:14px 20px; background:var(--zone);
+             border-left:3px solid var(--link); font-size:16px; line-height:1.7; color:var(--ink)}
+  .tbl{width:100%; border-collapse:collapse; font-size:15px}
+  .tbl th{text-align:left; font-size:12px; letter-spacing:.1em; text-transform:uppercase;
+          color:var(--soft); font-weight:500; padding:0 12px 10px 0;
+          border-bottom:1px solid var(--rule-solid);
+          font-family:"Geist Mono",ui-monospace,monospace}
+  .tbl td{padding:13px 12px 13px 0; border-bottom:1px solid var(--rule);
+          vertical-align:top; line-height:1.6}
+  .tbl tr:last-child td{border-bottom:0}
+  .tbl td:first-child{font-weight:600; width:26%}
+  .out{padding-left:22px; margin:0; font-size:16px}
+  .out li{margin-bottom:9px; line-height:1.6}
+  sup a{color:var(--link); text-decoration:none; font-size:12px; font-weight:600; padding:0 1px}
+  .fn{margin-top:80px; border-top:1px solid var(--rule-solid); padding-top:26px}
+  .fn h3{font-size:13px; letter-spacing:.16em; color:var(--soft); text-transform:uppercase;
+         margin:0 0 16px; font-family:"Geist Mono",ui-monospace,monospace; font-weight:500}
+  .fn ol{padding-left:24px; margin:0}
+  .fn li{font-size:14px; color:var(--muted); margin-bottom:11px; line-height:1.65}
+  .fn .path{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; color:var(--ink); font-size:13px}
+  .fn .quote{color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kicker">제 13 편 · 일지편</div>
+  <h1>치우다 실패했다는 말이<br>왜 치우게 됐는지를 덮었다</h1>
+  <p class="sub">#34 취소 사유를 덮은 정리 실패 — 「비차단」으로 적혀 있던 것이 닫힌 첫 자리</p>
+  <p class="meta">
+    대상 <code>fix/tree-kill-masks-cancellation</code> — 병합됨 · <code>98ee8bc</code> (PR #44)<br>
+    2026-08-24 · <code>ORD-EDU-log-34</code>
+  </p>
+
+  <div class="card good">
+    <div class="tag">읽기 전에 — 이 편은 앞의 셋과 두 가지가 다릅니다</div>
+    <p style="margin:8px 0 12px">
+      <b>첫째, 이 편은 «당대에» 쓰였습니다.</b>
+      <a href="04_2026-08-23_%ED%8B%B0%EC%BC%9313_bare%EB%AA%A8%EB%93%9C%EA%B2%8C%EC%9D%B4%ED%8A%B8.html">제04편</a>·<a href="05_2026-08-23_%ED%8B%B0%EC%BC%9314_%EC%95%88%EC%A0%84%ED%95%9C%ED%84%B4%EC%8B%9C%EC%9E%91.html">제05편</a>·<a href="06_2026-08-23_%ED%8B%B0%EC%BC%9315_%EA%B2%BD%EA%B3%84%EC%95%88%EC%9D%98%EC%8A%A4%ED%8A%B8%EB%A6%BC.html">제06편</a>은
+      대상이 끝난 «다음 날» 뒤늦게 채운 것이고, <b>이 편은 대상이 도는 동안 절차가 그대로 굴러 나온 것</b>입니다.
+    </p>
+    <p style="margin:0" class="note">
+      <b>둘째, 이 구간에는 통치자 원장이 «있습니다».</b>
+      앞의 셋은 전부 <b>원장이 열리기 «전»</b>이라 되돌림의 사유를 리뷰어·완결자 보고에서만 읽었습니다.
+      원장은 2026-08-24 01:17 에 열렸고 <b><code>#34</code> 는 그날 07:32 에 발행됐습니다</b> —
+      <b>제 읽기 절차의 다섯째(원장 발췌)가 처음으로 실제로 쓰였습니다.</b><sup><a href="#w5">[5]</a></sup>
+    </p>
+  </div>
+
+  <hr>
+
+  <h2>질문 1 · 무슨 일이</h2>
+  <div class="q">한 문장으로</div>
+
+  <p class="big">
+    <b>정리에 쓰는 도구가 이 컴퓨터에 없을 때, 그 «없음»이 <b>정리를 요청한 이유</b>를 덮었다 —
+    그리고 그것을 고치는 동안 <b>「검사는 있는데 그 검사가 다른 것을 재고 있는」 자리</b>가 셋 더 나왔다.</b>
+  </p>
+
+  <p class="note">
+    <b>먼저 용어 둘.</b>
+    <b>「프로세스 트리 종료」</b>는 프로그램 하나와 그것이 띄운 것들을 <b>통째로 끝내는 일</b>이고,
+    Windows 에서는 <code>taskkill</code> 이라는 도구가 합니다.
+    <b>「취소」</b>는 그 일을 <b>중간에 그만두게 하는 것</b>입니다 — 시간이 넘었거나, 사람이 멈추라 했거나.
+    <b>취소하면 반드시 정리가 따라옵니다.</b> 이 편의 이야기는 <b>그 정리가 실패했을 때 무슨 말이 남는가</b>입니다.
+  </p>
+
+  <hr>
+
+  <h2>이 편의 머리기사</h2>
+  <div class="q">같은 예외인데, 두 자리에서 다른 것을 잃었다</div>
+
+  <p>
+    <code>terminate_process_tree()</code> 의 <b>첫 줄</b>이 도구를 찾는 일입니다.
+    못 찾으면 거기서 <b>예외를 올리고</b>, <b>그 함수가 그것을 안 잡습니다.</b><sup><a href="#w1">[1]</a></sup>
+    그래서 <b>부른 쪽으로 그대로 올라갑니다.</b>
+  </p>
+
+  <blockquote>
+    「<b>호출부 둘이 같은 모양인데 망가지는 방식이 다르다.</b>」<sup><a href="#w1">[1]</a></sup>
+  </blockquote>
+
+  <figure>
+    <svg viewBox="0 0 940 520" role="img" aria-labelledby="t34-fork-title t34-fork-desc">
+      <title id="t34-fork-title">같은 예외가 두 자리에서 다른 것을 잃는다</title>
+      <desc id="t34-fork-desc">도구를 못 찾아 예외가 나는 자리에서 시작해, 그것을 안 잡는 함수를 지나 두 호출부로 갈라지는 그림. 왼쪽 spawn 쪽은 원래 예외를 잃고, 오른쪽 cancel 쪽은 답과 뒤따르는 정리와 자식까지 잃는다. 오른쪽 상자가 더 큰 것이 잃는 것이 더 많다는 뜻이다.</desc>
+      <defs>
+        <marker id="t34-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="var(--muted)"/>
+        </marker>
+        <marker id="t34-arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="var(--accent)"/>
+        </marker>
+      </defs>
+      <rect width="100%" height="100%" fill="var(--paper)"/>
+
+      <path d="M470 92 V128" fill="none" stroke="var(--accent)" stroke-width="1.2" marker-end="url(#t34-arrow-accent)"/>
+      <path d="M470 192 V222" fill="none" stroke="var(--muted)" stroke-width="1"/>
+      <path d="M250 222 H690" fill="none" stroke="var(--muted)" stroke-width="1"/>
+      <path d="M250 222 V250" fill="none" stroke="var(--muted)" stroke-width="1" marker-end="url(#t34-arrow)"/>
+      <path d="M690 222 V250" fill="none" stroke="var(--muted)" stroke-width="1" marker-end="url(#t34-arrow)"/>
+
+      <rect x="300" y="28" width="340" height="64" rx="8" fill="var(--accent-tint)" stroke="var(--accent)" stroke-width="1.4"/>
+      <text x="470" y="54" font-size="15" fill="var(--accent)" text-anchor="middle" font-weight="600"
+            font-family="'Geist Mono',ui-monospace,monospace">system_taskkill()</text>
+      <text x="470" y="76" font-size="12" fill="var(--accent)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">도구를 못 찾으면 예외를 올린다</text>
+
+      <rect x="300" y="132" width="340" height="60" rx="8" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="470" y="156" font-size="15" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist Mono',ui-monospace,monospace">terminate_process_tree()</text>
+      <text x="470" y="177" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">안 잡는다 — 부른 쪽으로 그대로 올라간다</text>
+
+      <rect x="50" y="250" width="400" height="120" rx="8" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="70" y="278" font-size="14" fill="var(--ink)" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">spawn 쪽 — 하나를 잃는다</text>
+      <text x="70" y="304" font-size="12" fill="var(--soft)"
+            font-family="'Geist Mono',ui-monospace,monospace">spawn.py</text>
+      <text x="70" y="330" font-size="13" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">원본을 다시 올리는 줄에 «도달하지 못한다»</text>
+      <text x="70" y="352" font-size="13" fill="var(--red)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">-&gt; 나가는 예외가 통째로 바뀐다</text>
+
+      <rect x="490" y="250" width="400" height="170" rx="8" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="510" y="278" font-size="14" fill="var(--ink)" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">cancel 쪽 — 셋을 잃는다</text>
+      <text x="510" y="304" font-size="12" fill="var(--soft)"
+            font-family="'Geist Mono',ui-monospace,monospace">observe.py</text>
+      <text x="510" y="330" font-size="13" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">① 호출자가 답을 못 받는다</text>
+      <text x="510" y="354" font-size="13" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">② 그 아래 정리가 «통째로» 안 돈다</text>
+      <text x="510" y="378" font-size="13" fill="var(--red)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">③ 자식이 살아남는다</text>
+      <text x="510" y="402" font-size="12" fill="var(--soft)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">약속한 「고아 0」이 «도달되지 않는다»</text>
+
+      <path d="M50 452 H890" stroke="var(--rule)" stroke-width="1" fill="none"/>
+      <text x="50" y="482" font-size="13" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">같은 예외 하나가 갈라진 뒤 서로 다른 것을 지운다 — 그래서 고치는 자리도 «둘»이다.</text>
+      <rect x="50" y="496" width="18" height="12" rx="3" fill="var(--accent-tint)" stroke="var(--accent)" stroke-width="1.2"/>
+      <text x="78" y="506" font-size="12" fill="var(--soft)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">예외가 나는 자리</text>
+    </svg>
+    <figcaption>
+      <b>오른쪽이 더 큰 것이 이 그림의 전부입니다</b> — 같은 예외인데 <b>한쪽은 「무엇이 잘못됐나」를 잃고,
+      다른 쪽은 「답」과 「뒤따르는 정리」와 「자식」까지 잃습니다.</b>
+    </figcaption>
+  </figure>
+
+  <p class="note">
+    <b>「고아」는 부모가 사라졌는데 안 죽고 남은 프로그램</b>입니다.
+    <code>close()</code> 라는 마무리 절차가 <b>「고아 0 · 남은 읽기 작업 0」</b>을 약속하는데,
+    구현자 표현으로 그 약속이 <b>「만들어지지 않은 게 아니라 도달되지 않는다」</b>였습니다.<sup><a href="#w1">[1]</a></sup>
+    <b>코드는 옳게 적혀 있고, 그 줄까지 «가지를» 못했습니다.</b>
+  </p>
+
+  <p>
+    <b>그리고 이 대상은 브랜치를 따기 «전»에 재현부터 했습니다.</b>
+  </p>
+
+  <div class="term"><span class="d">child pid=…  alive_before=True</span>
+cancel() -&gt; <span class="r">RAISED  LifecycleFailure: SYSTEMROOT is not set, ...</span>
+child <span class="r">alive_after=True</span>   returncode=<span class="r">None</span>   active_child_count=<span class="r">1</span>
+
+<span class="g">셋 다 티켓 서술 그대로다</span><sup><a href="#w1">[1]</a></sup></div>
+
+  <hr>
+
+  <h2>질문 2 · 무슨 일이</h2>
+  <div class="q">어떤 흐름으로 진행됐나 — 되돌아간 자리가 «없다»</div>
+
+  <p>
+    <b>이 폴더가 지금까지 실은 대상 넷은 전부 되돌아갔습니다.</b>
+    <code>#34</code> 는 <b>리뷰어가 첫 판정에서 「병합 가능」을 냈고, 그 뒤 뒤집힌 것이 없습니다.</b>
+  </p>
+
+  <p class="note">
+    <b>세는 방법을 밝힙니다.</b> <b>「되돌림 몇 번」은 편마다 세는 단위가 달라 나란히 못 놓습니다</b> —
+    어떤 편은 게이트를 세고 어떤 편은 결함 하나가 오간 걸음을 셉니다.
+    <b>그래서 서로 견줄 수 있는 것 하나만 봤습니다 — 리뷰어 보고서에 «재리뷰 절»이 몇 개인가.</b>
+    <b>재리뷰가 있다는 것은 판정이 한 번에 안 났다는 뜻</b>이고, 그건 절 제목을 세면 됩니다.
+  </p>
+
+  <div class="card">
+    <table class="tbl">
+      <thead><tr><th>대상</th><th>리뷰어 보고서에 남은 것</th></tr></thead>
+      <tbody>
+        <tr><td><code>#13</code></td><td class="note">재리뷰 절 <b>둘</b> + <b>판정 철회 하나</b> — 「F4 「해소」 판정을 철회한다」<sup><a href="#w6">[6]</a></sup></td></tr>
+        <tr><td><code>#14</code></td><td class="note">재리뷰 절 <b>셋</b> · 「머지 가능 아님」 <b>두 번</b> 적힘<sup><a href="#w6">[6]</a></sup></td></tr>
+        <tr><td><code>#15</code></td><td class="note">재리뷰 절 <b>둘</b> · 「머지 가능 아님」 <b>두 번</b> 적힘<sup><a href="#w6">[6]</a></sup></td></tr>
+        <tr><td><code>#34</code></td><td class="note"><b>재리뷰 절 «없음».</b> 절 다섯이 전부 검증이고 맨 끝이 판정입니다 —
+          <b>「내 판단상 병합 가능」</b><sup><a href="#w2">[2]</a></sup></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="note">
+    <b>「그래서 좋아졌다」고 적지 않습니다</b> — 티켓마다 어려움이 다르고, <b>네 개는 무엇이 나아졌는지 말하기에 적은 수</b>입니다.
+    <b>다만 사료가 말하는 것이 셋 있습니다</b> — 이 대상에서 <b>달라진 «방법»</b>입니다.
+  </p>
+
+  <ul class="out">
+    <li><b>브랜치를 따기 «전»에 재현했다</b> — 위의 그 출력입니다<sup><a href="#w1">[1]</a></sup></li>
+    <li><b>구현자가 자기 변이 배터리를 스스로 돌렸다</b> — 아홉, 생존 0<sup><a href="#w1">[1]</a></sup></li>
+    <li><b>버린 안 둘의 이유를 미리 적었다</b> — 리뷰어가 <b>「논거 검증(재구축 아님)」</b>으로 받았습니다<sup><a href="#w2">[2]</a></sup></li>
+  </ul>
+
+  <hr>
+
+  <h2>이 티켓이 남긴 것</h2>
+  <div class="q">「검사는 있는데, 그 검사가 다른 것을 재고 있다」 — 셋</div>
+
+  <p>
+    <b>이 대상에서 코드 결함은 하나였고, «검사» 쪽에서 셋이 나왔습니다.</b>
+    셋 다 <b>검사가 죽어 있던 것이 아닙니다</b> — 멀쩡히 돌았고, 숫자도 참이었고,
+    <b>다만 물으려던 것을 안 재고 있었습니다.</b>
+  </p>
+
+  <div class="card">
+    <table class="tbl">
+      <thead><tr><th>무엇이</th><th>무엇을 재고 있었나</th><th>누가 잡았나</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>변이 앵커</td>
+          <td class="note"><b>고치려던 함수가 아니라 «다른» 함수.</b> 같은 줄이 두 군데 있어
+            앵커가 <b>두 번 맞았습니다.</b> 그대로 돌았으면 변이가 엉뚱한 곳을 고치고
+            <b>그래도 테스트는 빨개져서 「잡혔다」로 읽혔을 자리</b>입니다<sup><a href="#w3">[3]</a></sup></td>
+          <td class="note">완결자<br><span class="note">(사전 대조가 있어서)</span></td>
+        </tr>
+        <tr>
+          <td>종료 코드</td>
+          <td class="note"><b>파이프 «끝»에 붙인 명령의 종료 코드.</b>
+            <code>… | head</code> 로 끝내면 <code>$?</code> 가 <b>항상 0</b> 입니다 —
+            <b>「못 찾았다」와 「안 돌았다」가 같은 0 으로 나옵니다</b><sup><a href="#w3">[3]</a></sup></td>
+          <td class="note">완결자<br><span class="note">(스스로)</span></td>
+        </tr>
+        <tr>
+          <td>인증정보 스캐너</td>
+          <td class="note"><b>«다른 나무».</b> 스크립트에 옛 작업 폴더 경로가 박혀 있어
+            <b>커밋은 이것인데 검사는 지난 티켓의 트리를 훑었습니다.</b>
+            「8종 0건」이 전부 <b>엉뚱한 대상의 0건</b>이었습니다<sup><a href="#w1">[1]</a></sup></td>
+          <td class="note">구현자<br><span class="note">(종료 코드를 함께 찍는 줄이)</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>셋째가 «가드가 가드를 잡은» 자리입니다</h3>
+
+  <p>
+    구현자는 앞선 대상에서 <b>「종료 코드를 삼킨 명령」에 데인 적이 있어</b>,
+    스캐너에 <b>「0건」과 «종료 코드»를 함께 찍는 줄</b>을 넣어 뒀습니다.
+    <b>그 가드가 이번에는 전혀 다른 사고를 잡았습니다.</b>
+  </p>
+
+  <div class="term"><span class="d">1 sk-   exit=128 hits=0</span>  <span class="r">&lt;-- NOT A CLEAN ZERO</span><sup><a href="#w1">[1]</a></sup></div>
+
+  <blockquote>
+    「<b>그 가드가 다른 사고를 잡았다.</b> 「hits=0」만 찍었으면 <b>두 번 다 깨끗한 0 으로 읽혔다.</b>」<sup><a href="#w1">[1]</a></sup>
+  </blockquote>
+
+  <p class="note">
+    <b>「0건」에 종료 코드를 붙이는 것이 «패턴이 죽었을 때»만이 아니라 «대상이 틀렸을 때»도 듣습니다.</b>
+    <b>둘은 전혀 다른 사고인데 같은 한 줄이 막았습니다</b> —
+    <b>막으려던 것보다 넓게 막는 장치가 있고, 그건 대개 「값이 아니라 그 값이 «어디서» 나왔는지를 함께 찍는」 것들입니다.</b>
+  </p>
+
+  <hr>
+
+  <h2>덧붙임</h2>
+  <div class="q">이 대상에서만 나온 것 셋</div>
+
+  <h3>하나 — 조건표 하나가 «새» 결함을 잡았다</h3>
+
+  <p>
+    다섯 번째 조건이 <b>「마무리 절차가 이 길에서도 고아 0 을 만드나」</b>였습니다.
+    그 테스트가 <b>빨갰습니다.</b> 최선을 다해 끝내는 쪽이
+    <b>「죽이기만 하고 거두지 않아서」</b> 자식이 <b>여전히 「살아 있는 것」으로 세어졌습니다.</b><sup><a href="#w1">[1]</a></sup>
+  </p>
+
+  <blockquote>
+    「<b>테스트를 안 썼으면 「고쳤다」고 보고했을 자리다.</b>」<sup><a href="#w1">[1]</a></sup>
+  </blockquote>
+
+  <p class="note">
+    <b>다른 길로 들어가면 통과했습니다.</b> 취소를 먼저 부르는 경로는 멀쩡했고,
+    <b>마무리만 단독으로 부르는 경로에서만</b> 깨졌습니다.
+    <b>한쪽만 시험했으면 안 보였을 것</b>이고, 이것은
+    <a href="06_2026-08-23_%ED%8B%B0%EC%BC%9315_%EA%B2%BD%EA%B3%84%EC%95%88%EC%9D%98%EC%8A%A4%ED%8A%B8%EB%A6%BC.html">제06편</a>의
+    <b>「전제를 만들지 않으면 안 터진 상태를 통과로 읽는다」</b>와 같은 자리입니다.
+  </p>
+
+  <h3>둘 — 같은 코드를 두 사람이 «따로» 읽었다</h3>
+
+  <p>
+    변이 배터리를 구현자가 돌렸고, <b>완결자가 다시 돌렸습니다.</b>
+    그런데 완결자가 <b>구현자의 것을 그대로 쓴 게 아닙니다.</b>
+  </p>
+
+  <blockquote>
+    「<b>구현자 보고에는 변이 «이름»만 있고 치환쌍이 없다.</b> 그래서 diff 를 읽고 앵커를 직접 세웠다 —
+    결과적으로 <b>두 배터리가 같은 코드에 대한 독립적인 읽기가 됐다.</b>」<sup><a href="#w3">[3]</a></sup>
+  </blockquote>
+
+  <p class="note">
+    <b>그리고 그 「직접 세우기」가 위의 첫째 함정을 잡았습니다</b> — 앵커가 두 군데 맞은 것.
+    <b>구현자 배터리를 복사해 돌렸으면 같은 눈으로 두 번 본 것</b>이 됩니다.
+    <b>「두 번 쟀다」와 「둘이 따로 쟀다」는 다릅니다.</b>
+  </p>
+
+  <h3>셋 — 「안 빨개진 것」을 증거로 썼다</h3>
+
+  <p>
+    완결자가 탐침 대상에 <code>test_lifecycle</code> 을 넣었는데
+    <b>아홉 변이 중 «한 번도» 안 빨개졌습니다.</b><sup><a href="#w3">[3]</a></sup>
+  </p>
+
+  <blockquote>
+    「<b>주장보다 더 멀리 닿는 변이가 없다는 뜻이다.</b>」<sup><a href="#w3">[3]</a></sup>
+  </blockquote>
+
+  <p class="note">
+    <b>변이 증명은 보통 「잡는다」만 증명합니다</b> — 망가뜨리면 빨개진다는 것.
+    <b>여기서는 «안 잡는 것»도 함께 봤습니다</b> — 손대지 않은 자리가 조용하다는 것.
+    <b>변이가 너무 넓게 닿으면 「이 테스트가 이것을 지킨다」가 흐려집니다.</b>
+    <b>초록을 증거로 쓴 드문 자리</b>이고, 쓸 수 있는 이유는 <b>무엇이 초록인지를 미리 정해 뒀기 때문</b>입니다.
+  </p>
+
+  <hr>
+
+  <h2>질문 6 · 7 · 다음은</h2>
+  <div class="q">무엇을 누구에게 넘겼나, 그리고 왜 그 자리인가</div>
+
+  <div class="card">
+    <table class="tbl">
+      <thead><tr><th>무엇을</th><th>어디로</th><th>왜 거기인가</th></tr></thead>
+      <tbody>
+        <tr><td>최선노력 종료의 <b>반환값을 안 본다</b></td><td class="note">분해자 · 티켓</td>
+          <td class="note">죽이기는 닿았는데 <b>기다림이 넘치면</b> 마무리가 <b>「0 을 못 만든 채 조용히」</b> 돌아옵니다.
+            리뷰어가 <b>티켓이 «일부러 뺀» 것의 거울상</b>이라 <b>범위 판단을 존중하고 기록만</b> 남겼습니다<sup><a href="#w2">[2]</a></sup></td></tr>
+        <tr><td>어댑터 쪽에 <b>안 내놓은 것</b></td><td class="note">티켓 «안 만듦»</td>
+          <td class="note">리뷰어가 <b>방아쇠를 달아 뒀습니다</b> — 「읽는 쪽이 생길 때, 읽는 테스트와 함께」.
+            <b>방아쇠가 이미 있는 것을 티켓으로 만들면 «영원히 안 닫히는 티켓»이 됩니다</b><sup><a href="#w2">[2]</a></sup></td></tr>
+        <tr><td>도구를 <b>찾았는데 실패</b>하는 경우</td><td class="note">그대로 둠</td>
+          <td class="note">이 티켓이 <b>일부러 뺀 범위</b>입니다. 지금도 「못 했다」를 돌려주고 있어 <b>거짓말은 안 합니다</b><sup><a href="#w1">[1]</a></sup></td></tr>
+        <tr><td>손자까지 못 끝내는 것</td><td class="note">문서로</td>
+          <td class="note">고칠 수 없는 범위라 <b>「없으면 무엇이 나빠지는지」를 전제 문서에 적었습니다</b> —
+            <b>「막을 수 없는 것은 알려 두는 것이 유일한 처리」</b><sup><a href="#w1">[1]</a></sup></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="note">
+    <b>둘째 줄이 이 표에서 제일 값집니다.</b> <b>「남은 것」을 전부 티켓으로 만드는 것이 성실해 보이지만</b>,
+    <b>열 조건이 이미 적혀 있는 것</b>까지 티켓으로 만들면 <b>그 목록이 「닫히지 않는 것들」로 채워집니다.</b>
+    <b>그러면 목록 자체가 안 읽힙니다.</b>
+  </p>
+
+  <hr>
+
+  <h2>질문 8 · 다음은</h2>
+  <div class="q">왜 이걸 제안했나 — 버린 둘의 이유를 «미리» 적었다</div>
+
+  <p>
+    정리 실패를 어디에 실어 보낼지 <b>셋을 놓고 하나를 골랐습니다.</b>
+  </p>
+
+  <div class="term"><span class="g">A (채택)</span>  spawn 은 원래 예외에 «쪽지»를 붙이고, cancel 은 «따로 난 자리»에 적는다
+         <span class="d">새 타입·새 의존성 0 · 나가는 예외의 타입도 자리도 안 바뀐다</span>
+
+<span class="r">B (버림)</span>  둘을 묶어서 올린다   <span class="d">-&gt; «올라가는 예외 타입이 바뀐다».</span>
+         <span class="d">기존 호출부가 못 잡는다 — 조건 1 의 「그대로 본다」를 어긴다</span>
+
+<span class="r">C (버림)</span>  이미 있는 칸을 다시 쓴다  <span class="d">-&gt; 그 칸은 «다른 용도 전용»이다.</span>
+         <span class="d">두 뜻을 섞으면 나중에 읽는 사람이 딴 문제로 읽는다</span><sup><a href="#w1">[1]</a></sup></div>
+
+  <p>
+    <b>리뷰어가 이 대목을 이렇게 처리했습니다.</b>
+  </p>
+
+  <blockquote>
+    「<b>버린 대안 B·C의 논거 검증(재구축 아님)</b>」 — <b>B</b> 전파 타입이 바뀌어 조건 1 을 깬다 <b>「타당」</b> ·
+    <b>C</b> 그 칸의 의미는 전용이라 섞으면 딴 문제로 읽힌다 <b>「타당」</b><sup><a href="#w2">[2]</a></sup>
+  </blockquote>
+
+  <p class="note">
+    <b>「재구축 아님」이 이 한 줄의 핵심입니다.</b>
+    <b>버린 이유가 적혀 있어서 리뷰어는 그 논거를 «다시 세우지» 않고 «맞는지만» 봤습니다.</b>
+    <b>안 적었으면 리뷰어가 처음부터 다시 생각해야 하고, 다시 생각하면 다른 답이 나올 수도 있습니다</b> —
+    <b>그 왕복이 「되돌림」이 됩니다.</b>
+  </p>
+
+  <p class="note">
+    <b>그리고 한 가지는 리뷰어가 «판단»으로 받았습니다.</b>
+    새로 만든 칸을 <b>지금 읽는 코드가 없습니다.</b> 통치자는 <b>「수용기준 해석이고 리뷰어 축」</b>이라며 정하지 않았고,
+    리뷰어가 <b>「옳다」</b>로 판정하며 근거 넷을 댔습니다 — 조건이 그 자리를 요구한다 · 테스트가 이미 읽는다 ·
+    전제 문서가 이름을 붙였다 · 저장소의 선례와 안 부딪친다.<sup><a href="#w2">[2]</a></sup>
+    <b>이 편은 그 판정을 옮길 뿐 다시 재지 않습니다.</b>
+  </p>
+
+  <hr>
+
+  <h2>질문 11 · 방향 점검</h2>
+  <div class="q">원점에 비춰, 이번 걸음이 그쪽으로 갔나</div>
+
+  <p>
+    <a href="00_%EC%99%9C_%EC%8B%9C%EC%9E%91%ED%96%88%EB%82%98.html">원점편</a>이 재는 자리는
+    <b>「사람이 자리를 비운 사이에 자동 에이전트가 무엇을 할 수 있느냐」</b>입니다.
+    <b>이 대상은 그 질문의 «사람이 돌아왔을 때» 쪽입니다</b> —
+    <b>무언가 잘못돼 멈췄을 때, 돌아온 사람이 화면에서 «무엇을» 읽느냐</b>.
+  </p>
+
+  <div class="card good">
+    <span class="tag">갔습니다</span>
+    <ul class="out" style="margin-top:12px">
+      <li><b>멈춘 이유가 정리 실패에 덮이지 않습니다</b> — 두 자리가 각자 잡고, <b>이유는 «나란히»</b> 남습니다<sup><a href="#w1">[1]</a></sup></li>
+      <li><b>자식이 안 남습니다</b> — 죽이고 <b>거두는</b> 데까지. 사망 확인은 장부가 아니라
+        <b>운영체제에 직접</b> 물었습니다<sup><a href="#w2">[2]</a></sup></li>
+      <li><b>없을 때 무엇이 나빠지는지가 문서에 있습니다</b> — 증상이 원인에서 먼 데 나타나기 때문입니다<sup><a href="#w2">[2]</a></sup></li>
+    </ul>
+  </div>
+
+  <p class="note">
+    <b>다만 한 자리는 여전히 열려 있고, 그것을 이 편이 감추지 않습니다</b> —
+    <b>기다림이 넘치면 마무리가 「0 을 못 만든 채 조용히」 돌아옵니다</b>(질문 6 의 첫 줄).
+    <b>「조용히」가 이 대상이 고치려던 바로 그 형태</b>인데, <b>더 좁은 자리에 한 겹 남았습니다.</b>
+    <b>티켓으로 넘어갔으니 사라지지는 않습니다.</b>
+  </p>
+
+  <hr>
+
+  <h2>질문 12 · 방향 점검</h2>
+  <div class="q">처음 범위에서 새로 늘어난 것이 있나</div>
+
+  <p class="big"><b>안 늘었습니다. 그리고 이 대상은 «안 한 것»을 네 군데 적고 갔습니다.</b></p>
+
+  <p>
+    질문 6 의 표 중 <b>셋이 「안 했다」</b>이고, 거기에 <b>승인된 사양을 안 건드렸다</b>가 더해집니다.<sup><a href="#w1">[1]</a></sup>
+    리뷰어도 <b>「scope creep: 실질 없음」</b>으로 따로 확인했습니다.<sup><a href="#w2">[2]</a></sup>
+  </p>
+
+  <p class="note">
+    <b>새 의존성도 0 입니다</b> — 추가된 것은 <b>같은 저장소 안의 모듈 하나</b>뿐입니다.<sup><a href="#w1">[1]</a></sup>
+    <b>정리 실패를 어디로 보낼지 고를 때 「기록 도구를 하나 들이는」 길이 있었는데</b>,
+    저장소 전체에 그 도구를 쓰는 곳이 <b>한 군데도 없어서</b> 「v0 을 작게」에 걸린다고 보고 <b>안 들였습니다.</b><sup><a href="#w1">[1]</a></sup>
+  </p>
+
+  <hr>
+
+  <h2>착지 — 검증한 것이 그대로 들어갔나</h2>
+  <div class="q">「초록이니 됐다」와 「그 코드가 들어갔나」는 다른 질문이다</div>
+
+  <p>
+    <b>이 저장소는 병합할 때 브랜치의 커밋들을 «하나로 눌러» 넣습니다.</b>
+    그래서 <b>검증한 커밋은 병합 뒤에도 <code>main</code> 의 조상이 «아닙니다»</b> —
+    <b>「그 커밋이 역사에 들어 있나」로는 영원히 못 묻습니다.</b><sup><a href="#w4">[4]</a></sup>
+  </p>
+
+  <blockquote>
+    「<b>그렇다고 <code>main</code> 트리 = 브랜치 트리도 아니다</b>」 — <code>main</code> 이 그 사이에 문서를 여럿 받았기 때문입니다.<sup><a href="#w4">[4]</a></sup>
+  </blockquote>
+
+  <p>그래서 물을 수 있는 형태가 <b>하나</b>였습니다 — <b>「차이가 문서류뿐인가」.</b></p>
+
+  <div class="term"><span class="d">git diff --name-only main 7f87dd7 -- «문서 셋 제외»</span>
+
+<span class="g">비어 있음</span>   <span class="d">-&gt; 코드 파일이 0 개. 검증한 코드가 «바이트 그대로» 착지했다</span>
+
+<span class="d">[미끼] 제외 없이 같은 명령</span>   <span class="y">AGENTS.md · docs/history/*.html …</span>  <span class="d">-&gt; 대조기가 살아 있다</span><sup><a href="#w6">[6]</a></sup></div>
+
+  <p class="note">
+    <b>이 편도 그 명령을 직접 돌려 확인했고, 미끼를 함께 걸었습니다</b> —
+    <b>「비어 있음」은 명령이 고장 나도 「비어 있음」으로 나옵니다.</b>
+    제외를 뺀 같은 명령이 <b>파일 목록을 뱉는 것</b>을 보고서야 그 「비어 있음」이 뜻을 가집니다.
+  </p>
+
+  <hr>
+
+  <h2>이 편이 답하지 않는 것</h2>
+  <div class="q">해당 없음 — 그리고 왜 없나</div>
+
+  <p>
+    일지편은 열두 질문 중 <b>1 · 2 · 6 · 7 · 8 · 11 · 12</b>에 답합니다.
+    <b>3 · 4 · 5 · 9 · 10 은 기편의 몫</b>인데, <b><code>#34</code> 가 속한 구간의 기편은 아직 없습니다</b> —
+    이 대상은 <a href="12_2026-08-24_G4_%EC%8A%A4%ED%8E%99%EC%97%90%EC%84%9C_%EC%B2%AB_%EB%B3%91%ED%95%A9%EA%B9%8C%EC%A7%80.html">제12편</a>이 다룬
+    G4 «뒤»에 있고, 다음 게이트를 지날 때 그 편이 이 구간을 봅니다.
+  </p>
+
+  <p class="note">
+    <b>그리고 이 대상이 왜 「비차단」으로 몇 주 남아 있었는지</b>는 이 편이 아니라
+    <b>그것을 처음 적어 둔 자리의 몫</b>입니다. 이 편이 아는 것은
+    <b>적혀 있었기 때문에 오늘 열렸다</b>는 것까지입니다.<sup><a href="#w5">[5]</a></sup>
+  </p>
+
+  <div class="fn">
+    <h3>각주 — 사료 출처</h3>
+    <ol>
+      <li id="w1"><span class="path">WORK_LOGS/whole-life/IMP_fix-tree-kill-masks-cancellation__ORD-IMP-34.md</span> — <span class="quote">「`terminate_process_tree()` 의 첫 줄이 `system_taskkill()` 이고, 그것이 `taskkill.exe` 를 못 찾으면 `LifecycleFailure` 를 던진다」</span> · <span class="quote">「호출부 둘이 같은 모양인데 망가지는 방식이 다르다」</span> · <span class="quote">「raise 되면 다음 줄의 `raise`(원본 재발생)에 **도달하지 못한다.** 나가는 예외가 통째로 바뀐다」</span> · <span class="quote">「`shutdown()` 이 `cancel()` 을 **먼저** 부르므로 그 아래 drain task 취소가 통째로 안 돈다」</span> · <span class="quote">「만들어지지 않은 게 아니라 도달되지 않는다」</span> · <span class="quote">「**셋 다 티켓 서술 그대로다**」</span> · <span class="quote">「죽이기만 하고 거두지 않아서」</span> · <span class="quote">「**테스트를 안 썼으면 「고쳤다」고 보고했을 자리다.**」</span> · <span class="quote">「올라가는 예외 타입이 바뀐다」</span> · <span class="quote">「그 필드는 **budget breach 전용**이다」</span> · <span class="quote">「운영자가 손쓸 수 있는 것은 뒤쪽」</span> · <span class="quote">「그 가드가 다른 사고를 잡았다」</span> · <span class="quote">「「hits=0」만 찍었으면 두 번 다 깨끗한 0 으로 읽혔다」</span> · <span class="quote">「막을 수 없는 것은 알려 두는 것이 유일한 처리」</span> · <span class="quote">「red: 9 | survived: 0 | hang: 0 | skipped: 0」</span></li>
+      <li id="w2"><span class="path">WORK_LOGS/whole-life/REV_7f87dd7__ORD-REV-7f87dd7.md</span> — <span class="quote">「verdict: "MERGEABLE"」</span> · <span class="quote">「내 판단상 병합 가능」</span> · <span class="quote">「blocking 0 / 잔여 2」</span> · <span class="quote">「「하나만 고치면 다른 쪽 테스트가 빨갛다」가 양방향으로 선다」</span> · <span class="quote">「사망 단언은 부기가 아니라 **OS에 직접**」</span> · <span class="quote">「잔여(비차단)**: `terminate_process_only` 반환값 무시」</span> · <span class="quote">「티켓이 명시적으로 뺀 「taskkill을 찾았는데 실패」의 거울상이라 범위 판단 존중」</span> · <span class="quote">「버린 대안 B·C의 논거 검증(재구축 아님)」</span> · <span class="quote">「**옳다.**」</span></li>
+      <li id="w3"><span class="path">WORK_LOGS/whole-life/CLS_fix-tree-kill-masks-cancellation__ORD-CLS-34-pr.md</span> — <span class="quote">「**구현자 보고에는 변이 «이름»만 있고 치환쌍이 없다.**」</span> · <span class="quote">「두 배터리가 **같은 코드에 대한 독립적인 읽기**가 됐다」</span> · <span class="quote">「앵커 하나(G)는 처음에 **두 번** 맞았다」</span> · <span class="quote">「**사전 대조가 없었으면 그 변이가 엉뚱한 함수를 고쳤을 것이다.**」</span> · <span class="quote">「한 번도 안 빨개졌다」</span> · <span class="quote">「주장보다 더 멀리 닿는 변이가 없다는 뜻이다」</span> · <span class="quote">「**파이프 끝의 `head` 가 종료코드를 삼킨다.**」</span> · <span class="quote">「안 맞는 앵커는 SKIP 으로 보고되고, SKIP 은 커버리지처럼 보인다」</span> · <span class="quote">「비차단이지만 본문에 없으면 병합과 함께 사라진다」</span></li>
+      <li id="w4"><span class="path">WORK_LOGS/whole-life/CLS_fix-tree-kill-masks-cancellation__ORD-CLS-34-merge.md</span> — <span class="quote">「**squash 전용 저장소라 `7f87dd7` 은 병합 뒤에도 `main` 의 조상이 아니다.**」</span> · <span class="quote">「그렇다고 `main` 트리 = `7f87dd7` 트리도 아니다」</span> · <span class="quote">「**코드 파일이 0 개다.**」</span> · <span class="quote">「바이트 그대로** 착지했다」</span> · <span class="quote">「「초록이니 됐다」와 「검증한 코드가 그대로 들어갔나」는 다른 질문이고, 뒤엣것을 물었다」</span> · <span class="quote">「**측정 -&gt; 예측 -&gt; 검증까지 한 바퀴 돌았다.**」</span></li>
+      <li id="w5"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — <b>살아 있는 장부라 해시를 쓰지 않고 «절 제목 줄 전문»으로 가리킵니다.</b>
+        <span class="quote">「## 2026-08-24 07:32 — 대표 확정: 다음은 `#34`. `ORD-IMP-34` 발행」</span> ·
+        <span class="quote">「## 2026-08-24 07:38 — `ORD-IMP-34` 착수 회신 · **형태 선택을 내가 하지 않았다**」</span><br>
+        <span class="note"><b>이 편이 원장을 «당대 사료»로 쓴 첫 편입니다.</b> 원장은 2026-08-24 01:17 에 열렸고
+        이 대상은 07:32 에 발행됐습니다 — <b>앞의 세 일지편은 전부 원장이 열리기 전 구간</b>이라
+        되돌림의 사유를 리뷰어·완결자 보고에서만 읽었습니다.
+        <b>장부는 계속 자라므로 절 제목이 그 자리를 가리키는 유일한 안정된 손잡이입니다.</b></span></li>
+      <li id="w6">저장소·원격 조회 (2026-08-24 13:20) — <span class="path">gh api .../pulls/44</span> · <span class="path">.../issues/34</span> · <span class="path">git diff --name-only origin/main 7f87dd7</span> · <span class="path">grep -n '^## ' &lt;리뷰 보고서 넷&gt;</span>.<br>
+        <span class="quote">「PR44 merged=true merge_commit=98ee8bc head=7f87dd7 files=7」</span> ·
+        <span class="quote">「이슈34 closed · completed · 2026-08-24T04:06:07Z」</span> ·
+        <span class="quote">「문서 셋 제외 -&gt; 비어 있음」</span><br>
+        <span class="note"><b>미끼를 셋 걸었습니다</b> — ① 제외를 뺀 같은 <code>diff</code> 는 <b>파일 목록을 뱉습니다</b>
+        ② 이슈 <code>#33</code> 을 같이 물어 조회가 <code>open</code> 도 찾아내는지 봤습니다
+        ③ 재리뷰 절 세기는 <b>「머지 가능 아님」 문구 세기와 «따로»</b> 했습니다 —
+        <b><code>#13</code> 은 그 문구가 0 건인데도 판정을 철회했습니다.</b>
+        <b>「0 건」이 「그런 일이 없었다」가 아닌 자리라, 문구가 아니라 «절 제목»으로 셌습니다.</b><br>
+        <b>파일이 아니라 원격·저장소 조회라 조회 시점을 함께 적습니다.</b></span></li>
+    </ol>
+
+    <p class="note" style="margin-top:20px">
+      각주에 줄 번호를 쓰지 않습니다. 인용문은 <code>grep</code> 으로 찾히고 사라졌으면
+      <b>사라졌다는 사실 자체가 신호</b>가 됩니다. <b>히트 수가 아니라 히트한 줄을 보십시오.</b>
+      <b>그리고 각주는 문구의 «존재»를 보증하지 그 문구의 «자격»을 보증하지 않습니다</b> —
+      자격 셋(주인·시각·생존)은 <a href="00_%EC%97%B0%EB%8C%80%EA%B8%B0.html">연대기</a>의 「이 폴더를 읽는 법」에 있습니다.
+    </p>
+
+    <p class="note">
+      <b>이 편의 사료 넷은 전부 <span class="path">WORK_LOGS/whole-life/</span> 쪽입니다</b> —
+      앞의 세 일지편은 전부 평면 <span class="path">WORK_LOGS/</span> 였습니다.
+      <b>대상이 원장 개설 뒤로 넘어오면서 사료가 놓이는 자리도 바뀌었습니다.</b>
+    </p>
+
+    <div class="term">Nest 사료 — <span class="g">동결.</span> <span class="d">sha256(앞 16자) + 바이트</span>
+<span class="d">  7cc33dd20bd5f758   9900B  IMP_fix-tree-kill-masks-cancellation__ORD-IMP-34.md   w1
+  e9e9983187144b02   7878B  REV_7f87dd7__ORD-REV-7f87dd7.md                       w2
+  9b20135b79c9e8c5   5231B  CLS_…__ORD-CLS-34-pr.md                               w3
+  dd1b4a4b8878ba04   3209B  CLS_…__ORD-CLS-34-merge.md                            w4</span>
+
+살아 있는 장부 — <span class="d">해시를 쓰지 않는다. 절 제목 줄 전문으로 가리킨다 (w5)</span>
+
+저장소·원격 조회 — <span class="d">커밋은 SHA 로 얼려 있음 · 상태는 조회 시점으로 (w6)</span></div>
+  </div>
+
+</div>
+</body>
+</html>
