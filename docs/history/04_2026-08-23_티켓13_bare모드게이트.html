@@ -35,7 +35,7 @@
   .big{font-size:26px; line-height:1.5; font-weight:500; margin:0 0 18px}
   p{font-size:17px; margin:0 0 18px}
   .note{font-size:15px; color:var(--muted)}
-  a{color:var(--link)}
+  a{color:var(--link); text-underline-offset:3px; text-decoration-thickness:1px}
   .card{background:var(--paper-2); border:1px solid var(--rule-solid); border-radius:8px;
         padding:26px 28px; margin:26px 0}
   .warn{border-color:var(--yellow)}
@@ -518,7 +518,7 @@ S-J1  수집기 shell=True vs no-shell runner
 
   <p class="note">
     <b>이름이 같고 하는 일이 같은데 계약이 정반대입니다.</b> 그리고 둘 다 그렇게 하기로
-    <b>docstring 에 이유까지 적어 두었습니다</b> — 실수가 아니라 <b>서로 다른 자리에서 각각 옳은 선택</b>입니다.
+    <b>docstring 에 이유까지 적어 두었습니다</b> — <b>둘 다 «이유가 적힌» 선택</b>이고, <b>그 이유가 서로 다른 자리를 가리킵니다.</b>
     스크립트는 증거를 모으는 도구라 <b>애매한 채로 통과시키면 안 되고</b>,
     런타임은 애매함 자체를 <code>unknown_outcome</code> 으로 <b>기록해야 하는</b> 쪽입니다.
   </p>

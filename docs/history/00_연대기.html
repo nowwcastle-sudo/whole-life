@@ -71,6 +71,13 @@
   .toc a:hover{border-bottom-color:var(--link); color:var(--link)}
   .toc .one{font-size:16px; color:var(--muted); margin:10px 0 0}
   .toc .date{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; font-size:13px; color:var(--soft)}
+  a{color:var(--link); text-underline-offset:3px; text-decoration-thickness:1px}
+  .term{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; font-size:14px; line-height:1.7;
+        background:var(--zone); color:var(--ink); border:1px solid var(--rule-solid);
+        border-radius:8px; padding:20px 22px; margin:0 0 18px; overflow-x:auto; white-space:pre-wrap}
+  .term .g{color:var(--green)}
+  .term .d{color:var(--soft)}
+  .term .r{color:var(--red)}
   .toc li.empty .title{font-size:20px; font-weight:600; color:var(--soft)}
   .toc li.empty .one{color:var(--soft)}
 </style>
@@ -358,6 +365,37 @@
       <b>기억이 검사 범위가 되면 잊은 것은 검사 밖에 남습니다.</b>
     </p>
   </div>
+
+  <p class="note">
+    <b>각주는 문구의 «존재»를 보증하지, 그 문구의 «자격»을 보증하지 않습니다.</b>
+    각주가 하는 말은 <b>「이 문구가 저 자리에 있다」</b> 하나뿐입니다.
+    <b>자격은 세 갈래로 따로 물어야 합니다</b> — 셋 다 이 폴더에서 한 번씩 걸린 적이 있습니다.
+  </p>
+
+  <div class="term"><span class="d">주인인가</span>   인용문이 그 파일에 있다      <span class="r">≠</span>  그 파일이 그 «사실»의 주인이다
+<span class="d">그때인가</span>   그 문구가 그 이벤트에 있다   <span class="r">≠</span>  그 이벤트가 그 문장을 받칠 «시각»에 있다
+<span class="d">아직인가</span>   그 문구가 원문에 있다        <span class="r">≠</span>  그것이 아직 «살아 있는» 주장이다</div>
+
+  <p class="note">
+    <b>「주인인가」</b> — 문구는 맞는데 <b>출처가 틀린</b> 자리입니다.
+    어떤 계약 문구를 <code>#13</code> 이 쓴 것으로 적었는데, 그 파일은 <code>#16</code> 이 만든 것이었습니다.
+    <b>문구가 있다는 것과 그 문구가 그 사람 것이라는 것은 다릅니다.</b>
+  </p>
+
+  <p class="note">
+    <b>「그때인가」</b> — 문구도 출처도 맞는데 <b>시각이 거꾸로인</b> 자리입니다.
+    「결정 전에 단서가 상에 있었다」를 <b>결정 74초 «뒤»의 말</b>로 받치고 있었습니다
+    (<a href="01_2026-08-22_%ED%84%B0%EB%8B%A6%EA%B8%B0.html">제01편</a>).
+    <b>같은 사람이 같은 말을 두 번 했다고 두 번이 같은 사실을 증명하지 않습니다</b> —
+    <b>언제 했는지가 그 말이 무엇을 받칠 수 있는지를 정합니다.</b>
+  </p>
+
+  <p class="note">
+    <b>「아직인가」</b> — 문구는 원문에 있는데 <b>그 주장은 이미 거둬진</b> 자리입니다.
+    리뷰어가 자기 판정을 <s>취소선</s>으로 지운 줄이 <code>grep</code> 에 그대로 잡힙니다
+    (<a href="06_2026-08-23_%ED%8B%B0%EC%BC%9315_%EA%B2%BD%EA%B3%84%EC%95%88%EC%9D%98%EC%8A%A4%ED%8A%B8%EB%A6%BC.html">제06편</a>).
+    <b>「찾았다」와 「살아 있다」는 다릅니다. 히트 수가 아니라 히트한 줄을 봐야 합니다.</b>
+  </p>
 
   <p class="note">
     <b>각주가 붙은 문장은 사료로 확인한 것이고, 안 붙은 문장은 사관의 이해입니다.</b>
