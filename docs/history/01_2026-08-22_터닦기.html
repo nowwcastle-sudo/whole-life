@@ -368,10 +368,34 @@ b03b919            Add AgentRuntime launch safety seam and Python CI (#11)   <sp
 
   <p class="note">
     <b>커밋 메시지가 원인을 정확히 적었습니다.</b> <code>#8</code> 과 <code>#9</code> 가 각각
-    <code>docs-ci.yml</code> 을 건드렸고, 병합되는 순서 때문에 나중 것이 앞선 것의
-    <b>SHA 고정과 기준선 검증 단계를 덮었습니다.</b>
+    <code>docs-ci.yml</code> 을 건드렸고, 병합되는 순서 때문에 나중 것이 앞선 것을 덮었습니다.
     <b>누구의 실수라고 적을 사람이 없습니다</b> — 두 변경 다 옳았고, 순서가 결과를 만들었습니다.
   </p>
+
+  <div class="card warn">
+    <div class="tag">덮인 것이 「단계 하나」가 아니었습니다 — 파일을 열어 재봤습니다</div>
+    <div class="term"><span class="d">$ git show &lt;SHA&gt;:.github/workflows/docs-ci.yml</span>
+
+<span class="g">4f24c97 (#8)</span>   jobs: <span class="g">docs-checks</span>   checkout@11bd7190…(SHA 고정)   <span class="g">기준선 검증 있음</span>   링크 검사
+<span class="r">40c2a5e (#9)</span>   jobs: <span class="r">link-check</span>    checkout<span class="r">@v4</span>(태그)            <span class="r">기준선 검증 없음</span>   링크 검사
+<span class="g">35ecb97 (#18)</span>  jobs: <span class="g">docs-checks</span>   checkout@11bd7190…(SHA 고정)   <span class="g">기준선 검증 있음</span>   링크 검사</div>
+    <p style="margin:16px 0 12px">
+      <b><code>#9</code> 는 잡의 <b>이름</b>까지 되돌렸고, checkout 을 <b>핀 없는 <code>@v4</code> 태그</b>로 되돌렸습니다.
+      그리고 그 태그가 저장소 정책(SHA 고정 필수)에 걸립니다 —
+      <b>터잡이가 <code>#8</code> 에서 이미 실측해 적어 둔 바로 그 함정</b>입니다.<sup><a href="#b1">[1]</a></sup>
+    </p>
+    <div class="term"><span class="d">$ gh api repos/{owner}/{repo}/commits/&lt;SHA&gt;/check-suites</span>
+<span class="g">4f24c97 (#8)</span>   github-actions  <span class="g">conclusion = success</span>
+<span class="r">40c2a5e (#9)</span>   github-actions  <span class="r">conclusion = startup_failure</span>
+
+<span class="d">$ gh api .../commits/40c2a5e/check-runs   ->  (비어 있음)</span></div>
+    <p style="margin:16px 0 0">
+      <b>워크플로가 아예 «시작하지 못했습니다».</b> 그리고 <code>startup_failure</code> 는
+      <b>check-run 을 하나도 만들지 않습니다</b> —
+      <b>커밋 화면에 빨간 X 가 뜨는 것이 아니라 «아무것도» 없습니다.</b><sup><a href="#b7">[7]</a></sup>
+      <b>「실패한 검사」와 「없는 검사」의 차이가 여기서 제일 크게 벌어집니다.</b>
+    </p>
+  </div>
 
   <div class="card warn">
     <div class="tag">이 구간이 겪은 나머지 함정 넷</div>
@@ -417,9 +441,13 @@ hash=$(git show HEAD:"$path" | sha256sum | cut -d' ' -f1)</div>
     <table class="tbl">
       <thead><tr><th>무엇이 막았을까</th><th>왜</th></tr></thead>
       <tbody>
-        <tr><td>워크플로 자신을<br>검사하는 검사</td>
-            <td><b>사라진 것이 검사 자체</b>였으므로, 남은 검사들은 <b>실패할 방법이 없었습니다.</b>
-            「이 워크플로에 기준선 검증 단계가 있는가」를 묻는 한 줄이 있었다면 <code>#18</code> 이 필요 없었습니다.</td></tr>
+        <tr><td>required<br>status checks</td>
+            <td><b>이것이 실제로 막았을 자리입니다.</b> 그 구간에 <code>docs-checks</code> 라는 이름의
+            check-run 이 <b>하나도 만들어지지 않았습니다</b>(잡 이름이 <code>link-check</code> 로 되돌았고
+            워크플로가 <code>startup_failure</code> 였습니다).<sup><a href="#b7">[7]</a></sup>
+            <b>필수 검사로 걸려 있었다면 보고할 것이 없어 병합이 멈췄을 것입니다.</b>
+            <span class="note">— 앞 문장 중 <b>「없으면 멈춘다」는 GitHub 동작에 대한 이해이고 이 편이 잰 것이 아닙니다.</b>
+            잰 것은 <b>「그 이름의 check-run 이 없었다」</b>까지입니다.</span></td></tr>
         <tr><td><code>main</code> 분기 보호</td>
             <td><b>0단계가 세우지 않은 유일한 문</b>입니다. 이틀 뒤 <code>#14</code> 가
             <code>unit-tests</code> 실패를 달고 <code>main</code> 에 들어갔고, <b>기계가 아무것도 안 막았습니다.</b><sup><a href="#b6">[6]</a></sup>
@@ -555,6 +583,7 @@ hash=$(git show HEAD:"$path" | sha256sum | cut -d' ' -f1)</div>
       <li id="b4"><span class="path">docs/project-context.md</span> — <span class="quote">「Every step starts from the corresponding conformance failures in the normative specification.」</span> · <span class="quote">「Hashes are taken over the stored Git blob (LF line endings)」</span> · <span class="quote">「The original 709-line research document is intentionally not copied into this repository.」</span> · <span class="quote">「Gate 2 is the one still open.」</span></li>
       <li id="b5">커밋 <span class="path">35ecb97</span> (PR #18) 메시지 — <span class="quote">「Restore pinned docs CI gates」</span> · <span class="quote">「Recover the checkout SHA pin and approved-baseline verification step overwritten by merge ordering.」</span></li>
       <li id="b6">조회 — <span class="path">gh api repos/{owner}/{repo}/commits/9e4c076/check-runs</span> · <span class="path">.../branches/main</span> (2026-08-24 08:26) — <span class="quote">「9e4c076 → unit-tests=failure」</span> · <span class="quote">「{"protected": false}」</span><br><span class="note">파일이 아니라 <b>원격 조회</b>다. 조회 시점을 함께 적는다 — 값이 달라지면 그 사이에 무언가 다시 돌았다는 뜻이다. 자세한 것은 <a href="12_2026-08-24_G4_%EC%8A%A4%ED%8E%99%EC%97%90%EC%84%9C_%EC%B2%AB_%EB%B3%91%ED%95%A9%EA%B9%8C%EC%A7%80.html">제12편</a>에 있다.</span></li>
+      <li id="b7">조회 — <span class="path">gh api repos/{owner}/{repo}/commits/&lt;SHA&gt;/check-suites</span> · <span class="path">.../check-runs</span> (2026-08-24 08:58). <span class="quote">「4f24c97 → github-actions conclusion=success」</span> · <span class="quote">「40c2a5e → github-actions conclusion=startup_failure」</span> · <span class="quote">「40c2a5e check-runs → 비어 있음」</span><br><span class="note">음성 대조로 없는 SHA 를 조회하면 <span class="quote">「422 No commit found for SHA」</span> 가 옵니다 — <b>「돌았는데 빈 것」과 「없는 커밋」은 구별됩니다.</b> 파일이 아니라 <b>원격 조회</b>라 시점을 함께 적습니다.</span></li>
     </ol>
 
     <p class="note" style="margin-top:20px">
