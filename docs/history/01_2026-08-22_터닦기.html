@@ -222,9 +222,9 @@ b03b919            Add AgentRuntime launch safety seam and Python CI (#11)   <sp
   </p>
 
   <figure>
-    <svg viewBox="0 0 860 496" role="img" aria-labelledby="bst-gates-title bst-gates-desc">
+    <svg viewBox="0 0 860 512" role="img" aria-labelledby="bst-gates-title bst-gates-desc">
       <title id="bst-gates-title">0단계가 세운 문과 세우지 않은 문</title>
-      <desc id="bst-gates-desc">사람 앞의 문인 git 가드레일 훅과 문서의 문인 docs CI는 0단계에 세워졌고, 코드의 문은 코드가 없어 미뤄졌으며, 착지의 문인 main 분기 보호는 끝내 세우지 않았다는 것을 네 층으로 보여주는 그림.</desc>
+      <desc id="bst-gates-desc">사람 앞의 문인 git 가드레일 훅과 문서의 문인 docs CI는 0단계에 세워졌으나 문서의 문은 같은 구간 안에서 한 번 덮였다가 되살아났고, 코드의 문은 코드가 없어 미뤄졌으며, 착지의 문인 main 분기 보호는 끝내 세우지 않았다는 것을 네 층으로 보여주는 그림.</desc>
       <rect width="100%" height="100%" fill="var(--paper)"/>
 
       <rect x="32" y="40" width="796" height="88" rx="8" fill="var(--green-tint)" stroke="var(--green)" stroke-width="1"/>
@@ -235,32 +235,34 @@ b03b919            Add AgentRuntime launch safety seam and Python CI (#11)   <sp
       <text x="804" y="102" font-size="12" fill="var(--green)" text-anchor="end"
             font-family="'Geist Mono',ui-monospace,monospace">push · reset --hard · clean -f · branch -D · checkout .</text>
 
-      <rect x="32" y="144" width="796" height="88" rx="8" fill="var(--green-tint)" stroke="var(--green)" stroke-width="1"/>
+      <rect x="32" y="144" width="796" height="104" rx="8" fill="var(--green-tint)" stroke="var(--green)" stroke-width="1"/>
       <text x="56" y="172" font-size="12" fill="var(--green)" letter-spacing="0.14em"
-            font-family="'Geist Mono',ui-monospace,monospace">세웠다 — 문서의 문</text>
+            font-family="'Geist Mono',ui-monospace,monospace">세웠다 — 문서의 문 · 그런데 한 번 무너졌다</text>
       <text x="56" y="206" font-size="20" fill="var(--green)" font-weight="600"
             font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">docs CI</text>
       <text x="804" y="206" font-size="12" fill="var(--green)" text-anchor="end"
             font-family="'Geist Mono',ui-monospace,monospace">상대링크 검사 · 승인 기준선 해시 검증</text>
+      <text x="56" y="232" font-size="12" fill="var(--red)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">#8 에 세웠는데 #9 가 덮었고 #18 이 되살렸다 — 그 사이 워크플로는 시작조차 못 했다</text>
 
-      <rect x="32" y="248" width="796" height="88" rx="8" fill="none"
+      <rect x="32" y="264" width="796" height="88" rx="8" fill="none"
             stroke="var(--rule-solid)" stroke-width="1" stroke-dasharray="6,5"/>
-      <text x="56" y="276" font-size="12" fill="var(--soft)" letter-spacing="0.14em"
+      <text x="56" y="292" font-size="12" fill="var(--soft)" letter-spacing="0.14em"
             font-family="'Geist Mono',ui-monospace,monospace">못 세웠다 — 코드의 문</text>
-      <text x="56" y="310" font-size="20" fill="var(--muted)" font-weight="600"
+      <text x="56" y="326" font-size="20" fill="var(--muted)" font-weight="600"
             font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">python-ci · pre-commit</text>
-      <text x="804" y="310" font-size="12" fill="var(--soft)" text-anchor="end"
+      <text x="804" y="326" font-size="12" fill="var(--soft)" text-anchor="end"
             font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">코드가 없었다 — #11 에 함께 왔다</text>
 
-      <rect x="32" y="352" width="796" height="104" rx="8" fill="var(--red-tint)"
+      <rect x="32" y="368" width="796" height="104" rx="8" fill="var(--red-tint)"
             stroke="var(--red)" stroke-width="1.2" stroke-dasharray="6,5"/>
-      <text x="56" y="380" font-size="12" fill="var(--red)" letter-spacing="0.14em"
+      <text x="56" y="396" font-size="12" fill="var(--red)" letter-spacing="0.14em"
             font-family="'Geist Mono',ui-monospace,monospace">안 세웠다 — 착지의 문</text>
-      <text x="56" y="414" font-size="20" fill="var(--red)" font-weight="600"
+      <text x="56" y="430" font-size="20" fill="var(--red)" font-weight="600"
             font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">main 분기 보호</text>
-      <text x="804" y="414" font-size="12" fill="var(--red)" text-anchor="end"
+      <text x="804" y="430" font-size="12" fill="var(--red)" text-anchor="end"
             font-family="'Geist Mono',ui-monospace,monospace">protected: false</text>
-      <text x="56" y="440" font-size="12" fill="var(--red)"
+      <text x="56" y="456" font-size="12" fill="var(--red)"
             font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">이틀 뒤 #14 가 빨간 CI 를 달고 main 에 들어갔다 — 아무도 안 막았다</text>
     </svg>
     <figcaption>
