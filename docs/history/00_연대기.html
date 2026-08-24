@@ -48,6 +48,11 @@
      margin:56px 0 18px; font-weight:500;
      font-family:"Geist Mono",ui-monospace,"Consolas",monospace}
 
+  .tbl{width:100%; border-collapse:collapse; font-size:15px}
+  .tbl td{padding:13px 12px 13px 0; border-bottom:1px solid var(--rule);
+          vertical-align:top; line-height:1.6}
+  .tbl tr:last-child td{border-bottom:0}
+  .tbl td:first-child{font-weight:600; width:32%; white-space:nowrap}
   figure{margin:34px 0}
   figcaption{font-size:14px; color:var(--muted); margin-top:12px; text-align:center; line-height:1.6}
   svg{display:block; width:100%; height:auto}
@@ -251,6 +256,42 @@
     <b>모든 사실 진술에는 각주가 붙고, 각주는 「경로 + 인용문」입니다.</b>
     줄 번호는 쓰지 않습니다 — 파일이 바뀌면 줄 번호는 조용히 다른 곳을 가리키지만,
     인용문은 <code>grep</code>으로 찾히고 사라졌으면 사라졌다는 사실 자체가 신호가 됩니다.
+  </p>
+
+  <p>
+    <b>편은 이어 붙습니다. 그래서 나중에 틀리는 줄이 생깁니다 — 두 종류이고, 하나만 고칩니다.</b>
+  </p>
+
+  <div class="card">
+    <table class="tbl">
+      <tbody>
+        <tr>
+          <td>그때는 맞았던 줄</td>
+          <td><b>고치지 않습니다.</b> 「이 편을 쓰는 동안 재리뷰가 도착했습니다(01:32)」처럼
+            <b>그때 무엇을 알고 있었는지의 기록</b>입니다. 고치면 <b>그 시점이 사라집니다.</b></td>
+        </tr>
+        <tr>
+          <td>그때도 틀렸던 줄</td>
+          <td><b>고칩니다.</b> 쓸 때 이미 사실이 아니었고 <b>확인을 안 했을 뿐</b>인 줄입니다.
+            고치면서 <b>무엇이 어떻게 틀렸는지를 각주에 남깁니다</b> — 지우지 않습니다.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="margin:16px 0 0" class="note">
+      <b>낱말로 훑는 것은 후보를 모으는 것이고, 판정이 아닙니다.</b>
+      둘은 같은 낱말을 품고 있어서 <b>검색으로는 안 갈립니다</b> — 한 줄씩 읽어야 갈립니다.
+      그리고 훑을 낱말은 <b>기억이 아니라 그 주장에서</b> 뽑습니다.
+      <b>기억이 검사 범위가 되면 잊은 것은 검사 밖에 남습니다.</b>
+    </p>
+  </div>
+
+  <p class="note">
+    <b>고쳤다는 「표시」와 「고친 것」은 같은 자리에 있어야 합니다.</b>
+    절 머리에 「대체됨」만 달고 아래의 틀린 문장을 두거나,
+    새 실측을 카드로 붙이고 바로 위 그림을 그대로 두면 —
+    <b>표시를 읽은 사람만 안 틀리고, 안 읽은 사람은 그대로 틀립니다.</b>
+    <b>특히 눈에 잘 안 띄는 자리를 따로 봅니다</b> — 요약 그림, 머리말 한 문장,
+    그리고 그림의 <code>desc</code>(화면 낭독기로만 드러납니다).
   </p>
 
   <p class="note">
