@@ -20,6 +20,7 @@ import unittest
 from pathlib import Path
 
 from tests.runtime.test_lifecycle import still_running
+from tests.support.lifecycle_fixtures import KILLER_UNAVAILABLE
 from tests.support.launch_fixtures import launch_plan, turn_request
 from whole_life.runtime.lifecycle import system_taskkill
 from whole_life.runtime.spawn import (
@@ -471,6 +472,77 @@ class PromptHandoverTests(unittest.IsolatedAsyncioTestCase):
                 )
             finally:
                 force_stop(grandchild)
+
+    async def test_a_failed_tree_kill_does_not_replace_the_reason_for_it(self):
+        """Issue #34, the spawn half: the caller asked why the spawn ended.
+
+        The escalation here runs inside `except BaseException`, so anything it
+        raises leaves in place of the exception on its way out — and the caller
+        is handed a lifecycle complaint about a run it never learned was
+        cancelled. Both ways `system_taskkill` can refuse are exercised, because
+        clearing the variables never reaches the branch that looks for the file.
+        """
+        for name, broken, _reason in KILLER_UNAVAILABLE:
+            with self.subTest(name):
+                with tempfile.TemporaryDirectory() as tmp:
+                    marker = Path(tmp) / "pid"
+                    plan = launch_plan(
+                        executable=Path(sys.executable),
+                        args=("-c", RECORDS_ITS_PID_THEN_SLEEPS.format(marker=marker)),
+                        turn_request=turn_request(prompt=UNREADABLE_PROMPT),
+                    )
+                    spawning = asyncio.ensure_future(SubprocessSpawner().spawn(plan))
+                    pid = await self.recorded_pid(marker)
+
+                    spawning.cancel()
+                    # Narrow on purpose: `force_stop` in the cleanup below needs
+                    # the killer this block is hiding.
+                    with broken():
+                        with self.assertRaises(asyncio.CancelledError):
+                            await spawning
+
+                    try:
+                        self.assertFalse(
+                            await settled(pid, False),
+                            "the child outlived a spawn whose tree kill could not run",
+                        )
+                    finally:
+                        force_stop(pid)
+
+    async def test_the_cleanup_failure_travels_with_the_original(self):
+        """Alongside, not instead — the other half of #34's first criterion.
+
+        Swallowing the lifecycle error keeps the caller's own exception intact
+        and loses the one fact that explains why the child's descendants may
+        still be running. A note rides on the exception already leaving, so
+        nothing is displaced and nothing is dropped.
+        """
+        for name, broken, reason in KILLER_UNAVAILABLE:
+            with self.subTest(name):
+                with tempfile.TemporaryDirectory() as tmp:
+                    marker = Path(tmp) / "pid"
+                    plan = launch_plan(
+                        executable=Path(sys.executable),
+                        args=("-c", RECORDS_ITS_PID_THEN_SLEEPS.format(marker=marker)),
+                        turn_request=turn_request(prompt=UNREADABLE_PROMPT),
+                    )
+                    spawning = asyncio.ensure_future(SubprocessSpawner().spawn(plan))
+                    pid = await self.recorded_pid(marker)
+
+                    spawning.cancel()
+                    with broken():
+                        with self.assertRaises(asyncio.CancelledError) as caught:
+                            await spawning
+
+                    try:
+                        notes = getattr(caught.exception, "__notes__", [])
+                        self.assertTrue(
+                            any(reason in note for note in notes),
+                            f"the cancellation carried no reason for the failed "
+                            f"cleanup; notes were {notes!r}",
+                        )
+                    finally:
+                        force_stop(pid)
 
     async def recorded_pid(self, marker, *, timeout=10.0):
         """The child's own pid, once it has demonstrably started.

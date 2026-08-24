@@ -21,6 +21,8 @@ from whole_life.runtime.delegation import DelegationLedger
 from whole_life.runtime.lifecycle import (
     FORCED_WAIT_SECONDS,
     GRACEFUL_WAIT_SECONDS,
+    LifecycleFailure,
+    terminate_process_only,
     terminate_process_tree,
 )
 from whole_life.runtime.outcome import TerminalEvent, resolve_outcome
@@ -79,6 +81,11 @@ class RunObserver:
         #: Set when a cancellation arrives *after* a terminal result. Then
         #: the exit status is our own kill, not the provider's verdict.
         self._cancelled_after_terminal = False
+        #: Why the escalation could not run, when it could not. Kept apart from
+        #: the run's diagnostic on purpose: this is a fact about our own
+        #: cleanup, and filing it under the turn's outcome would send a reader
+        #: after the provider for something the broker's environment caused.
+        self._cleanup_failure: str | None = None
         #: The drain tasks, held so they can be counted and stopped from
         #: outside. `close()` has to promise there are none left, and a
         #: task nobody holds a reference to cannot be counted.
@@ -243,10 +250,37 @@ class RunObserver:
         # Still alive after the window. `UNKNOWN` rather than `FORCED` when the
         # tree cannot be confirmed dead: descendants may still be running, and
         # a tidy report of "forced" would claim the request stopped.
-        ended = await terminate_process_tree(
-            self._process, forced_wait=forced_wait
-        )
+        try:
+            ended = await terminate_process_tree(
+                self._process, forced_wait=forced_wait
+            )
+        except LifecycleFailure as failure:
+            # The escalation could not run. That is a fact about cleanup, and
+            # letting it leave here in place of the cancellation would hand the
+            # caller an unrelated diagnostic for a run it asked to stop.
+            # `UNKNOWN` is already this method's word for "the tree could not be
+            # confirmed dead", which is exactly what happened.
+            #
+            # Kept rather than dropped: `UNKNOWN` says the tree was not
+            # confirmed dead and says nothing about why, and "the killer is not
+            # on this machine" is the one cause an operator can act on.
+            self._cleanup_failure = str(failure)
+            #
+            # The process we hold a handle on is still ours to end, even without
+            # the helper that would have reached its descendants. Doing less
+            # than we can because we cannot do everything would leave the whole
+            # tree running instead of only what we never had a handle on.
+            await terminate_process_only(
+                self._process, forced_wait=forced_wait
+            )
+            return CancelOutcome.UNKNOWN
         return CancelOutcome.FORCED if ended else CancelOutcome.UNKNOWN
+
+    @property
+    def cleanup_failure(self) -> str | None:
+        """Why ending this run's process tree could not be attempted, if it
+        could not. `None` when the escalation ran, whatever it concluded."""
+        return self._cleanup_failure
 
     def has_child(self) -> bool:
         """True while this run's process has not been reaped."""
