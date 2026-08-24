@@ -1,0 +1,1510 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>제11편 · 일지 — #17 네이티브 워커 강제</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:       #282828;
+    --paper-2:     #32302f;
+    --zone:        #302e2c;
+    --ink:         #ebdbb2;
+    --muted:       #a89984;
+    --soft:        #928374;
+    --rule:        rgba(235,219,178,0.12);
+    --rule-solid:  #504945;
+    --accent:      #fe8019;
+    --accent-tint: rgba(254,128,25,0.12);
+    --link:        #83a598;
+    --green-tint:  rgba(184,187,38,0.10);
+    --red-tint:    rgba(251,73,52,0.10);
+    --yellow-tint: rgba(250,189,47,0.10);
+    --green:       #b8bb26;
+    --red:         #fb4934;
+    --yellow:      #fabd2f;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Geist","Pretendard","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;
+    line-height:1.75; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:880px; margin:0 auto; padding:64px 28px 120px}
+  .kicker{font-size:13px; letter-spacing:.14em; color:var(--soft); text-transform:uppercase;
+          font-family:"Geist Mono",ui-monospace,"Consolas",monospace}
+  h1{font-family:"Instrument Serif","Malgun Gothic",serif;
+     font-size:52px; line-height:1.2; margin:14px 0 6px; letter-spacing:-.01em; font-weight:400}
+  .sub{font-size:17px; color:var(--muted); margin:0 0 8px}
+  .meta{font-size:14px; color:var(--soft); font-family:"Geist Mono",ui-monospace,"Consolas",monospace}
+  hr{border:0; border-top:1px solid var(--rule); margin:48px 0}
+
+  h2{font-size:14px; letter-spacing:.16em; color:var(--soft); text-transform:uppercase;
+     margin:72px 0 4px; font-weight:500;
+     font-family:"Geist Mono",ui-monospace,"Consolas",monospace}
+  .q{font-family:"Instrument Serif","Malgun Gothic",serif;
+     font-size:34px; line-height:1.35; margin:0 0 26px; font-weight:400; letter-spacing:-.01em}
+
+  .big{font-size:26px; line-height:1.5; font-weight:500; margin:0 0 18px}
+  p{font-size:17px; margin:0 0 18px}
+  .note{font-size:15px; color:var(--muted)}
+  a{color:var(--link)}
+
+  .card{background:var(--paper-2); border:1px solid var(--rule-solid); border-radius:8px;
+        padding:26px 28px; margin:26px 0}
+  .warn{border-color:var(--yellow)}
+  .warn .tag{color:var(--yellow); font-weight:600; font-size:13px; letter-spacing:.1em;
+             font-family:"Geist Mono",ui-monospace,monospace}
+
+  figure{margin:34px 0}
+  figcaption{font-size:14px; color:var(--muted); margin-top:12px; text-align:center; line-height:1.6}
+  svg{display:block; width:100%; height:auto}
+
+  .steps{list-style:none; padding:0; margin:0; counter-reset:s}
+  .steps li{position:relative; padding:14px 0 14px 62px; border-top:1px solid var(--rule)}
+  .steps li:last-child{border-bottom:1px solid var(--rule)}
+  .steps li::before{
+    counter-increment:s; content:counter(s);
+    position:absolute; left:0; top:16px; width:34px; height:34px; border-radius:50%;
+    background:var(--zone); color:var(--muted); font-size:14px; font-weight:600;
+    border:1px solid var(--rule-solid);
+    display:flex; align-items:center; justify-content:center;
+    font-family:"Geist Mono",ui-monospace,monospace;
+  }
+  .steps b{display:block; font-size:18px}
+  .steps span{font-size:15px; color:var(--muted)}
+  .steps li.bad::before{color:var(--red); border-color:var(--red)}
+  .steps li.good::before{color:var(--green); border-color:var(--green)}
+
+  code{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; font-size:.9em;
+       background:var(--zone); color:var(--ink); padding:1px 6px; border-radius:4px}
+  .term{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; font-size:14px; line-height:1.7;
+        background:var(--zone); color:var(--ink); border:1px solid var(--rule-solid);
+        border-radius:8px; padding:20px 22px;
+        overflow-x:auto; white-space:pre-wrap}
+  .term .g{color:var(--green)}
+  .term .d{color:var(--soft)}
+
+  .word{background:var(--zone); border-left:3px solid var(--link); padding:12px 16px;
+        font-size:15px; margin:0 0 18px}
+
+  .tbl{width:100%; border-collapse:collapse; font-size:15px}
+  .tbl th{text-align:left; font-size:12px; letter-spacing:.1em; text-transform:uppercase;
+          color:var(--soft); font-weight:500; padding:0 12px 10px 0; border-bottom:1px solid var(--rule-solid);
+          font-family:"Geist Mono",ui-monospace,monospace}
+  .tbl td{padding:13px 12px 13px 0; border-bottom:1px solid var(--rule); vertical-align:top; line-height:1.6}
+  .tbl tr:last-child td{border-bottom:0}
+  .tbl td:first-child{white-space:nowrap; font-weight:600; width:78px}
+  .tbl td:last-child{white-space:nowrap; color:var(--muted); text-align:right}
+  .tbl .cr{color:var(--red); font-weight:600}
+
+  sup a{color:var(--link); text-decoration:none; font-size:12px; font-weight:600; padding:0 1px}
+  .fn{margin-top:80px; border-top:1px solid var(--rule-solid); padding-top:26px}
+  .fn h3{font-size:13px; letter-spacing:.16em; color:var(--soft); text-transform:uppercase; margin:0 0 16px;
+         font-family:"Geist Mono",ui-monospace,monospace; font-weight:500}
+  .fn ol{padding-left:24px; margin:0}
+  .fn li{font-size:14px; color:var(--muted); margin-bottom:11px; line-height:1.65}
+  .fn .path{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; color:var(--ink); font-size:13px}
+  .fn .quote{color:var(--ink)}
+
+  .verdict{display:flex; gap:14px; flex-wrap:wrap; margin:22px 0}
+  .verdict div{flex:1 1 240px; border:1px solid var(--rule-solid); border-radius:8px;
+               padding:16px 18px; background:var(--paper-2)}
+  .verdict .lab{font-size:12px; letter-spacing:.12em; color:var(--soft); text-transform:uppercase;
+                font-family:"Geist Mono",ui-monospace,monospace}
+  .verdict .val{font-size:19px; font-weight:600; margin-top:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kicker">제 11 편 · 일지편</div>
+  <h1>테스트는 다 통과했는데,<br>진짜 제품에서는 꺼져 있었다</h1>
+  <p class="sub">#17 네이티브 워커 강제 — 구현 레그</p>
+  <p class="meta">
+    대상 <code>feat/17-native-worker-enforcement</code> — <b>병합됨</b> · <code>main</code> = <code>4808bc1</code><br>
+    구현 · 리뷰 · 완결 세 레그 · 2026-08-24 · <code>ORD-EDU-IMP-17</code>
+  </p>
+
+  <div class="card warn">
+    <div class="tag">읽기 전에</div>
+    <p style="margin:8px 0 12px">
+      이 편은 처음 쓸 때 <b>기준자가 없었습니다.</b> 그래서 「원점에 비춰 갔나」를
+      저장소의 v0 불변식을 임시 자로 삼아 답했습니다.
+      <b>같은 날 원점편(<a href="00_%EC%99%9C_%EC%8B%9C%EC%9E%91%ED%96%88%EB%82%98.html">00_왜_시작했나</a>)이 나왔고,
+      질문 11·12를 그 자로 다시 쟀습니다</b> — 아래 「방향 점검」이 다시 잰 결과입니다.
+      임시 자로 잰 결과와 <b>답은 같았습니다.</b>
+    </p>
+    <p style="margin:0" class="note">
+      <b>이 편은 세 회차가 이어 붙은 것입니다</b> — 구현 레그(1회차) 뒤에 리뷰 레그와 완결 레그가 아래에 이어집니다. 일지편의 단위는 「지시 하나」가 아니라 <b>「대상 하나」</b>이기 때문입니다.<br>
+      첫 편인 <code>01_..._터닦기.html</code>은 아직 쓰이지 않았습니다.
+      또 이 편은 <b>11번</b>이지만 2~10번은 아직 비어 있습니다 — 먼저 지나간
+      #11~#16 · #28 · #32 <b>여덟</b> 대상의 자리로 비워 둔 것입니다.<sup><a href="#f22">[22]</a></sup>
+      <span class="note">— 각주 22 가 인용한 원장 목록에는 <code>#31</code> 이 들어 있는데,
+      <b><code>#31</code> 은 이슈가 아니라 <code>#28</code> 을 닫은 PR</b> 입니다.
+      <b>인용문은 그때 원장에 적혀 있던 그대로 두고, 사실만 여기서 바로잡습니다.</b></span>
+    </p>
+  </div>
+
+  <hr>
+
+  <h2>질문 1 · 무슨 일이</h2>
+  <div class="q">이번에 무엇이 일어났나?</div>
+
+  <p class="big">
+    안전장치를 만들어 붙였는데 <b>전선을 잇지 않아</b> 실제 제품에서는 꺼져 있었고,
+    테스트가 그 전선을 건너뛰고 장치만 따로 만져 보는 바람에 <b>전부 초록불</b>이었다.
+    리뷰어가 이것을 잡아 되돌렸고, 구현자가 전선을 잇고
+    <b>전선을 끊으면 반드시 빨개지는 테스트</b>까지 세워 통과했다.
+  </p>
+
+  <div class="word">
+    <b>네이티브 워커(native worker)</b> — Claude Code 같은 AI 도구가 턴 도중에 스스로 띄우는
+    새끼 작업자입니다. 얘가 몇 마리까지 생길 수 있는지, 얼마나 깊이 파고들 수 있는지를
+    <b>예산(budget)</b>으로 막는 것이 티켓 #17입니다.
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 860 500" role="img" aria-labelledby="ch11-two-paths-title ch11-two-paths-desc">
+      <title id="ch11-two-paths-title">같은 금고로 가는 두 갈래 길</title>
+      <desc id="ch11-two-paths-desc">제품이 도는 길에서는 어댑터가 예산을 관찰자에게 넘기지 않아 금고가 비어 있고, 테스트가 도는 길은 어댑터를 건너뛰고 관찰자를 직접 만들어 금고가 정상으로 보이는 것을 나란히 비교한 그림.</desc>
+      <defs>
+        <marker id="ch11-tp-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="var(--muted)"/>
+        </marker>
+        <marker id="ch11-tp-arrow-red" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="var(--red)"/>
+        </marker>
+        <marker id="ch11-tp-arrow-green" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="var(--green)"/>
+        </marker>
+      </defs>
+      <rect width="100%" height="100%" fill="var(--paper)"/>
+
+      <!-- 연결선 먼저 -->
+      <path d="M200 104 H248" fill="none" stroke="var(--muted)" stroke-width="1" marker-end="url(#ch11-tp-arrow)"/>
+      <path d="M416 104 H544" fill="none" stroke="var(--red)" stroke-width="1.2"
+            stroke-dasharray="6,5" marker-end="url(#ch11-tp-arrow-red)"/>
+      <path d="M696 104 H728" fill="none" stroke="var(--muted)" stroke-width="1" marker-end="url(#ch11-tp-arrow)"/>
+      <path d="M116 336 V384 Q116 392 124 392 H612 Q620 392 620 384 V344"
+            fill="none" stroke="var(--green)" stroke-width="1.2" marker-end="url(#ch11-tp-arrow-green)"/>
+      <path d="M696 304 H728" fill="none" stroke="var(--muted)" stroke-width="1" marker-end="url(#ch11-tp-arrow)"/>
+
+      <!-- 연결선 라벨 -->
+      <rect x="424" y="112" width="112" height="20" rx="2" fill="var(--paper)"/>
+      <text x="480" y="128" font-size="12" fill="var(--red)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">예산을 안 넘김</text>
+      <rect x="216" y="400" width="304" height="20" rx="2" fill="var(--paper)"/>
+      <text x="368" y="416" font-size="12" fill="var(--green)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">어댑터를 건너뛰고 관찰자를 손으로 직접 만든다</text>
+
+      <!-- 위 : 제품 경로 -->
+      <text x="32" y="48" font-size="12" fill="var(--soft)" letter-spacing="0.14em"
+            font-family="'Geist Mono',ui-monospace,monospace">진짜 제품이 도는 길</text>
+
+      <rect x="32" y="72" width="168" height="64" rx="6" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="116" y="100" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">턴 요청</text>
+      <text x="116" y="124" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">예산 (1, 1, 1)</text>
+
+      <rect x="248" y="72" width="168" height="64" rx="6" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="332" y="100" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">어댑터</text>
+      <text x="332" y="124" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">start_turn</text>
+
+      <rect x="544" y="72" width="152" height="64" rx="6" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="620" y="100" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">관찰자</text>
+      <text x="620" y="124" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">RunObserver</text>
+
+      <rect x="728" y="72" width="100" height="64" rx="6" fill="var(--red-tint)" stroke="var(--red)" stroke-width="1"/>
+      <text x="778" y="100" font-size="16" fill="var(--red)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">금고</text>
+      <text x="778" y="124" font-size="12" fill="var(--red)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">비어 있음</text>
+
+      <line x1="32" y1="216" x2="828" y2="216" stroke="var(--rule)" stroke-width="1"/>
+
+      <!-- 아래 : 테스트 경로 -->
+      <text x="32" y="248" font-size="12" fill="var(--soft)" letter-spacing="0.14em"
+            font-family="'Geist Mono',ui-monospace,monospace">테스트가 돌던 길</text>
+
+      <rect x="32" y="272" width="168" height="64" rx="6" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="116" y="300" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">테스트</text>
+      <text x="116" y="324" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">633줄</text>
+
+      <rect x="248" y="272" width="168" height="64" rx="6" fill="none"
+            stroke="var(--rule-solid)" stroke-width="1" stroke-dasharray="5,4"/>
+      <text x="332" y="310" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">어댑터 — 지나가지 않음</text>
+
+      <rect x="544" y="272" width="152" height="64" rx="6" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="620" y="300" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">관찰자</text>
+      <text x="620" y="324" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">예산 들고 태어남</text>
+
+      <rect x="728" y="272" width="100" height="64" rx="6" fill="var(--green-tint)" stroke="var(--green)" stroke-width="1"/>
+      <text x="778" y="300" font-size="16" fill="var(--green)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">금고</text>
+      <text x="778" y="324" font-size="12" fill="var(--green)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">정상</text>
+
+      <!-- 범례 -->
+      <line x1="32" y1="452" x2="828" y2="452" stroke="var(--rule)" stroke-width="1"/>
+      <text x="32" y="480" font-size="12" fill="var(--soft)" letter-spacing="0.14em"
+            font-family="'Geist Mono',ui-monospace,monospace">범례</text>
+      <line x1="120" y1="476" x2="176" y2="476" stroke="var(--red)" stroke-width="1.2" stroke-dasharray="6,5"/>
+      <text x="188" y="480" font-size="12" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">예산이 끊긴 자리</text>
+      <line x1="340" y1="476" x2="396" y2="476" stroke="var(--green)" stroke-width="1.2"/>
+      <text x="408" y="480" font-size="12" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">테스트가 실제로 탄 길</text>
+      <rect x="576" y="468" width="40" height="16" rx="4" fill="none" stroke="var(--rule-solid)" stroke-width="1" stroke-dasharray="5,4"/>
+      <text x="628" y="480" font-size="12" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">지나가지 않는 자리</text>
+    </svg>
+    <figcaption>
+      같은 금고를 두고 두 개의 길이 있었습니다. 테스트가 탄 길에는 구멍이 없었고,
+      제품이 타는 길에만 구멍이 있었습니다.<sup><a href="#f1">[1]</a></sup><sup><a href="#f2">[2]</a></sup>
+    </figcaption>
+  </figure>
+
+  <div class="card">
+    <p style="margin:0">
+      <b>이 프로젝트에서 세 번째 같은 모양이었습니다.</b>
+      #14의 <code>resolve_executable</code>, #15의 first-terminal도
+      「정의는 있고 테스트도 있는데 배선만 없음」이었습니다.<sup><a href="#f3">[3]</a></sup>
+      <span class="note">— 이 편을 쓰는 사이 <b>네 번째</b>가 나왔습니다. 아래 「다음은」을 보십시오.<sup><a href="#f25">[25]</a></sup></span>
+    </p>
+  </div>
+
+  <hr>
+
+  <h2>질문 2 · 무슨 일이</h2>
+  <div class="q">어떤 흐름으로 진행됐나?</div>
+
+  <p class="big">
+    앞으로만 간 것이 아닙니다. <b>같은 자리로 세 번 되돌아갔습니다.</b>
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 860 752" role="img" aria-labelledby="ch11-rework-title ch11-rework-desc">
+      <title id="ch11-rework-title">#17 구현 레그의 되돌림 세 번</title>
+      <desc id="ch11-rework-desc">구현에서 시작해 리뷰어 게이트, 변이 배터리 게이트, 통치자 게이트를 차례로 만나고, 각 게이트에서 막힐 때마다 오른쪽의 수정 작업을 거쳐 같은 게이트로 다시 들어간 뒤 재리뷰로 넘어가는 흐름도.</desc>
+      <defs>
+        <marker id="ch11-rw-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="var(--muted)"/>
+        </marker>
+        <marker id="ch11-rw-arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="var(--accent)"/>
+        </marker>
+        <marker id="ch11-rw-arrow-soft" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="var(--soft)"/>
+        </marker>
+      </defs>
+      <rect width="100%" height="100%" fill="var(--paper)"/>
+
+      <!-- 연결선 먼저 -->
+      <path d="M240 72 V116" fill="none" stroke="var(--muted)" stroke-width="1" marker-end="url(#ch11-rw-arrow)"/>
+      <path d="M380 172 H692 Q700 172 700 164 V128" fill="none" stroke="var(--accent)" stroke-width="1.2" marker-end="url(#ch11-rw-arrow-accent)"/>
+      <path d="M480 96 H248" fill="none" stroke="var(--soft)" stroke-width="1" stroke-dasharray="5,4" marker-end="url(#ch11-rw-arrow-soft)"/>
+      <path d="M240 228 V296" fill="none" stroke="var(--muted)" stroke-width="1" marker-end="url(#ch11-rw-arrow)"/>
+
+      <path d="M380 352 H692 Q700 352 700 344 V308" fill="none" stroke="var(--muted)" stroke-width="1" marker-end="url(#ch11-rw-arrow)"/>
+      <path d="M480 276 H248" fill="none" stroke="var(--soft)" stroke-width="1" stroke-dasharray="5,4" marker-end="url(#ch11-rw-arrow-soft)"/>
+      <path d="M240 408 V476" fill="none" stroke="var(--muted)" stroke-width="1" marker-end="url(#ch11-rw-arrow)"/>
+
+      <path d="M380 532 H692 Q700 532 700 524 V488" fill="none" stroke="var(--muted)" stroke-width="1" marker-end="url(#ch11-rw-arrow)"/>
+      <path d="M480 456 H248" fill="none" stroke="var(--soft)" stroke-width="1" stroke-dasharray="5,4" marker-end="url(#ch11-rw-arrow-soft)"/>
+      <path d="M240 588 V620" fill="none" stroke="var(--muted)" stroke-width="1" marker-end="url(#ch11-rw-arrow)"/>
+
+      <!-- 되돌아간 자리를 잇는 점 -->
+      <circle cx="240" cy="96" r="4" fill="var(--ink)"/>
+      <circle cx="240" cy="276" r="4" fill="var(--ink)"/>
+      <circle cx="240" cy="456" r="4" fill="var(--ink)"/>
+
+      <!-- 연결선 라벨 -->
+      <rect x="508" y="180" width="64" height="20" rx="2" fill="var(--paper)"/>
+      <text x="540" y="196" font-size="12" fill="var(--accent)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">아니오</text>
+      <rect x="304" y="104" width="112" height="20" rx="2" fill="var(--paper)"/>
+      <text x="360" y="120" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">고친 뒤 다시</text>
+      <rect x="248" y="244" width="40" height="20" rx="2" fill="var(--paper)"/>
+      <text x="268" y="260" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">예</text>
+
+      <rect x="508" y="360" width="64" height="20" rx="2" fill="var(--paper)"/>
+      <text x="540" y="376" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">아니오</text>
+      <rect x="304" y="284" width="112" height="20" rx="2" fill="var(--paper)"/>
+      <text x="360" y="300" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">고친 뒤 다시</text>
+      <rect x="248" y="424" width="40" height="20" rx="2" fill="var(--paper)"/>
+      <text x="268" y="440" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">예</text>
+
+      <rect x="508" y="540" width="64" height="20" rx="2" fill="var(--paper)"/>
+      <text x="540" y="556" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">아니오</text>
+      <rect x="304" y="464" width="112" height="20" rx="2" fill="var(--paper)"/>
+      <text x="360" y="480" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">고친 뒤 다시</text>
+      <rect x="248" y="596" width="40" height="20" rx="2" fill="var(--paper)"/>
+      <text x="268" y="612" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">예</text>
+
+      <!-- 시작 -->
+      <ellipse cx="240" cy="40" rx="176" ry="32" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="240" y="36" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">구현 — 360개 테스트 전부 초록</text>
+      <text x="240" y="60" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">edce722</text>
+
+      <!-- 게이트 1 : 이 편의 머리기사 -->
+      <path d="M240 116 L380 172 L240 228 L100 172 Z" fill="var(--accent-tint)" stroke="var(--accent)" stroke-width="1.2"/>
+      <text x="240" y="168" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">제품 경로가 증명됐나?</text>
+      <text x="240" y="192" font-size="12" fill="var(--accent)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">리뷰어 판정</text>
+
+      <rect x="480" y="64" width="336" height="64" rx="6" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="648" y="94" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">어댑터 두 곳이 예산을 넘기게 고침</text>
+      <text x="648" y="116" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">25a0dfe</text>
+
+      <!-- 게이트 2 -->
+      <path d="M240 296 L380 352 L240 408 L100 352 Z" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="240" y="348" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">변이가 전부 잡히나?</text>
+      <text x="240" y="372" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">스스로 돌린 변이 배터리</text>
+
+      <rect x="480" y="244" width="336" height="64" rx="6" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="648" y="274" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">Codex 쪽 테스트를 더해 닫음</text>
+      <text x="648" y="296" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">변이 U 생존 → 생존 0 · SKIP 0</text>
+
+      <!-- 게이트 3 -->
+      <path d="M240 476 L380 532 L240 588 L100 532 Z" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="240" y="528" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">정본 보고 파일이 있나?</text>
+      <text x="240" y="552" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">통치자 판정</text>
+
+      <rect x="480" y="424" width="336" height="64" rx="6" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="648" y="454" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">새 커밋을 다루는 보고 파일을 씀</text>
+      <text x="648" y="476" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">옛 파일은 status: superseded</text>
+
+      <!-- 끝 -->
+      <ellipse cx="240" cy="652" rx="176" ry="32" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="240" y="648" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">재리뷰로</text>
+      <text x="240" y="672" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">새 blocking 1건 — 다음 레그</text>
+
+      <!-- 범례 -->
+      <line x1="40" y1="704" x2="820" y2="704" stroke="var(--rule)" stroke-width="1"/>
+      <text x="40" y="736" font-size="12" fill="var(--soft)" letter-spacing="0.14em"
+            font-family="'Geist Mono',ui-monospace,monospace">범례</text>
+      <path d="M128 724 L144 732 L128 740 L112 732 Z" fill="none" stroke="var(--muted)" stroke-width="1"/>
+      <text x="156" y="736" font-size="12" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">게이트</text>
+      <rect x="240" y="724" width="40" height="16" rx="4" fill="none" stroke="var(--muted)" stroke-width="1"/>
+      <text x="292" y="736" font-size="12" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">되돌림 뒤의 수정</text>
+      <line x1="440" y1="732" x2="496" y2="732" stroke="var(--soft)" stroke-width="1" stroke-dasharray="5,4"/>
+      <text x="508" y="736" font-size="12" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">같은 게이트로 다시</text>
+      <path d="M660 724 L676 732 L660 740 L644 732 Z" fill="var(--accent-tint)" stroke="var(--accent)" stroke-width="1"/>
+      <text x="688" y="736" font-size="12" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">이 편의 머리기사</text>
+    </svg>
+    <figcaption>
+      게이트가 셋이고 <b>셋 다 한 번씩 막았습니다.</b> 점선은 고친 뒤 <b>같은 게이트로 다시 들어간</b> 길입니다 —
+      되돌아간 자리가 어디인지가 이 편의 이야기 전부입니다.
+    </figcaption>
+  </figure>
+
+  <ol class="steps">
+    <li>
+      <b>구현자가 #17을 만든다</b>
+      <span>커밋 <code>edce722</code>. 360개 테스트 전부 통과.</span>
+    </li>
+    <li class="bad">
+      <b>리뷰어가 막는다 — BLOCKED</b>
+      <span>수용기준 3·4의 예산 기계가 제품에 안 붙어 있다. 「테스트는 초록인데 제품 경로는 미증명」<sup><a href="#f2">[2]</a></sup></span>
+    </li>
+    <li>
+      <b>구현자가 전선을 잇는다</b>
+      <span>어댑터 두 곳(Claude·Codex)이 예산을 넘기게 고치고, 테스트를 <code>start_turn</code> → <code>events</code> → <code>wait</code> 로 관통시킨다.<sup><a href="#f4">[4]</a></sup> 커밋 <code>25a0dfe</code>.</span>
+    </li>
+    <li class="bad">
+      <b>자기 테스트를 시험한다 — 그리고 한 마리가 살아남는다</b>
+      <span>일부러 코드를 21군데 망가뜨려 테스트가 잡는지 본다. Codex 쪽 전선을 끊는 변이 <b>U</b>가 <b>살아남았다.</b> 제품 경로 테스트가 <b>Claude만</b> 보고 있었기 때문.<sup><a href="#f5">[5]</a></sup><sup><a href="#f6">[6]</a></sup></span>
+    </li>
+    <li class="good">
+      <b>Codex 쪽 테스트를 더해 닫는다</b>
+      <span>21개 변이 · RED 19 · HANG 2 · <b>생존 0 · SKIP 0.</b><sup><a href="#f7">[7]</a></sup> 364개 테스트, 깨끗한 클론에서도 통과.<sup><a href="#f16">[16]</a></sup></span>
+    </li>
+    <li class="bad">
+      <b>통치자가 되돌린다 — 코드가 아니라 기록 때문에</b>
+      <span>새 커밋을 다루는 보고 파일이 없어서, 정본을 읽은 사람은 <b>막힌 옛 커밋</b>에 도착한다.<sup><a href="#f23">[23]</a></sup></span>
+    </li>
+    <li class="good">
+      <b>구현자가 정본 파일을 쓴다 — 그 과정에서 죽은 검사를 잡는다</b>
+      <span>옛 파일과 새 파일을 서로 가리키게 하고, 인증정보 8종을 커밋에서 하나씩 다시 돌린다.<sup><a href="#f14">[14]</a></sup> 그러다 <b>한 번도 돌지 않았던 검사</b>를 발견한다.</span>
+    </li>
+  </ol>
+
+  <hr>
+
+  <h2>소재 하나</h2>
+  <div class="q">「0건」이 두 가지 뜻이었다</div>
+
+  <p class="big">검사해서 0건 · 검사가 없었던 0건 — 화면에는 똑같이 <b>0</b>으로 보인다.</p>
+
+  <figure>
+    <svg viewBox="0 0 860 400" role="img" aria-labelledby="ch11-zero-title ch11-zero-desc">
+      <title id="ch11-zero-title">두 가지 뜻의 0건</title>
+      <desc id="ch11-zero-desc">하이픈으로 시작하는 패턴을 git이 옵션으로 읽어 검사가 종료코드 129로 죽고, 래퍼의 awk가 그 오류를 삼켜 화면에는 0건으로 보이는 경로와, 그 결과 검사해서 나온 0건과 검사가 없었던 0건이 구별되지 않는다는 것을 보여주는 그림.</desc>
+      <defs>
+        <marker id="ch11-zero-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="var(--muted)"/>
+        </marker>
+        <marker id="ch11-zero-arrow-red" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="var(--red)"/>
+        </marker>
+        <marker id="ch11-zero-arrow-yellow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="var(--yellow)"/>
+        </marker>
+      </defs>
+      <rect width="100%" height="100%" fill="var(--paper)"/>
+
+      <!-- 연결선 먼저 -->
+      <path d="M272 88 H320" fill="none" stroke="var(--muted)" stroke-width="1" marker-end="url(#ch11-zero-arrow)"/>
+      <path d="M560 88 H608" fill="none" stroke="var(--red)" stroke-width="1" marker-end="url(#ch11-zero-arrow-red)"/>
+      <path d="M702 128 V176" fill="none" stroke="var(--red)" stroke-width="1" marker-end="url(#ch11-zero-arrow-red)"/>
+      <path d="M576 212 H496" fill="none" stroke="var(--yellow)" stroke-width="1" marker-end="url(#ch11-zero-arrow-yellow)"/>
+
+      <rect x="32" y="48" width="240" height="80" rx="6" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="152" y="72" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">찾으려던 것 (패턴 6)</text>
+      <text x="152" y="96" font-size="12" fill="var(--ink)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">-----BEGIN</text>
+      <text x="152" y="116" font-size="12" fill="var(--ink)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">PRIVATE KEY</text>
+
+      <rect x="320" y="48" width="240" height="80" rx="6" fill="var(--red-tint)" stroke="var(--red)" stroke-width="1"/>
+      <text x="440" y="72" font-size="12" fill="var(--red)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">git 이 읽은 것</text>
+      <text x="440" y="96" font-size="16" fill="var(--red)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">「앞에 하이픈이네.</text>
+      <text x="440" y="118" font-size="16" fill="var(--red)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">이건 옵션이잖아」</text>
+
+      <rect x="608" y="48" width="220" height="80" rx="6" fill="var(--zone)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="718" y="76" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">검사가 죽는다</text>
+      <text x="718" y="108" font-size="20" fill="var(--red)" text-anchor="middle" font-weight="600"
+            font-family="'Geist Mono',ui-monospace,monospace">exit = 129</text>
+
+      <rect x="576" y="176" width="252" height="72" rx="6" fill="var(--yellow-tint)" stroke="var(--yellow)" stroke-width="1"/>
+      <text x="702" y="204" font-size="12" fill="var(--yellow)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">래퍼의 awk 가</text>
+      <text x="702" y="228" font-size="16" fill="var(--yellow)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">그 에러를 조용히 삼킨다</text>
+
+      <rect x="336" y="176" width="160" height="72" rx="6" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="416" y="224" font-size="32" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">0 건</text>
+      <text x="316" y="220" font-size="12" fill="var(--soft)" text-anchor="end"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">화면에 뜬 것 →</text>
+
+      <line x1="32" y1="288" x2="828" y2="288" stroke="var(--rule)" stroke-width="1"/>
+
+      <rect x="32" y="312" width="240" height="56" rx="6" fill="var(--green-tint)" stroke="var(--green)" stroke-width="1"/>
+      <text x="152" y="346" font-size="16" fill="var(--green)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">검사해서 0건</text>
+
+      <rect x="304" y="312" width="252" height="56" rx="6" fill="none" stroke="var(--rule-solid)" stroke-width="1" stroke-dasharray="5,4"/>
+      <text x="430" y="346" font-size="16" fill="var(--muted)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">화면에서는 구별 불가</text>
+
+      <rect x="588" y="312" width="240" height="56" rx="6" fill="var(--red-tint)" stroke="var(--red)" stroke-width="1"/>
+      <text x="708" y="346" font-size="16" fill="var(--red)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">검사가 없었던 0건</text>
+    </svg>
+    <figcaption>
+      원인은 사람의 부주의가 아니라 <b>도구의 인자 파싱</b>입니다. 하이픈으로 시작하는 문자열을
+      찾으려 하면 어떤 도구에서든 같은 일이 납니다.<sup><a href="#f8">[8]</a></sup><sup><a href="#f9">[9]</a></sup>
+    </figcaption>
+  </figure>
+
+  <p>
+    구현자는 여기서 멈추지 않고, 패턴을 <code>-e</code> 로 고정해 다시 돌린 뒤
+    <b>일부러 심어 둔 가짜 미끼가 실제로 잡히는 것</b>까지 확인하고 나서야 0건을 근거로 썼습니다.<sup><a href="#f9">[9]</a></sup>
+  </p>
+
+  <div class="card warn">
+    <div class="tag">아직 안 닫힌 자리</div>
+    <p style="margin:8px 0 0">
+      같은 래퍼가 이전 커밋들에서도 같은 보고를 냈다면, <b>그 커밋들의 패턴 6도 미실행이었을 수 있습니다.</b><sup><a href="#f19">[19]</a></sup>
+      통치자가 완결자에게 게이트 7의 스캐너가 같은 형태인지 확인을 요청했습니다.
+    </p>
+  </div>
+
+  <hr>
+
+  <h2>소재 둘</h2>
+  <div class="q">「검사 대상이, 내가 쓴 그 글자인가」</div>
+
+  <p class="big">
+    정규식을 아무리 들여다봐도 <b>이 층은 하나도 안 잡힙니다.</b>
+    정규식이 맞았는지를 묻기 <b>전에</b>, 그 정규식이 실제로 <b>내가 친 글자 그대로</b> 검사기에
+    닿았는지를 물어야 합니다.<sup><a href="#f26">[26]</a></sup>
+  </p>
+
+  <p class="note">
+    이 이름은 완결자가 붙였고, 통치자가 「손으로 옮긴 숫자」보다 나은 층 이름이라며
+    이 편의 소재로 올려 주었습니다.<sup><a href="#f34">[34]</a></sup>
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 860 340" role="img" aria-labelledby="ch11-layers-title ch11-layers-desc">
+      <title id="ch11-layers-title">검토로 잡히는 층과 잡히지 않는 층</title>
+      <desc id="ch11-layers-desc">눈으로 읽어 고칠 수 있는 정규식의 층 아래에, 인자 파싱과 전달 경로와 저장 형태와 검사 범위처럼 검토로는 하나도 잡히지 않는 층이 따로 있다는 것을 보여주는 두 층 스택.</desc>
+      <defs>
+        <marker id="ch11-layers-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="var(--muted)"/>
+        </marker>
+      </defs>
+      <rect width="100%" height="100%" fill="var(--paper)"/>
+
+      <path d="M432 132 V164" fill="none" stroke="var(--muted)" stroke-width="1" marker-end="url(#ch11-layers-arrow)"/>
+      <rect x="440" y="140" width="72" height="20" rx="2" fill="var(--paper)"/>
+      <text x="476" y="156" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">그 아래에</text>
+
+      <rect x="32" y="32" width="796" height="96" rx="8" fill="var(--green-tint)" stroke="var(--green)" stroke-width="1"/>
+      <text x="56" y="60" font-size="12" fill="var(--green)" letter-spacing="0.14em"
+            font-family="'Geist Mono',ui-monospace,monospace">위층 — 눈으로 검토하면 잡힌다</text>
+      <text x="56" y="100" font-size="24" fill="var(--green)" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">「정규식이 맞았는가」</text>
+      <text x="804" y="100" font-size="16" fill="var(--green)" text-anchor="end"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">사람이 읽어서 고칠 수 있는 자리</text>
+
+      <rect x="32" y="164" width="796" height="144" rx="8" fill="var(--red-tint)" stroke="var(--red)" stroke-width="1"/>
+      <text x="56" y="192" font-size="12" fill="var(--red)" letter-spacing="0.14em"
+            font-family="'Geist Mono',ui-monospace,monospace">아래층 — 검토로는 하나도 안 잡힌다</text>
+      <text x="56" y="232" font-size="24" fill="var(--red)" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">「검사 대상이 내가 쓴 그 글자인가」</text>
+
+      <rect x="56" y="256" width="180" height="40" rx="4" fill="var(--paper)" stroke="var(--red)" stroke-width="0.8"/>
+      <text x="146" y="280" font-size="12" fill="var(--red)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">인자 파싱 · exit 129</text>
+
+      <rect x="248" y="256" width="180" height="40" rx="4" fill="var(--paper)" stroke="var(--red)" stroke-width="0.8"/>
+      <text x="338" y="280" font-size="12" fill="var(--red)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">전달 경로 · heredoc</text>
+
+      <rect x="440" y="256" width="200" height="40" rx="4" fill="var(--paper)" stroke="var(--red)" stroke-width="0.8"/>
+      <text x="540" y="280" font-size="12" fill="var(--red)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">저장 형태 · JSON 이스케이프</text>
+
+      <rect x="652" y="256" width="152" height="40" rx="4" fill="var(--paper)" stroke="var(--red)" stroke-width="0.8"/>
+      <text x="728" y="280" font-size="12" fill="var(--red)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">검사 범위가 비껴감</text>
+    </svg>
+    <figcaption>
+      앞의 셋은 <b>도구가 글자를 바꿉니다.</b> 마지막 하나는 글자는 멀쩡한데
+      <b>검사가 결함이 사는 자리를 지나가지 않습니다.</b> 어느 쪽이든 화면에는 깨끗한 <b>0</b>이 뜹니다.
+    </figcaption>
+  </figure>
+
+  <p><b>그날 이 층에서 여섯이 나왔습니다.</b> <span class="note">— 이것은 <b>1회차까지</b>의 목록입니다. 대상 전체의 번호는 아래 <b>「이 대상 전체의 층 목록」</b>에서 한 번에 다시 매겼습니다.</span></p>
+
+  <div class="card">
+    <table class="tbl">
+      <thead><tr><th>누가</th><th>무엇이 글자를 / 범위를 바꿨나</th><th>어느 방향</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>구현자</td>
+          <td><code>git grep -cE</code>의 하이픈이 옵션으로 읽혀 <code>exit=129</code>, 래퍼의 <code>awk</code>가 삼킴<sup><a href="#f8">[8]</a></sup></td>
+          <td class="cr">거짓 0건</td>
+        </tr>
+        <tr>
+          <td>완결자</td>
+          <td>미끼를 heredoc으로 넘기다 역슬래시가 접힘<sup><a href="#f27">[27]</a></sup></td>
+          <td class="cr">거짓 경보</td>
+        </tr>
+        <tr>
+          <td>완결자</td>
+          <td><code>windows-path</code> 0건이 「걸러냈다」가 아니라 <b>「거를 것이 없었다」</b><sup><a href="#f34">[34]</a></sup></td>
+          <td>참인 0건, 잘못된 근거</td>
+        </tr>
+        <tr>
+          <td>완결자</td>
+          <td>미해결 worker 케이스가 전부 <code>linger=False</code> — <b>자식의 수명을 축으로 세지 않음</b><sup><a href="#f29">[29]</a></sup></td>
+          <td class="cr">범위 밖 0건</td>
+        </tr>
+        <tr>
+          <td>완결자</td>
+          <td>해시 행 grep 0건 — 표의 해시가 대문자인데 <code>[0-9a-f]{64}</code>로 찾음<sup><a href="#f30">[30]</a></sup></td>
+          <td class="cr">거짓 0건</td>
+        </tr>
+        <tr>
+          <td>통치자</td>
+          <td><b>이 함정을 설명하는 표 자체가</b> heredoc을 지나며 역슬래시가 벗겨짐<sup><a href="#f35">[35]</a></sup></td>
+          <td class="cr">문서가 당함</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    완결자의 harness 결함 둘은 코드 문제가 아니었습니다 —
+    <code>PATH= timeout ...</code>이라 <b><code>timeout</code> 자체를 못 찾은 것</b>이었고<sup><a href="#f31">[31]</a></sup>,
+    해시는 대문자인데 소문자 클래스로 찾고 있었습니다.<sup><a href="#f30">[30]</a></sup>
+    둘 다 <b>정규식은 완벽했고 검사 대상이 달랐습니다.</b>
+  </p>
+
+  <hr>
+
+  <h2>소재 둘 · 이어서</h2>
+  <div class="q">규칙을 세운 사람이, 그 규칙을 스스로 뒤집었다</div>
+
+  <p>
+    완결자가 「역슬래시가 든 검사는 heredoc 말고 파일로 — 인용 heredoc은 안전」이라고 규칙을 세우려던 참에,
+    구현자의 실측이 그것을 뒤집었습니다.<sup><a href="#f27">[27]</a></sup>
+    <b>인용해도 마찬가지</b>였습니다 — 「내 미끼가 바뀐 것은 인용 여부와 무관했다」.<sup><a href="#f28">[28]</a></sup>
+  </p>
+
+  <div class="term">인용 heredoc <span class="d">&lt;&lt;'EOF'</span> 로 쓴 역슬래시 <b>개수</b>  →  파일에 담긴 <b>개수</b>
+<span class="d">    1  →  1     (홑 역슬래시는 살아남는다)
+    2  →  1
+    4  →  2</span>
+
+<span class="g">규칙: 인용 heredoc 이 역슬래시 연쇄를 절반으로 접는다.</span></div>
+
+  <p style="margin-top:20px">
+    <b>글자로 적으면 그 표가 또 벗겨지므로 개수로 적습니다.</b>
+    통치자가 처음 올린 표는 실제로 글자로 적혀 있었고, 그래서 채널에 실리면서 벗겨져
+    「2 → 1」이 「1 → 1」로 읽히는 상태가 됐습니다.<sup><a href="#f35">[35]</a></sup>
+  </p>
+
+  <div class="card warn">
+    <div class="tag">이 편에서 제일 값진 자리</div>
+    <p style="margin:8px 0 12px">
+      <b>앞의 다섯은 검사가 당했고, 여섯 번째는 그 사실을 알리는 문서가 당했습니다.</b>
+      통치자는 이 함정을 <b>알고 있었고, 그것을 설명하는 중이었고, 그러면서 걸렸습니다.</b><sup><a href="#f35">[35]</a></sup>
+    </p>
+    <p style="margin:0 0 12px">
+      <b>아는 것으로는 안 막힙니다. 전달 경로를 바꿔야 막힙니다.</b>
+      믿을 수 있는 셋 — ① 에디터 도구로 파일에 <b>직접</b> 쓰기(셸을 안 거침)
+      ② 파이썬에서 <code>chr(92)</code>·raw string으로 계산해 만들기
+      ③ 그렇게 만든 파일을 <code>&lt; file</code>로 흘리기.<sup><a href="#f27">[27]</a></sup>
+    </p>
+    <p style="margin:0" class="note">
+      <b>왜 특히 고약한가</b> — 홑 역슬래시는 멀쩡히 지나갑니다.
+      <code>C:\Users</code> 같은 흔한 경로로 짧게 시험하면 통과하고, 「인용했으니 안전하다」는
+      <b>잘못된 확신만 남습니다.</b> 무너지는 곳은 정규식 소스·JSON 이스케이프처럼
+      역슬래시가 겹치는 자리이고, 하필 눈으로 제일 안 보이는 자리입니다.<sup><a href="#f35">[35]</a></sup>
+    </p>
+  </div>
+
+  <p class="big" style="margin-top:30px">
+    「규칙이 낡는 게 아니라 <b>규칙의 요약이 낡습니다.</b>」<sup><a href="#f35">[35]</a></sup>
+  </p>
+
+  <p>
+    통치자의 메모리에는 이 규칙이 <b>이미 본문에 맞게 적혀 있었는데</b>,
+    매 세션 읽는 <b>색인 한 줄만</b> 옛 처방(「인용 heredoc을 쓰라」)으로 남아 있었습니다.
+    본문은 맞고 색인이 틀린 상태였고, 실제로 읽히는 것은 색인 쪽이었습니다.<sup><a href="#f35">[35]</a></sup>
+  </p>
+
+  <hr>
+
+  <h2>소재 셋</h2>
+  <div class="q">손으로 옮긴 숫자가, 두 사람이 같은 자리에서 틀렸다</div>
+
+  <p class="note" style="margin-bottom:20px">
+    통치자는 이것도 같은 층의 사례로 보았습니다.<sup><a href="#f34">[34]</a></sup>
+    앞의 여섯은 <b>도구가</b> 글자를 바꿨고, 이것은 <b>사람이</b> 옮겨 적으며 바꿉니다 —
+    그러나 결과는 같습니다. <b>검사 대상이 내가 쓴 그 글자가 아니게 됩니다.</b>
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 860 400" role="img" aria-labelledby="ch11-seam-title ch11-seam-desc">
+      <title id="ch11-seam-title">기계 출력과 사람 요약 사이의 이음매</title>
+      <desc id="ch11-seam-desc">정확한 기계 출력이 사람이 요약하며 손으로 옮기는 한 이음매에서 틀린 숫자로 바뀌고 그대로 채널과 지시서로 퍼지는 경로, 그리고 같은 이음매에서 구현자와 통치자가 각각 한 번씩 틀린 것을 보여주는 그림.</desc>
+      <defs>
+        <marker id="ch11-seam-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="var(--muted)"/>
+        </marker>
+        <marker id="ch11-seam-arrow-red" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="var(--red)"/>
+        </marker>
+      </defs>
+      <rect width="100%" height="100%" fill="var(--paper)"/>
+
+      <path d="M272 112 H368" fill="none" stroke="var(--red)" stroke-width="1.2" marker-end="url(#ch11-seam-arrow-red)"/>
+      <path d="M608 112 H656" fill="none" stroke="var(--muted)" stroke-width="1" marker-end="url(#ch11-seam-arrow)"/>
+      <rect x="284" y="120" width="72" height="20" rx="2" fill="var(--paper)"/>
+      <text x="320" y="136" font-size="12" fill="var(--red)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">손으로 옮김</text>
+
+      <rect x="32" y="56" width="240" height="112" rx="6" fill="var(--zone)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="152" y="84" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">기계 출력</text>
+      <text x="152" y="112" font-size="12" fill="var(--ink)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">red 19 | hang 2</text>
+      <text x="152" y="136" font-size="12" fill="var(--ink)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">survived 0 | skipped 0</text>
+      <text x="152" y="156" font-size="12" fill="var(--green)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">정확함</text>
+
+      <rect x="368" y="56" width="240" height="112" rx="6" fill="var(--red-tint)" stroke="var(--red)" stroke-width="1"/>
+      <text x="488" y="84" font-size="12" fill="var(--red)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">사람이 요약하며 옮김</text>
+      <text x="488" y="124" font-size="24" fill="var(--red)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">「변이 22개」</text>
+      <text x="488" y="152" font-size="12" fill="var(--red)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">19 + 2 = 21 인데</text>
+
+      <rect x="656" y="56" width="172" height="112" rx="6" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="742" y="84" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">채널 메시지 · 지시서</text>
+      <text x="742" y="120" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">틀린 숫자가</text>
+      <text x="742" y="148" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">그대로 퍼진다</text>
+
+      <text x="320" y="200" font-size="12" fill="var(--red)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">↑ 구멍은 이 이음매 한 곳</text>
+
+      <line x1="32" y1="240" x2="828" y2="240" stroke="var(--rule)" stroke-width="1"/>
+      <text x="32" y="272" font-size="12" fill="var(--soft)" letter-spacing="0.14em"
+            font-family="'Geist Mono',ui-monospace,monospace">같은 이음매에서 두 번</text>
+
+      <rect x="32" y="292" width="396" height="76" rx="6" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="56" y="320" font-size="16" fill="var(--ink)" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">구현자</text>
+      <text x="56" y="348" font-size="12" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">인증정보 검사 8종을 「6종」이라 적음</text>
+
+      <rect x="444" y="292" width="384" height="76" rx="6" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="468" y="320" font-size="16" fill="var(--ink)" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">통치자</text>
+      <text x="468" y="348" font-size="12" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">변이 21개를 「22개」라 적음</text>
+    </svg>
+    <figcaption>
+      사람이 다른데 <b>자리가 같습니다.</b> 기계 출력을 요약하며 숫자를 손으로 옮기는 그 한 이음매입니다.
+    </figcaption>
+  </figure>
+
+  <p class="big">이것은 개인의 부주의가 아니라 <b>절차의 구멍</b>입니다.</p>
+
+  <p>
+    구현자는 「인계 메시지에 개수를 손으로 옮기며 잘못 셌다」고 적었고<sup><a href="#f10">[10]</a></sup>,
+    통치자는 「내가 옮겨 적은 그 줄 자체가 이미 자기모순이었다」고 적었습니다.<sup><a href="#f11">[11]</a></sup>
+    두 사람 모두 원인을 같은 곳으로 짚었습니다 — <b>기계 출력을 그대로 붙이지 않고 요약하며 손으로 옮긴 자리</b>.<sup><a href="#f12">[12]</a></sup>
+  </p>
+
+  <div class="card">
+    <p style="margin:0 0 10px"><b>두 사람이 각각 내놓은 대책도 같은 모양입니다.</b></p>
+    <p style="margin:0">
+      통치자 — 「앞으로 저도 출력 줄을 그대로 싣겠습니다」 ·
+      구현자 — 세는 대신 <b>커밋에서 8종을 하나씩 다시 돌리고 미끼 8/8이 잡히는 것을 확인</b>했습니다.<sup><a href="#f14">[14]</a></sup><br>
+      <span class="note">둘 다 「더 조심하자」가 아니라 <b>손으로 옮기는 단계 자체를 없애는</b> 쪽입니다.</span>
+    </p>
+  </div>
+
+  <hr>
+
+  <h2>덧붙임</h2>
+  <div class="q">규약 위반 하나를 구현자가 스스로 적었다</div>
+
+  <p>
+    <code>25a0dfe</code>를 다루는 보고 파일을 쓰지 않고 채널 메시지만 올렸습니다.<sup><a href="#f13">[13]</a></sup>
+    그래서 정본을 읽은 사람은 <b>블로킹 판정을 받은 옛 커밋</b>에 도착했습니다.
+    고칠 때 옛 파일을 지우지 않고 <code>status: superseded</code>로 바꾸고 본문을 남겨,
+    <b>어느 쪽 파일을 먼저 열어도 반대쪽에 닿게</b> 했습니다.<sup><a href="#f14">[14]</a></sup>
+  </p>
+
+  <p class="note">구현자 본인의 문장 — 「채널은 스크롤에 묻히고 파일은 남는다」<sup><a href="#f13">[13]</a></sup></p>
+
+  <hr>
+
+  <h2>질문 6 · 7 · 다음은</h2>
+  <div class="q">다음 담당에게 무엇을, 왜 맡기나?</div>
+
+  <div class="verdict">
+    <div>
+      <div class="lab">리뷰어 Reviewer</div>
+      <div class="val"><code>25a0dfe</code> 재리뷰</div>
+      <p class="note" style="margin:8px 0 0">
+        되돌림을 낸 당사자입니다. 그 지적이 실제로 닫혔는지는 <b>지적한 사람이 판정</b>합니다.
+      </p>
+    </div>
+    <div>
+      <div class="lab">완결자 Closer</div>
+      <div class="val">통합 게이트 · 배터리</div>
+      <p class="note" style="margin:8px 0 0">
+        병합 전 게이트의 주인입니다. 여기에 <b>게이트 7 스캐너가 같은 죽은 검사 형태인지</b> 확인이 얹혔습니다.<sup><a href="#f19">[19]</a></sup>
+      </p>
+    </div>
+  </div>
+
+  <div class="card">
+    <p style="margin:0 0 12px"><b>이 편을 쓰는 동안 재리뷰가 도착했습니다 (2026-08-24 01:32).</b></p>
+    <p style="margin:0 0 14px">
+      지난 판정의 요구사항 — 어댑터 배선과 제품 경로 테스트 — 은 <b>실측으로 충족</b> 확인됐습니다.
+      리뷰어는 변이 배터리를 통째로 다시 돌리는 대신
+      <b>값이 제일 큰 두 변이 T·U를 손으로 직접 주입해</b> 둘 다 빨개지는 것을 독립으로 확인했습니다.<sup><a href="#f21">[21]</a></sup>
+    </p>
+    <p style="margin:0 0 14px">
+      다만 <b>새 blocking 1건</b>이 나왔습니다 — 「cancel-after-terminal이 unresolved worker를 이긴다」.
+      취소 경로에서 수용기준 4가 무너지는 것을 제품 경로 실측으로 재현했습니다.<sup><a href="#f20">[20]</a></sup>
+      통치자는 이것을 <b>같은 반복 결함형의 네 번째</b>로 세었습니다 — 이번에는 검사가 없는 것이 아니라
+      <b>검사가 있는데 앞 분기가 먼저 돌아가 도달하지 못하는</b> 모양입니다.<sup><a href="#f25">[25]</a></sup>
+    </p>
+    <p style="margin:0" class="note">
+      이 건은 리뷰 레그의 사건이므로, 그 레그가 끝날 때 이 편에 이어 붙습니다.
+      일지편의 단위는 「지시 하나」가 아니라 「대상 하나」이기 때문입니다.
+    </p>
+  </div>
+
+  <div class="card">
+    <p style="margin:0 0 12px">
+      <b>그리고 통치자가 자기 수정 지시를 30분 만에 정정했습니다 — 「또는」으로 묶은 두 선택지 중 하나가 회귀였습니다.</b>
+    </p>
+    <p style="margin:0 0 14px">
+      통치자가 「검사를 분기 <b>앞으로</b> 옮기거나, <b>또는</b> 그 분기 조건에 <code>and not unresolved_worker</code>」라고
+      두 길을 나란히 냈는데, 완결자가 <b>대조군을 세워 재면서</b> 앞의 것이 #16을 깨뜨린다는 것을 잡았습니다.<sup><a href="#f32">[32]</a></sup>
+    </p>
+    <div class="term">A. worker 미해결 · terminal 봄 · CANCELLED
+   <span class="d">status=completed  diagnostic=None</span>        <span class="d">→ 결함 (재현됨)</span>
+
+B. 대조군 — 같은 모양인데 worker 가 정산됨
+   <span class="d">status=completed  diagnostic=None</span>        <span class="g">← 옳고, 옳은 채로 남아야 한다</span>
+
+C. 대조군 — worker 미해결 · 자식이 스스로 종료
+   <span class="d">status=unknown_outcome</span>                   <span class="g">← 이미 옳다</span></div>
+    <p style="margin:16px 0 0">
+      <b>대조군 B가 핵심입니다.</b> 분기를 통째로 지우거나 순서만 뒤집으면
+      「worker가 전부 정산된 cancel-after-terminal은 <code>completed</code>로 남는다」는
+      #16의 보장이 깨집니다.<sup><a href="#f32">[32]</a></sup>
+      통치자 본인의 문장 — <b>「둘은 대등한 대안이 아니라 하나는 회귀입니다.」</b><sup><a href="#f36">[36]</a></sup>
+      <span class="note">더 단순해 보이는 쪽을 고르는 것이 자연스러웠고, 그랬다면 리뷰어가 그 회귀를 또 잡아야 했을 것입니다.</span>
+    </p>
+  </div>
+
+  <div class="card warn">
+    <div class="tag">CI가 초록이었습니다</div>
+    <p style="margin:8px 0 0">
+      결함이 재현된 그 커밋 위에서 <code>unit-tests</code>도 <code>docs-checks</code>도 통과했습니다.
+      <b>「초록이 결함 위에서 났다」</b>는 것이고, 그대로 두면
+      <b>초록이 리뷰 판정을 덮습니다.</b><sup><a href="#f33">[33]</a></sup>
+      완결자가 PR #38을 draft로 내려 병합을 막았습니다 — 되돌리기는 한 번이면 됩니다.
+    </p>
+  </div>
+
+  <hr>
+
+  <h2>질문 8 · 다음은</h2>
+  <div class="q">왜 이걸 제안했나?</div>
+
+  <p>구현자가 스스로 낸 판단 둘이 있고, 둘 다 <b>이유가 같은 축</b>에 있습니다 — 「나중에 무엇이 걸렸는지 알 수 있는가」.</p>
+
+  <div class="card">
+    <p style="margin:0 0 8px"><b>했다 — 조건 4개가 <code>or</code>로 뭉쳐 있던 문장을 네 문장으로 쪼갬</b></p>
+    <p style="margin:0 0 20px" class="note">「뭉쳐 있으면 어느 조건이 걸렸는지 로그로 못 가린다」<sup><a href="#f17">[17]</a></sup></p>
+    <p style="margin:0 0 8px"><b>안 했다 — <code>task_id</code> 마스킹</b></p>
+    <p style="margin:0" class="note">
+      상수로 바꾸면 「provider 값을 실었다」와 「다른 상수를 실었다」를 구별하던 단언이 죽습니다.
+      완결자가 제안을 거두었고 그대로 두었습니다.<sup><a href="#f18">[18]</a></sup>
+    </p>
+  </div>
+
+  <hr>
+
+  <h2>질문 11 · 방향 점검</h2>
+  <div class="q">원점에 비춰, 이번 걸음이 그쪽으로 갔나?</div>
+
+  <p class="note" style="margin-bottom:20px">
+    <b>다시 잰 것입니다.</b> 처음에는 원점편이 없어 <code>docs/project-context.md</code>의
+    「협상 불가 v0 불변식」을 임시 자로 삼았고, 같은 날 원점편이 나온 뒤
+    <a href="00_%EC%99%9C_%EC%8B%9C%EC%9E%91%ED%96%88%EB%82%98.html">원점편</a>의 「문제」로 다시 쟀습니다.
+  </p>
+
+  <div class="card">
+    <p style="margin:0 0 10px"><b>원점편의 「문제」 셋 중 첫 번째에 정확히 얹힙니다.</b></p>
+    <p style="margin:0">
+      원점이 세운 문제는 <b>「협업 상태가 어디에도 없다」</b>였고, 그 상태를 지키는 장치가
+      <b>제품에서 꺼져 있었던 것</b>이 이번 걸음이 고친 것입니다.
+      원점편은 이 문제를 「서로 다른 두 공식 CLI의 context·event 협업」이라고 적었고,<sup><a href="#f37">[37]</a></sup>
+      #17은 그 협업이 <b>제멋대로 번지지 않게</b> 막는 부분입니다.
+    </p>
+  </div>
+
+  <p class="note" style="margin-bottom:20px">
+    임시 자였던 v0 불변식도 그대로 유효합니다 — 원점의 문제를 코드가 지키는 형태로 옮긴 것이 이 문장이기 때문입니다.
+  </p>
+
+  <div class="term">불변식 7
+<span class="d">Unknown CLI versions, <span class="g">unsupported delegation observation</span>,
+ambiguous process outcomes, and concurrent native-session resumes
+<span class="g">fail closed</span>.</span></div>
+
+  <p style="margin-top:20px">
+    #17은 이 문장 한 줄을 코드로 만든 티켓입니다. 그리고 이번 걸음이 고친 것은
+    <b>그 fail-closed가 테스트에서만 살아 있고 제품에서는 죽어 있던 상태</b>였습니다.
+    <b>원점 쪽으로 갔습니다.</b><sup><a href="#f15">[15]</a></sup>
+  </p>
+
+  <p>
+    다만 구현자 본인이 남긴 한계가 하나 있습니다 — Codex 쪽은 코드가 「거부한다」만 증명하고,
+    <b>그 거부가 옳은지는 8/29 재측정(#35)이 답합니다.</b><sup><a href="#f24">[24]</a></sup>
+  </p>
+
+  <hr>
+
+  <h2>질문 12 · 방향 점검</h2>
+  <div class="q">처음 범위에서 새로 늘어난 것이 있나?</div>
+
+  <p class="big">늘어난 것 없음.</p>
+
+  <div class="term">$ git diff --stat e1e47b4..25a0dfe
+<span class="d">23 files changed, 1701 insertions(+), 45 deletions(-)</span></div>
+
+  <p style="margin-top:18px">
+    바뀐 23개 파일은 전부 이 티켓이 원래 건드리기로 한 표면입니다 —
+    위임(delegation) 모듈, 어댑터 둘, 그 테스트, 그리고 스펙·ADR·CHANGELOG.
+    리뷰어의 재리뷰도 같은 축을 따로 확인해 <b>「scope creep: 없음」</b>으로 적었습니다.<sup><a href="#f20">[20]</a></sup>
+  </p>
+
+  <p class="note">
+    이번 회차에서 「제안된 뒤 하지 않기로 한 것」은 <code>task_id</code> 마스킹 하나이며,
+    그것도 범위를 늘리는 쪽이 아니라 줄이는 쪽 판단이었습니다.<sup><a href="#f18">[18]</a></sup>
+  </p>
+
+  <div class="card">
+    <p style="margin:0 0 10px"><b>원점편의 「범위 밖」 목록에 대보면 — #17은 그 목록을 코드로 집행하는 티켓입니다.</b></p>
+    <p style="margin:0">
+      범위 밖 14개 중 둘이 정확히 이 티켓입니다 —
+      <b>「recursive delegation(depth 2 이상)」</b>과
+      <b>「native worker를 독립 participant로 승격하거나 플랫폼 간 직접 연결하는 기능」</b>.<sup><a href="#f38">[38]</a></sup>
+      #17이 강제하는 선이 바로 그 두 줄입니다.
+      <b>범위를 늘린 것이 아니라, 처음부터 안 하기로 한 것을 안 되게 만든 것</b>입니다.
+    </p>
+  </div>
+
+  <hr>
+
+  <hr>
+
+  <div class="kicker" style="margin-top:8px">제 2 · 3 회차 · 리뷰 레그 · 완결 레그</div>
+  <h2 style="margin-top:14px">질문 1 · 무슨 일이</h2>
+  <div class="q">그 뒤에 무엇이 일어났나?</div>
+
+  <p class="big">
+    리뷰어가 <b>두 번 더 막았고</b>, 대표가 「그냥 merge 할까?」를 물었을 때
+    <b>PR 이 가리키던 것은 병합 불가 판정을 받은 옛 커밋</b>이었다.
+    통치자가 막았고, 수정 둘을 밀어 올린 뒤 완결자 배터리가 한 번에 통과했으며,
+    <b>#17 은 2026-08-23 22:37(UTC)에 병합됐다.</b><sup><a href="#f39">[39]</a></sup>
+  </p>
+
+  <div class="word">
+    <b>squash 병합</b> — 브랜치의 커밋 여럿을 하나로 눌러 <code>main</code> 에 얹는 방식입니다.
+    이 저장소는 <b>이것만 허용</b>합니다.<sup><a href="#f40">[40]</a></sup>
+    그래서 검증한 커밋 <code>e969625</code> 는 <b>SHA 로는 <code>main</code> 에 남지 않습니다</b> —
+    남는 것은 <b>내용(트리)</b>입니다.
+  </div>
+
+  <hr>
+
+  <h2>질문 2 · 무슨 일이</h2>
+  <div class="q">어떤 흐름으로 진행됐나?</div>
+
+  <p class="big">
+    게이트가 <b>셋 더</b> 있었고, 셋 다 한 번씩 막았습니다.
+    <b>세 번째는 사람이 누르기 직전에 막힌 것</b>입니다.
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 860 856" role="img" aria-labelledby="ch11-rw2-title ch11-rw2-desc">
+      <title id="ch11-rw2-title">리뷰 레그와 완결 레그의 되돌림 세 번</title>
+      <desc id="ch11-rw2-desc">재리뷰에서 시작해 취소 경로의 수용기준 게이트와 depth 미보고 게이트를 거치고, 대표의 병합 질의 앞에서 PR이 옛 커밋을 가리키던 것이 막힌 뒤, 완결자 배터리를 한 번에 통과해 squash 병합으로 끝나는 흐름도.</desc>
+      <defs>
+        <marker id="ch11-rw2-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="var(--muted)"/>
+        </marker>
+        <marker id="ch11-rw2-arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="var(--accent)"/>
+        </marker>
+        <marker id="ch11-rw2-arrow-soft" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="var(--soft)"/>
+        </marker>
+      </defs>
+      <rect width="100%" height="100%" fill="var(--paper)"/>
+
+      <path d="M240 72 V116" fill="none" stroke="var(--muted)" stroke-width="1" marker-end="url(#ch11-rw2-arrow)"/>
+      <path d="M380 172 H692 Q700 172 700 164 V128" fill="none" stroke="var(--muted)" stroke-width="1" marker-end="url(#ch11-rw2-arrow)"/>
+      <path d="M480 96 H248" fill="none" stroke="var(--soft)" stroke-width="1" stroke-dasharray="5,4" marker-end="url(#ch11-rw2-arrow-soft)"/>
+      <path d="M240 228 V296" fill="none" stroke="var(--muted)" stroke-width="1" marker-end="url(#ch11-rw2-arrow)"/>
+
+      <path d="M380 352 H692 Q700 352 700 344 V308" fill="none" stroke="var(--muted)" stroke-width="1" marker-end="url(#ch11-rw2-arrow)"/>
+      <path d="M480 276 H248" fill="none" stroke="var(--soft)" stroke-width="1" stroke-dasharray="5,4" marker-end="url(#ch11-rw2-arrow-soft)"/>
+      <path d="M240 408 V476" fill="none" stroke="var(--muted)" stroke-width="1" marker-end="url(#ch11-rw2-arrow)"/>
+
+      <path d="M380 532 H692 Q700 532 700 524 V488" fill="none" stroke="var(--accent)" stroke-width="1.2" marker-end="url(#ch11-rw2-arrow-accent)"/>
+      <path d="M480 456 H248" fill="none" stroke="var(--soft)" stroke-width="1" stroke-dasharray="5,4" marker-end="url(#ch11-rw2-arrow-soft)"/>
+      <path d="M240 588 V620" fill="none" stroke="var(--muted)" stroke-width="1" marker-end="url(#ch11-rw2-arrow)"/>
+      <path d="M240 684 V716" fill="none" stroke="var(--muted)" stroke-width="1" marker-end="url(#ch11-rw2-arrow)"/>
+
+      <circle cx="240" cy="96" r="4" fill="var(--ink)"/>
+      <circle cx="240" cy="276" r="4" fill="var(--ink)"/>
+      <circle cx="240" cy="456" r="4" fill="var(--ink)"/>
+
+      <rect x="508" y="180" width="64" height="20" rx="2" fill="var(--paper)"/>
+      <text x="540" y="196" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">아니오</text>
+      <rect x="304" y="104" width="112" height="20" rx="2" fill="var(--paper)"/>
+      <text x="360" y="120" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">고친 뒤 다시</text>
+      <rect x="248" y="244" width="40" height="20" rx="2" fill="var(--paper)"/>
+      <text x="268" y="260" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">예</text>
+
+      <rect x="508" y="360" width="64" height="20" rx="2" fill="var(--paper)"/>
+      <text x="540" y="376" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">아니오</text>
+      <rect x="304" y="284" width="112" height="20" rx="2" fill="var(--paper)"/>
+      <text x="360" y="300" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">고친 뒤 다시</text>
+      <rect x="248" y="424" width="40" height="20" rx="2" fill="var(--paper)"/>
+      <text x="268" y="440" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">예</text>
+
+      <rect x="508" y="540" width="64" height="20" rx="2" fill="var(--paper)"/>
+      <text x="540" y="556" font-size="12" fill="var(--accent)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">아니오</text>
+      <rect x="304" y="464" width="112" height="20" rx="2" fill="var(--paper)"/>
+      <text x="360" y="480" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">밀어 올린 뒤</text>
+      <rect x="248" y="596" width="40" height="20" rx="2" fill="var(--paper)"/>
+      <text x="268" y="612" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">예</text>
+
+      <ellipse cx="240" cy="40" rx="176" ry="32" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="240" y="36" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">재리뷰 — 결함 둘이 남아 있었다</text>
+      <text x="240" y="58" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">25a0dfe</text>
+
+      <path d="M240 116 L380 172 L240 228 L100 172 Z" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="240" y="166" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">취소 경로에서도 서나?</text>
+      <text x="240" y="190" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">리뷰어 판정</text>
+
+      <rect x="480" y="64" width="336" height="64" rx="6" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="648" y="94" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">분기 안에서 미해결을 먼저 본다</text>
+      <text x="648" y="116" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">bdbfa17</text>
+
+      <path d="M240 296 L380 352 L240 408 L100 352 Z" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="240" y="346" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">depth 미보고가 막히나?</text>
+      <text x="240" y="370" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">리뷰어 판정</text>
+
+      <rect x="480" y="244" width="336" height="64" rx="6" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="648" y="274" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">start 에서만 depth 를 요구한다</text>
+      <text x="648" y="296" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">e969625 · StdoutSchemaMismatch</text>
+
+      <path d="M240 476 L380 532 L240 588 L100 532 Z" fill="var(--accent-tint)" stroke="var(--accent)" stroke-width="1.2"/>
+      <text x="240" y="526" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">PR 이 검증한 커밋인가?</text>
+      <text x="240" y="550" font-size="12" fill="var(--accent)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">대표 「그냥 merge 할까?」</text>
+
+      <rect x="480" y="424" width="336" height="64" rx="6" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="648" y="454" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">수정 둘이 원격에 없었다 — push</text>
+      <text x="648" y="476" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">b7f8ff3..e969625</text>
+
+      <rect x="64" y="620" width="352" height="64" rx="6" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="240" y="650" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">완결자 배터리 — 한 번에 통과</text>
+      <text x="240" y="672" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">변이 25 · 생존 0 · 368 테스트 OK</text>
+
+      <ellipse cx="240" cy="748" rx="176" ry="32" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="240" y="744" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">병합 — main = 4808bc1</text>
+      <text x="240" y="766" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">squash · 트리 68b2a8dd 일치</text>
+
+      <line x1="40" y1="812" x2="820" y2="812" stroke="var(--rule)" stroke-width="1"/>
+      <text x="40" y="840" font-size="12" fill="var(--soft)" letter-spacing="0.14em"
+            font-family="'Geist Mono',ui-monospace,monospace">범례</text>
+      <path d="M128 828 L144 836 L128 844 L112 836 Z" fill="none" stroke="var(--muted)" stroke-width="1"/>
+      <text x="156" y="840" font-size="12" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">게이트</text>
+      <rect x="240" y="828" width="40" height="16" rx="4" fill="none" stroke="var(--muted)" stroke-width="1"/>
+      <text x="292" y="840" font-size="12" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">되돌림 뒤의 수정</text>
+      <line x1="440" y1="836" x2="496" y2="836" stroke="var(--soft)" stroke-width="1" stroke-dasharray="5,4"/>
+      <text x="508" y="840" font-size="12" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">같은 게이트로 다시</text>
+      <path d="M660 828 L676 836 L660 844 L644 836 Z" fill="var(--accent-tint)" stroke="var(--accent)" stroke-width="1"/>
+      <text x="688" y="840" font-size="12" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">이 레그의 머리기사</text>
+    </svg>
+    <figcaption>
+      앞 그림과 <b>같은 모양이 세 번 더</b> 났습니다. 다른 것은 마지막 게이트입니다 —
+      <b>기계가 아니라 사람이 누르려던 순간에 막혔습니다.</b>
+    </figcaption>
+  </figure>
+
+  <div class="card warn">
+    <div class="tag">이 레그에서 제일 값진 자리</div>
+    <p style="margin:8px 0 12px">
+      대표가 <b>「그냥 merge 할까?」</b>를 물었을 때, PR 이 가리키던 head 는
+      <code>b7f8ff3</code> — <b>리뷰어가 「병합 불가」를 낸 그 커밋</b>이었습니다.
+      고친 커밋 <code>bdbfa17</code>·<code>e969625</code> 는 <b>아직 밀어 올려지지 않았습니다.</b><sup><a href="#f41">[41]</a></sup>
+    </p>
+    <p style="margin:0 0 12px">
+      <b>봇 코멘트 둘은 「해결됐지만 GitHub 에는 없는」 상태였습니다.</b>
+      화면만 보면 지적이 남아 있고, 로컬만 보면 다 고쳐져 있습니다.
+      <b>둘 다 사실이고, 둘을 잇는 push 가 빠져 있었습니다.</b><sup><a href="#f41">[41]</a></sup>
+    </p>
+    <p style="margin:0" class="note">
+      이번엔 <b>검사가 아니라 사람의 손이 결함 위에 놓일 뻔했습니다.</b>
+      막은 것은 새 검사가 아니라 <b>「지금 PR 이 가리키는 것이 무엇인가」를 따로 조회한 것</b>입니다 —
+      화면에 보이는 것과 실제로 병합될 것이 다를 수 있다는 것.
+    </p>
+  </div>
+
+  <hr>
+
+  <h2>이 대상 전체의 층 목록</h2>
+  <div class="q">번호를 한 번에 다시 매겼습니다</div>
+
+  <p>
+    이 층의 사례를 <b>세 사람이 각자 세고 있었습니다.</b> 완결자가 자기 보고에 번호를 붙였고,
+    통치자가 그것을 원장으로 옮겼고, 이 편에는 또 다른 번호가 있었습니다 —
+    <b>같은 번호가 서로 다른 사건을 가리켰습니다.</b><sup><a href="#f42">[42]</a></sup>
+  </p>
+
+  <p>
+    그래서 <b>번호의 주인을 하나로 정했습니다.</b> 통치자가 원장에서 계수를 떼고
+    <b>「무엇을 · 누가 · 어느 사료에」</b>만 적기로 했으며, 번호는 여기서만 매깁니다.<sup><a href="#f42">[42]</a></sup>
+    <b>번호는 옮겨 적을 때마다 틀리고, 경로는 안 틀립니다.</b>
+  </p>
+
+  <div class="card">
+    <table class="tbl">
+      <thead><tr><th>#</th><th>누가 · 무엇이</th><th>종류</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td><b>구현자</b> — <code>git grep -cE</code> 의 하이픈이 옵션으로 읽혀 <code>exit=129</code>, 래퍼의 <code>awk</code> 가 삼킴<sup><a href="#f8">[8]</a></sup></td><td>검사가 죽음</td></tr>
+        <tr><td>2</td><td><b>완결자</b> — 미끼를 heredoc 으로 넘기다 역슬래시가 접힘<sup><a href="#f27">[27]</a></sup></td><td>전달 경로</td></tr>
+        <tr><td>3</td><td><b>완결자</b> — <code>windows-path</code> 0건이 「걸러냈다」가 아니라 「거를 것이 없었다」<sup><a href="#f34">[34]</a></sup></td><td>범위 밖</td></tr>
+        <tr><td>4</td><td><b>완결자</b> — 미해결 worker 가 전부 <code>linger=False</code> — 자식의 수명을 축으로 안 셈<sup><a href="#f29">[29]</a></sup></td><td>범위 밖</td></tr>
+        <tr><td>5</td><td><b>완결자</b> — 해시가 대문자인데 <code>[0-9a-f]{64}</code> 로 찾음<sup><a href="#f30">[30]</a></sup></td><td>검사가 죽음</td></tr>
+        <tr><td>6</td><td><b>완결자</b> — <code>str(StrEnum)</code> 비교라 판정이 <b>어떤 결과에도 한 마디만</b> 낼 수 있었음<sup><a href="#f43">[43]</a></sup></td><td class="cr">판정이 한 마디</td></tr>
+        <tr><td>7</td><td><b>통치자</b> — 이 함정을 설명하는 표 자체가 heredoc 을 지나며 벗겨짐<sup><a href="#f35">[35]</a></sup></td><td class="cr">문서가 당함</td></tr>
+        <tr><td>8</td><td><b>교육자</b> — 색 검사가 <code>fill=</code> 만, <code>[0-9a-f]</code> 만 — <b>미끼 넷 중 하나만</b> 살아 있었음<sup><a href="#f44">[44]</a></sup></td><td>검사가 죽음</td></tr>
+        <tr><td>9</td><td><b>교육자</b> — 각주 검사기의 태그 제거가 2,172자를 삼킴. <b>대조가 안 먹힌 자리에서 뽑혀 통과</b><sup><a href="#f44">[44]</a></sup></td><td class="cr">대조가 엉뚱한 자리</td></tr>
+        <tr><td>10</td><td><b>구현자·교육자</b> — <code>first.terminal</code> 넓은 패턴의 줄 수와 리터럴의 출현 수가 <b>둘 다 6</b><sup><a href="#f45">[45]</a></sup></td><td class="cr">맞은 답, 틀린 이름</td></tr>
+        <tr><td>11</td><td><b>교육자</b> — 「heredoc 말고 파일로」를 조판해 놓고 그 자리에서 heredoc 을 씀<sup><a href="#f44">[44]</a></sup></td><td class="cr">문서가 당함</td></tr>
+        <tr><td>12</td><td><b>교육자</b> — 경로 조건에 <code>'/'</code> 를 넣어 루트 파일이 통째로 빠짐<sup><a href="#f44">[44]</a></sup></td><td>범위 밖</td></tr>
+        <tr><td>13</td><td><b>교육자</b> — 제목이 시각을 「언급」한 것을 그 절의 시각으로 셈<sup><a href="#f44">[44]</a></sup></td><td>검사가 죽음</td></tr>
+        <tr><td>14</td><td><b>통치자</b> — 앵커 규칙을 원장에 적으면서 <b>그 앵커가 원장 안에 하나 더 생김</b><sup><a href="#f44">[44]</a></sup></td><td class="cr">문서가 당함</td></tr>
+        <tr><td>15</td><td><b>통치자</b> — squash 전용 저장소인데 <b>「SHA 가 히스토리에 남는지 확인하라」</b>는 성립 불가능한 지시. 그 근거가 <b>여덟 시간 동안 팀 안에서 돌았음</b><sup><a href="#f39">[39]</a></sup></td><td class="cr">근거가 거짓</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="note">
+    <b>번호가 아니라 사료가 대조의 단위입니다.</b> 위 각 행의 각주가 원본을 가리키고,
+    맺음 각주에 <b>그 원본이 언제 그러했는지</b>를 함께 못박아 두었습니다.
+  </p>
+
+  <div class="card">
+    <p style="margin:0 0 10px"><b>이 층은 이 대상에서 끝나지 않습니다.</b></p>
+    <p style="margin:0" class="note">
+      다음 티켓 <b>#34</b> 의 착수 회신에서 벌써 둘이 더 나왔습니다 —
+      <code>tasklist</code> 가 콘솔 코드페이지로 써서 <b>결함이 없을 때만 깨지는 검사</b>가 되는 것,
+      그리고 <b>정리 헬퍼가 자기도 같은 환경 변수를 읽어</b> 패치 범위가 정리를 덮으면
+      정리가 죽고 탐침이 남는 것.<sup><a href="#f46">[46]</a></sup>
+      <b>다른 대상이므로 여기 세지 않습니다</b> — #34 의 편에서 이어집니다.
+      일지편의 단위는 「지시 하나」가 아니라 「대상 하나」이기 때문입니다.
+    </p>
+  </div>
+
+  <hr>
+
+  <h2>질문 6 · 7 · 다음은</h2>
+  <div class="q">이 대상은 끝났고, 무엇이 남았나?</div>
+
+  <div class="verdict">
+    <div>
+      <div class="lab">끝난 것</div>
+      <div class="val"><code>main</code> = <code>4808bc1</code></div>
+      <p class="note" style="margin:8px 0 0">
+        이슈 #17 도 함께 닫혔습니다. <b>브랜치 히스토리는 남지 않았고</b>
+        (squash · 원격 브랜치는 정책상 자동 삭제) <b>내용은 그대로 올라갔습니다.</b><sup><a href="#f39">[39]</a></sup>
+      </p>
+    </div>
+    <div>
+      <div class="lab">남은 것 — 비차단 넷</div>
+      <div class="val">#35 와 묶임</div>
+      <p class="note" style="margin:8px 0 0">
+        진단 문구 둘 · 테스트 보일러플레이트 · <code>docs/conformance/</code> 에 delegation 실측 부재 ·
+        마스킹을 안 한 이유의 문서화.<sup><a href="#f47">[47]</a></sup>
+      </p>
+    </div>
+  </div>
+
+  <div class="card warn">
+    <div class="tag">이 대상이 스스로 적은 한계</div>
+    <p style="margin:8px 0 0">
+      <b>Codex 쪽은 코드가 「거부한다」만 증명합니다.</b> 그 거부가 옳은지는
+      <b>8/29 재측정(#35)</b>이 답합니다.<sup><a href="#f24">[24]</a></sup>
+      Claude 녹화도 <code>fast_mode off</code> · <code>claude-opus-5[1m]</code> 한 조합뿐이라
+      다른 모델·모드가 다른 줄을 쓸지는 <b>이 녹화가 말해 주지 않습니다.</b><sup><a href="#f47">[47]</a></sup>
+      <b>숨기지 않고 PR 본문에 그대로 적혔습니다.</b>
+    </p>
+  </div>
+
+  <hr>
+
+  <h2>질문 8 · 다음은</h2>
+  <div class="q">왜 이걸 제안했나?</div>
+
+  <p>
+    리뷰어가 통치자의 두 수정안을 <b>둘 다 물리고 구현자의 형태를 택했습니다.</b>
+    이유가 셋 다 <b>같은 축</b>에 있습니다 — 「그 자리에서 무엇이 증거로 읽히는가」.
+  </p>
+
+  <div class="card">
+    <p style="margin:0 0 8px"><b>물린 것 하나 — 「검사를 분기 앞으로 옮긴다」</b></p>
+    <p style="margin:0 0 20px" class="note">
+      비취소 경로에서 <b>exit 증거가 먼저 읽혀야 하는 순서</b>가 깨집니다.<sup><a href="#f48">[48]</a></sup>
+    </p>
+    <p style="margin:0 0 8px"><b>물린 것 둘 — 「분기 조건에 <code>and not unresolved_worker</code>」</b></p>
+    <p style="margin:0 0 20px" class="note">
+      분기를 빠져나가 아래 exit 검사로 떨어져 <b>답이 exit 모양의 함수</b>가 됩니다.
+      취소 뒤의 exit 상태는 <b>우리가 죽인 메아리</b>라 증거로 읽으면 안 됩니다.<sup><a href="#f48">[48]</a></sup>
+    </p>
+    <p style="margin:0 0 8px"><b>택한 것 — 분기 <b>안</b>에서, exit 를 읽기 전에 미해결을 본다</b></p>
+    <p style="margin:0" class="note">
+      exit 모양과 무관하게 상태·진단이 맞습니다. <b>두 자리에 검사를 두는 근거 주석</b>도
+      리뷰어가 타당하다고 봤습니다 — <b>두 경로가 서로 다른 증거 체계를 지나오기</b> 때문입니다.<sup><a href="#f48">[48]</a></sup>
+    </p>
+  </div>
+
+  <p class="note">
+    그리고 <code>spawn_depth</code> 쪽에서는 <b>더 쉬운 길을 일부러 버렸습니다</b> —
+    「<code>depth is None</code> 을 위반으로 친다」는 <b>스키마 문제를 <code>DelegationDepthExceeded</code> 로 오진</b>해
+    진단의 의미를 흐립니다. <b>부재의 정직한 이름은 스키마 불일치</b>입니다.<sup><a href="#f49">[49]</a></sup>
+  </p>
+
+  <hr>
+
+  <h2>질문 11 · 방향 점검</h2>
+  <div class="q">원점에 비춰, 이 대상 전체가 그쪽으로 갔나?</div>
+
+  <div class="card">
+    <p style="margin:0 0 10px"><b>갔습니다. 그리고 이번 회차가 그 근거를 하나 더 붙였습니다.</b></p>
+    <p style="margin:0">
+      원점편이 세운 문제는 <b>「협업 상태가 어디에도 없다」</b>였고, 그것을 지키는 장치가
+      제품에서 꺼져 있던 것이 1회차가 고친 것입니다.
+      이번 회차는 그 장치가 <b>취소 경로에서도, 그리고 필드가 안 올 때도</b> 서는지를 물었고,
+      둘 다 <b>fail-closed</b> 로 닫았습니다.<sup><a href="#f48">[48]</a></sup><sup><a href="#f49">[49]</a></sup>
+      불변식 7 의 「<b>unsupported delegation observation … fail closed</b>」가
+      이제 <b>관찰이 아예 안 올 때까지</b> 덮습니다.<sup><a href="#f15">[15]</a></sup>
+    </p>
+  </div>
+
+  <p>
+    <b>「자기 신고에만 반응하는 경계는 경계가 아니다」</b> — 리뷰어의 이 한 문장이
+    이번 회차의 방향을 가장 짧게 적은 것입니다.<sup><a href="#f49">[49]</a></sup>
+    <code>spawn_depth</code> 를 안 보내면 통과하던 상태는, 원점이 말한
+    <b>「제멋대로 번지지 않게 막는다」</b>가 <b>보내 주는 쪽의 선의에 기대고 있었다</b>는 뜻이었습니다.
+  </p>
+
+  <hr>
+
+  <h2>질문 12 · 방향 점검</h2>
+  <div class="q">처음 범위에서 새로 늘어난 것이 있나?</div>
+
+  <p class="big">늘어난 것 없음. 리뷰어가 따로 확인해 적었습니다.<sup><a href="#f48">[48]</a></sup></p>
+
+  <div class="term">$ git diff --stat  (재리뷰 델타 = bdbfa17 + e969625)
+<span class="d">4 files changed, 249 insertions(+), 2 deletions(-)</span>
+
+<span class="g">scope creep: 없음   (observe.py 의 +6 은 주석뿐)</span></div>
+
+  <p style="margin-top:18px">
+    <b>스펙·ADR 을 고칠 필요도 없었습니다.</b> 리뷰어가 확인한 대로
+    인용된 스펙 조항들이 <b>이미 base 에 있었고 코드가 스펙을 따라간 것</b>이며,
+    승인 기준선의 해시 행도 갱신 대상이 없었습니다(문서 무변).<sup><a href="#f48">[48]</a></sup>
+  </p>
+
+  <div class="card">
+    <p style="margin:0 0 10px"><b>오히려 낡은 절대 진술 하나가 같은 커밋에서 정정됐습니다.</b></p>
+    <p style="margin:0" class="note">
+      <code>observe.py</code> 의 docstring 이 「<b>terminal 은 cancel 을 이긴다</b>」고 단언하고 있었는데,
+      이번 수정이 바로 그 예외를 만든 것이라 <b>같은 커밋에서 문장을 고쳤습니다.</b><sup><a href="#f48">[48]</a></sup>
+      <b>코드가 바뀌면 그 코드를 설명하는 문장도 같이 바뀌어야 한다</b>는 것 —
+      이 편의 15번(이름만 바꾸면 그 절이 거짓말이 된다)과 같은 자리입니다.
+    </p>
+  </div>
+
+
+  <hr>
+
+  <h2>이 편이 답하지 않는 것</h2>
+  <div class="q">해당 없음 — 그리고 왜 없나</div>
+
+  <p>
+    일지편은 열두 질문 중 <b>1 · 2 · 6 · 7 · 8 · 11</b>(그리고 12)에 답합니다.
+    <b>3(왜 이 흐름으로)</b> · <b>4(무엇을 위해)</b> · <b>5(대신 무엇을 안 하기로)</b> ·
+    <b>9(왜 이런 오류가)</b> · <b>10(무엇이 막았을까)</b>는 기편의 몫입니다 —
+    <b>레그 하나가 아니라 구간 전체를 봐야 답이 서기 때문</b>입니다.
+    #17은 <b>2026-08-23 22:37(UTC)에 병합되어 G4 를 지났습니다.</b><sup><a href="#f39">[39]</a></sup> 그 게이트를 다루는 <b>기편은 별도 지시</b>로 씁니다 — 이 편은 <b>대상 하나의 일지</b>이고, 기편은 <b>구간 하나</b>를 봅니다.
+  </p>
+
+  <div class="fn">
+    <h3>각주 — 사료 출처</h3>
+    <ol>
+      <li id="f1"><span class="path">WORK_LOGS/REV_17_NATIVE_WORKER_ENFORCEMENT.md</span> — <span class="quote">「adapter `start_turn`이 `request.delegation_budget`을 `RunObserver`에 안 넘김」</span></li>
+      <li id="f2"><span class="path">WORK_LOGS/REV_17_NATIVE_WORKER_ENFORCEMENT.md</span> — <span class="quote">「start_turn 우회 → green이지만 production 경로 미증명」</span></li>
+      <li id="f3"><span class="path">WORK_LOGS/REV_17_NATIVE_WORKER_ENFORCEMENT.md</span> — <span class="quote">「#14 F-S2(resolve_executable 정의·테스트만·미배선), #15 first-terminal(outcome만·stream 미배선)」</span></li>
+      <li id="f4"><span class="path">WORK_LOGS/whole-life/IMP_17__ORD-IMP-17.md</span> — <span class="quote">「RED 는 `RunObserver` 직접 생성이 아니라」</span></li>
+      <li id="f5"><span class="path">WORK_LOGS/whole-life/IMP_17__ORD-IMP-17.md</span> — <span class="quote">「(codex 어댑터에서 인자만 삭제)가 SURVIVED」</span></li>
+      <li id="f6"><span class="path">WORK_LOGS/whole-life/IMP_17__ORD-IMP-17.md</span> — <span class="quote">「호출부 둘 중 하나가 검사되지 않은 채」</span></li>
+      <li id="f7"><span class="path">WORK_LOGS/whole-life/IMP_17__ORD-IMP-17.md</span> — <span class="quote">「21개 · RED 19 · HANG 2 · 생존 0 · SKIP 0」</span></li>
+      <li id="f8"><span class="path">WORK_LOGS/whole-life/IMP_17__ORD-IMP-17.md</span> — <span class="quote">「git 이 이것을 옵션으로 읽고」</span></li>
+      <li id="f9"><span class="path">WORK_LOGS/whole-life/IMP_17__ORD-IMP-17.md</span> — <span class="quote">「검사가 없었던 0건」</span></li>
+      <li id="f10"><span class="path">WORK_LOGS/whole-life/IMP_17__ORD-IMP-17.md</span> — <span class="quote">「인계 메시지에 개수를 손으로 옮기며 잘못 셌다」</span></li>
+      <li id="f11"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — <span class="quote">「내가 옮겨 적은 그 줄 자체가 이미 자기모순이었다」</span></li>
+      <li id="f12"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — <span class="quote">「요약하며 숫자를 손으로 옮긴 자리다」</span></li>
+      <li id="f13"><span class="path">WORK_LOGS/whole-life/IMP_17__ORD-IMP-17.md</span> — <span class="quote">「채널은 스크롤에 묻히고 파일은 남는다」</span></li>
+      <li id="f14"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — <span class="quote">「충족 (양방향 상호참조)」</span> · <span class="quote">「8종 개별 재실행 + **양성 대조 8/8**」</span></li>
+      <li id="f15"><span class="path">docs/project-context.md</span> — <span class="quote">「Unknown CLI versions, unsupported delegation observation, ambiguous process outcomes, and concurrent native-session resumes fail closed.」</span></li>
+      <li id="f16"><span class="path">WORK_LOGS/whole-life/IMP_17__ORD-IMP-17.md</span> — <span class="quote">「Ran 364 tests in 106.242s」</span></li>
+      <li id="f17"><span class="path">WORK_LOGS/whole-life/IMP_17__ORD-IMP-17.md</span> — <span class="quote">「뭉쳐 있으면 어느 조건이 걸렸는지 로그로 못 가린다」</span></li>
+      <li id="f18"><span class="path">WORK_LOGS/whole-life/IMP_17__ORD-IMP-17.md</span> — <span class="quote">「마스킹은 하지 않았다」</span></li>
+      <li id="f19"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — <span class="quote">「이전 커밋들의 같은 래퍼 보고도 패턴 6은 미실행이었을 수 있다」</span></li>
+      <li id="f20"><span class="path">WORK_LOGS/whole-life/REV_feat-17-native-worker-enforcement__ORD-REV-feat-17-native-worker-enforcement.md</span> — <span class="quote">「cancel-after-terminal이 unresolved worker를 이긴다」</span> · <span class="quote">「내 판단상 병합 불가」</span> · <span class="quote">「scope creep: 없음」</span></li>
+      <li id="f21"><span class="path">WORK_LOGS/whole-life/REV_feat-17-native-worker-enforcement__ORD-REV-feat-17-native-worker-enforcement.md</span> — <span class="quote">「가장 값이 큰 두 변이 T·U를 harness 없이 손으로 주입해 둘 다 RED임을 독립 확인」</span></li>
+      <li id="f22"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — <span class="quote">「#11~#16 · #28 · #31 · #32」</span> · <span class="quote">「전부 병합(PR #19·#20·#21·#23·#29·#30·#31·#36)」</span><br><span class="note"><b>이 인용문은 지금 원장에서 «취소선이 그어진 채» 남아 있습니다.</b> 통치자가 2026-08-24 09:20 에 <b><code>#31</code> 은 이슈가 아니라 <code>#28</code> 을 닫은 PR</b> 이라고 정정했습니다. <code>grep</code> 으로 찾으면 <b>2건이 걸리는데 둘 다 살아 있는 주장이 아닙니다</b> — 하나는 <b>취소선이 그어진 원문</b>이고 하나는 <b>정정 기록</b>입니다. <b>이것이 이 편이 맺음에 적어 둔 「0건의 예외」가 실제로 일어난 자리입니다</b> — <b>히트 수가 아니라 히트한 줄을 봐야 갈립니다.</b> 인용문은 <b>그때 원장에 적혀 있던 그대로</b> 두고, 사실은 위 본문에서 바로잡았습니다.</span></li>
+      <li id="f23"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — <span class="quote">「정본 보고 파일 부재」</span></li>
+      <li id="f24"><span class="path">WORK_LOGS/whole-life/IMP_17__ORD-IMP-17.md</span> — <span class="quote">「그 거부가 옳은지는 8/29 재측정(#35)이 답한다」</span></li>
+      <li id="f25"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — <span class="quote">「반복 결함형 — 네 번째다 (멈춤 조건 계수)」</span> · <span class="quote">「검사 존재하나 cancel 분기 뒤라」</span></li>
+      <li id="f26"><span class="path">WORK_LOGS/CLS_17_NATIVE_WORKER_ENFORCEMENT.md</span> — <span class="quote">「exit 129(인자 파싱) · heredoc(전달 경로) · JSON 이스케이프(저장 형태) 는」</span> · <span class="quote">「「정규식이 맞았는가」 이전에」</span></li>
+      <li id="f27"><span class="path">WORK_LOGS/CLS_17_NATIVE_WORKER_ENFORCEMENT.md</span> — <span class="quote">「내가 「인용 heredoc 은 안전」으로 적으려던 것을 구현자가 실측으로 뒤집었다」</span> · <span class="quote">「역슬래시 이스케이프를 정확히 한 겹 벗긴다」</span> · <span class="quote">「믿을 수 있는 셋:」</span></li>
+      <li id="f28"><span class="path">WORK_LOGS/CLS_17_NATIVE_WORKER_ENFORCEMENT.md</span> — <span class="quote">「내 미끼가 바뀐 것은 인용 여부와 무관했다」</span></li>
+      <li id="f29"><span class="path">WORK_LOGS/CLS_17_NATIVE_WORKER_ENFORCEMENT.md</span> — <span class="quote">「결함이 사는 자리를 지나가지 않았다」</span> · <span class="quote">「자식의 수명을 축으로 세지 않았다」</span></li>
+      <li id="f30"><span class="path">WORK_LOGS/CLS_17_NATIVE_WORKER_ENFORCEMENT.md</span> — <span class="quote">「표의 해시가 대문자인데 `[0-9a-f]{64}` 로 찾았다」</span></li>
+      <li id="f31"><span class="path">WORK_LOGS/CLS_17_NATIVE_WORKER_ENFORCEMENT.md</span> — <span class="quote">「이라 `timeout` 자체를 못 찾은 것이었다」</span></li>
+      <li id="f32"><span class="path">WORK_LOGS/CLS_17_NATIVE_WORKER_ENFORCEMENT.md</span> — <span class="quote">「대조 B 가 수정하는 사람에게 중요하다」</span> · <span class="quote">「미해결인 경우만 그 분기를 빠져나가야 한다」</span></li>
+      <li id="f33"><span class="path">WORK_LOGS/CLS_17_NATIVE_WORKER_ENFORCEMENT.md</span> — <span class="quote">「초록이 결함 위에서 났다」</span> · <span class="quote">「그대로 두면 초록이 리뷰 판정을 덮는다」</span></li>
+      <li id="f34">채널 <span class="path">whole-life</span> · 통치자 Governor · 이벤트 <span class="path">45c81be1</span> (2026-08-24 01:41) — <span class="quote">「검사 대상이 내가 쓴 그 글자인가」</span> · <span class="quote">「`windows-path` 0건이 「걸러냈다」가 아니라 「거를 것이 없었다」」</span> · <span class="quote">「이 층의 다섯 번째 사례로 넣으시면 자리가 맞습니다」</span><br><span class="note">이 중 <code>windows-path</code> 행만은 어느 <span class="path">WORK_LOGS/</span> 파일에도 없습니다(<code>grep -rl "windows-path" WORK_LOGS/</code> → exit 1). 채널 메시지가 유일한 사료입니다.</span></li>
+      <li id="f35">채널 <span class="path">whole-life</span> · 통치자 Governor · 이벤트 <span class="path">66609ba7</span> (2026-08-24 01:43) — <span class="quote">「앞 메시지의 역슬래시 표가 그 표에 적힌 버그에 당했습니다」</span> · <span class="quote">「인용 heredoc(`&lt;&lt;'EOF'`)이 역슬래시 연쇄를 절반으로 접는다. 홑 역슬래시만 살아남는다」</span> · <span class="quote">「앞의 넷은 검사가 당했고, 이번엔 그 사실을 알리는 문서가 당했습니다」</span> · <span class="quote">「규칙이 낡는 게 아니라 규칙의 요약이 낡습니다」</span></li>
+      <li id="f36">채널 <span class="path">whole-life</span> · 통치자 Governor · 이벤트 <span class="path">45c81be1</span> (2026-08-24 01:41) — <span class="quote">「둘은 대등한 대안이 아니라 하나는 회귀입니다」</span></li>
+      <li id="f37"><span class="path">docs/adr/0001-local-subscription-v0.md</span> — <span class="quote">「현재 검증할 문제는 서로 다른 두 공식 CLI의 context·event 협업이고, API·remote 표준은 v0 성공에 필요하지 않다.」</span> <span class="note">(원점편이 이 문장을 「문제」 첫 항목으로 엮었다 — <span class="path">docs/history/00_왜_시작했나.html</span>)</span></li>
+      <li id="f38"><span class="path">docs/spec/whole-life-v0.md</span> §2 v0 비목표 — <span class="quote">「recursive delegation(depth 2 이상)」</span> · <span class="quote">「native worker를 독립 participant로 승격하거나 플랫폼 간 직접 연결하는 기능」</span></li>
+      <li id="f39"><span class="path">WORK_LOGS/whole-life/CLS_feat-17-native-worker-enforcement__ORD-CLS-merge-38.md</span> — <span class="quote">「merge_commit_sha 4808bc1e896df0d0bf1d4bee43647596874e6269」</span> · <span class="quote">「전부 병합 명령의 반환값이 아니라 따로 조회한 값이다」</span> · <span class="quote">「그래서 `e969625` 는 SHA 로는 `main` 에 안 남는다」</span> · <span class="quote">「== 368 테스트를 돌린 그 트리」</span></li>
+      <li id="f40"><span class="path">WORK_LOGS/whole-life/CLS_feat-17-native-worker-enforcement__ORD-CLS-merge-38.md</span> — <span class="quote">「병합 방식은 **squash 뿐이다.**」</span> · <span class="quote">「`allow_squash_merge:true`」</span></li>
+      <li id="f41"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> 절 <span class="path">## 2026-08-24 02:25 — 대표가 「그냥 merge 할까?」를 물었다. **막았다. 그리고 원인은 내 순서다**</span> — <span class="quote">「**`b7f8ff3` 은 리뷰어가 「병합 불가」를 낸 그 커밋이다. 지금 병합하면 결함 둘이 그대로 들어간다.**」</span> · <span class="quote">「아직 push 되지 않았다」</span> · <span class="quote">「해결됐지만 GitHub 에는 없다」</span></li>
+      <li id="f42"><span class="path">WORK_LOGS/whole-life/CLS_feat-17-native-worker-enforcement__ORD-CLS-17.md</span> — <span class="quote">「번호는 매기지 않는다」</span> · <span class="quote">「번호의 주인은 교육자 하나」</span> · <span class="quote">「「무엇을 · 누가 · 어느 사료에」」</span></li>
+      <li id="f43"><span class="path">WORK_LOGS/CLS_17_NATIVE_WORKER_ENFORCEMENT.md</span> 절 <span class="path">## 내 검사가 죽어 있었다</span> — <span class="quote">「그 줄은 어떤 결과에도」</span></li>
+      <li id="f44"><span class="path">WORK_LOGS/whole-life/EDU_history-restyle__ORD-EDU-history-restyle.md</span> — <span class="quote">「넷 중 셋을 놓쳤다」</span> · <span class="quote">「2,172자가 사라졌다」</span> · <span class="quote">「루트 파일이 통째로 빠졌다」</span> · <span class="quote">「제목이 시각을 언급만 한 것」</span> · <span class="quote">「믿을 수 있는 셋 — ① 에디터 도구로 파일에 직접 쓰기」</span><br><span class="note">이 다섯은 <b>교육자 자신의 것</b>이다. 남의 실수만 적고 제 것을 빼면 이 표가 거짓이 된다.</span></li>
+      <li id="f45"><span class="path">WORK_LOGS/whole-life/EDU_history-restyle__ORD-EDU-history-restyle.md</span> — <span class="quote">「넓은 패턴 first.terminal -i」</span> · <span class="quote">「숫자만 같고 다른 양」</span></li>
+      <li id="f46">채널 <span class="path">whole-life</span> · 통치자 Governor · 이벤트 <span class="path">0eb4032d</span> (2026-08-24 07:43) — <span class="quote">「tasklist 가 콘솔 코드페이지로 쓴다」</span> · <span class="quote">「결함이 없을 때만 깨지는 검사」</span> · <span class="quote">「정리 헬퍼가 자기도 같은 환경 변수를 읽는다」</span><br><span class="note">#34 착수 회신에서 나온 것이라 <b>이 대상의 표에 세지 않는다.</b> 채널 메시지가 유일한 사료다.</span></li>
+      <li id="f47"><span class="path">WORK_LOGS/whole-life/CLS_feat-17-native-worker-enforcement__ORD-CLS-merge-38.md</span> — <span class="quote">「README 실측(clean clone 후 문서대로 따라 하기)은 이번 ORD 에서 안 했다」</span> · <span class="quote">「숨기지 않고 남긴다」</span></li>
+      <li id="f48"><span class="path">WORK_LOGS/whole-life/REV_e969625__ORD-REV-e969625.md</span> — <span class="quote">「옳다. 내가 제안한 두 형태보다 낫다」</span> · <span class="quote">「exit 모양의 함수**가 된다」</span> · <span class="quote">「두 경로가 서로 다른 증거 체계를 지나온다」</span> · <span class="quote">「scope creep 없음」</span> · <span class="quote">「「terminal은 cancel을 이긴다」」</span> · <span class="quote">「해시 행 갱신 대상 없음」</span></li>
+      <li id="f49"><span class="path">WORK_LOGS/whole-life/REV_spawn-depth-optional__ORD-REV-spawn-depth-optional.md</span> — <span class="quote">「판정: **위반이다.**」</span> · <span class="quote">「자기 신고에만 반응하는 경계는 경계가 아니다」</span> · <span class="quote">「부재의 정직한 이름은 스키마 불일치」</span></li>
+    </ol>
+    <p class="note" style="margin-top:20px">
+      각주에 줄 번호를 쓰지 않습니다. 파일이 바뀌면 줄 번호는 조용히 다른 곳을 가리키지만,
+      인용문은 <code>grep</code>으로 찾히고 사라졌으면 <b>사라졌다는 사실 자체가 신호</b>가 됩니다.
+    </p>
+    <p class="note">
+      <span class="path">WORK_LOGS/</span> 로 시작하는 경로는 이 저장소가 아니라
+      팀 작업공간(<span class="path">~/.buzz/</span>) 기준입니다.
+    </p>
+    <p class="note" style="margin-top:26px">
+      <b>인용문이 언제 참이었나 — 아래에 못박아 둡니다.</b>
+      각주의 인용문이 나중에 <code>grep</code> 으로 안 잡히면, 이 표가 있어야
+      <b>「사료가 그 뒤에 바뀌었다」와 「지어냈다」를 가를 수 있습니다.</b>
+      <b>얼리는 방법은 대상마다 다릅니다</b> — 하나의 규칙으로 뭉뚱그리면
+      살아 있는 장부에서 경보가 매 턴 울리고, <b>늘 울리는 경보는 경보가 아닙니다.</b>
+    </p>
+
+    <div class="term">저장소 사료 — 커밋 <span class="g">9546af8</span> 의 blob. <span class="d">git show 9546af8:&lt;경로&gt; 로 영구 재검</span>
+<span class="d">  e955aa0a585c   docs/adr/0001-local-subscription-v0.md
+  747197431fc2   docs/project-context.md
+  f158e1c81ec6   docs/spec/whole-life-v0.md
+  8cd54d568fe2   docs/history/00_왜_시작했나.html
+  ececb82fa273   PRODUCT.md          96d27d6a8ce9   README.md   (원점편이 인용)</span>
+
+Nest 사료 — <span class="g">동결됨.</span> <span class="d">sha256(앞 16자) + 바이트. 다르면 「그 뒤에 바뀜」이 확정된다</span>
+<span class="d">  559f2aaecc166f32   36540B   WORK_LOGS/CLS_17_NATIVE_WORKER_ENFORCEMENT.md
+  39ff003e4026ee07    4352B   WORK_LOGS/REV_17_NATIVE_WORKER_ENFORCEMENT.md
+  949700ad48267071    8437B   WORK_LOGS/whole-life/CLS_feat-17-…__ORD-CLS-17.md
+  00f998653a6728b2    5037B   WORK_LOGS/whole-life/CLS_feat-17-…__ORD-CLS-merge-38.md
+  b5f9016959dd71ac   10804B   WORK_LOGS/whole-life/IMP_17__ORD-IMP-17.md
+  c3a0af9d765b9bd3    6628B   WORK_LOGS/whole-life/REV_e969625__ORD-REV-e969625.md
+  65a641b5abc0de33   10540B   WORK_LOGS/whole-life/REV_feat-17-…__ORD-REV-feat-17-….md
+  f9c9ab49626f43a7    4094B   WORK_LOGS/whole-life/REV_spawn-depth-optional__ORD-REV-….md</span>
+
+살아 있는 장부 — <span class="d">해시를 쓰지 않는다. 매 턴 바뀐다. <b>절 제목 줄 전문</b>으로 가리킨다</span>
+<span class="d">  WORK_LOGS/whole-life/GOV_LEDGER.md
+     ## 원장 개설 경위 (2026-08-24 01:17 KST)                                    f22 f23
+     ## 2026-08-24 01:27 — `RPT-ORD-IMP-17` 판정: **통과**                       f11 f12 f14 f19
+     ## 2026-08-24 01:35 — `RPT-ORD-REV-feat-17-…` 판정: **회신 충족 · 결과 BLOCKED**  f25
+     ## 2026-08-24 02:25 — 대표가 「그냥 merge 할까?」를 물었다. …                 f41
+  WORK_LOGS/whole-life/EDU_history-restyle__ORD-EDU-history-restyle.md          f44 f45
+     — 교육자 자신의 보고서. 이것도 이어 쓰는 장부라 해시로 얼리지 않는다</span></div>
+
+    <p class="note" style="margin-top:20px">
+      <b>확인은 <code>grep</code> 부분일치가 아니라 「줄 전체 일치」로 합니다.</b>
+      절 제목을 앵커로 쓰면, <b>그 앵커를 인용하는 문서가 늘어날 때마다 부분일치가 늘어납니다</b> —
+      실제로 위 <code>01:27</code> 앵커는 지금 부분일치가 2건이고 줄 전체 일치가 1건입니다.
+      <code>grep -cxF</code> 를 쓰십시오.
+    </p>
+
+    <p class="note">
+      <b>「인용문이 0건이면 사라진 것」에는 예외가 하나 있습니다.</b>
+      <b>삭제 기록이 그 문구를 품고 있으면</b> <code>grep</code> 이 성공하면서
+      「…를 뺐다」고 적은 줄을 가리킵니다. <b>히트 수가 아니라 히트한 줄을 보십시오.</b>
+      이 편에서 실제로 한 번 일어났고, 완결자가 뗀 기록을 서술형으로 고쳐 닫았습니다.<sup><a href="#f42">[42]</a></sup>
+    </p>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>제04편 · 일지 — #13 bare 모드 게이트</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#282828; --paper-2:#32302f; --zone:#302e2c; --ink:#ebdbb2;
+    --muted:#a89984; --soft:#928374;
+    --rule:rgba(235,219,178,0.12); --rule-solid:#504945;
+    --accent:#fe8019; --accent-tint:rgba(254,128,25,0.12); --link:#83a598;
+    --green-tint:rgba(184,187,38,0.10); --red-tint:rgba(251,73,52,0.10);
+    --yellow-tint:rgba(250,189,47,0.10);
+    --green:#b8bb26; --red:#fb4934; --yellow:#fabd2f;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Geist","Pretendard","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;
+    line-height:1.75; -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:880px; margin:0 auto; padding:64px 28px 120px}
+  .kicker{font-size:13px; letter-spacing:.14em; color:var(--soft); text-transform:uppercase;
+          font-family:"Geist Mono",ui-monospace,"Consolas",monospace}
+  h1{font-family:"Instrument Serif","Malgun Gothic",serif;
+     font-size:52px; line-height:1.2; margin:14px 0 6px; letter-spacing:-.01em; font-weight:400}
+  .sub{font-size:17px; color:var(--muted); margin:0 0 8px}
+  .meta{font-size:14px; color:var(--soft); font-family:"Geist Mono",ui-monospace,"Consolas",monospace}
+  hr{border:0; border-top:1px solid var(--rule); margin:48px 0}
+  h2{font-size:14px; letter-spacing:.16em; color:var(--soft); text-transform:uppercase;
+     margin:72px 0 4px; font-weight:500;
+     font-family:"Geist Mono",ui-monospace,"Consolas",monospace}
+  .q{font-family:"Instrument Serif","Malgun Gothic",serif;
+     font-size:34px; line-height:1.35; margin:0 0 26px; font-weight:400; letter-spacing:-.01em}
+  .big{font-size:26px; line-height:1.5; font-weight:500; margin:0 0 18px}
+  p{font-size:17px; margin:0 0 18px}
+  .note{font-size:15px; color:var(--muted)}
+  a{color:var(--link)}
+  .card{background:var(--paper-2); border:1px solid var(--rule-solid); border-radius:8px;
+        padding:26px 28px; margin:26px 0}
+  .warn{border-color:var(--yellow)}
+  .warn .tag{color:var(--yellow); font-weight:600; font-size:13px; letter-spacing:.1em;
+             font-family:"Geist Mono",ui-monospace,monospace}
+  .good{border-color:var(--green)}
+  .good .tag{color:var(--green); font-weight:600; font-size:13px; letter-spacing:.1em;
+             font-family:"Geist Mono",ui-monospace,monospace}
+  figure{margin:34px 0}
+  figcaption{font-size:14px; color:var(--muted); margin-top:12px; text-align:center; line-height:1.6}
+  svg{display:block; width:100%; height:auto}
+  code{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; font-size:.9em;
+       background:var(--zone); color:var(--ink); padding:1px 6px; border-radius:4px}
+  .term{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; font-size:14px; line-height:1.7;
+        background:var(--zone); color:var(--ink); border:1px solid var(--rule-solid);
+        border-radius:8px; padding:20px 22px; overflow-x:auto; white-space:pre-wrap}
+  .term .g{color:var(--green)}
+  .term .d{color:var(--soft)}
+  .term .r{color:var(--red)}
+  .word{background:var(--zone); border-left:3px solid var(--link); padding:12px 16px;
+        font-size:15px; margin:0 0 18px}
+  blockquote{margin:0 0 18px; padding:14px 20px; background:var(--zone);
+             border-left:3px solid var(--link); font-size:16px; line-height:1.7; color:var(--ink)}
+  .tbl{width:100%; border-collapse:collapse; font-size:15px}
+  .tbl th{text-align:left; font-size:12px; letter-spacing:.1em; text-transform:uppercase;
+          color:var(--soft); font-weight:500; padding:0 12px 10px 0;
+          border-bottom:1px solid var(--rule-solid);
+          font-family:"Geist Mono",ui-monospace,monospace}
+  .tbl td{padding:13px 12px 13px 0; border-bottom:1px solid var(--rule);
+          vertical-align:top; line-height:1.6}
+  .tbl tr:last-child td{border-bottom:0}
+  .tbl td:first-child{font-weight:600; width:34%}
+  .out{padding-left:22px; margin:0; font-size:16px}
+  .out li{margin-bottom:9px; line-height:1.6}
+  sup a{color:var(--link); text-decoration:none; font-size:12px; font-weight:600; padding:0 1px}
+  .fn{margin-top:80px; border-top:1px solid var(--rule-solid); padding-top:26px}
+  .fn h3{font-size:13px; letter-spacing:.16em; color:var(--soft); text-transform:uppercase;
+         margin:0 0 16px; font-family:"Geist Mono",ui-monospace,monospace; font-weight:500}
+  .fn ol{padding-left:24px; margin:0}
+  .fn li{font-size:14px; color:var(--muted); margin-bottom:11px; line-height:1.65}
+  .fn .path{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; color:var(--ink); font-size:13px}
+  .fn .quote{color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kicker">제 04 편 · 일지편</div>
+  <h1>「불렀다」가 「됐다」 자리에<br>세 번 앉았다</h1>
+  <p class="sub">#13 bare 모드 게이트 — 반복 결함형이 이름을 얻은 티켓</p>
+  <p class="meta">
+    대상 <code>feat/13-bare-mode-gate</code> — 병합됨 · <code>e84ccc1</code> (PR #23)<br>
+    2026-08-23 · 2026-08-24 에 뒤늦게 씀 · <code>ORD-EDU-log-13-14-15</code>
+  </p>
+
+  <div class="card warn">
+    <div class="tag">읽기 전에 — 이 편은 뒤늦게 쓰였습니다</div>
+    <p style="margin:8px 0 12px">
+      <b>이 대상은 2026-08-23 에 끝났고 이 편은 그다음 날 썼습니다.</b>
+      그래서 <a href="00_%EC%99%9C_%EC%8B%9C%EC%9E%91%ED%96%88%EB%82%98.html">원점편</a>이라는 자를
+      처음부터 손에 쥐고 있습니다 — <b>그때의 눈이 아니라 하루 뒤의 눈입니다.</b>
+    </p>
+    <p style="margin:0" class="note">
+      <b>그리고 이 구간에는 통치자 원장이 없습니다.</b> 원장은 2026-08-24 01:17 에 열렸습니다.
+      그래서 <b>「무엇이 되돌려졌고 왜였나」는 리뷰어·완결자 보고에서만</b> 읽었습니다.
+      원장을 함께 읽었으면 보였을 것이 있는지는 <b>이 편이 모릅니다.</b>
+    </p>
+  </div>
+
+  <hr>
+
+  <h2>질문 1 · 무슨 일이</h2>
+  <div class="q">이번에 무엇이 일어났나?</div>
+
+  <p class="big">
+    <b>구현자가 사양을 읽기 전에 사람의 승인부터 받았고</b>, 읽어 보니 사양이 같은 설계를 이미
+    지정해 두고 있었다. 그리고 리뷰가 세 번 되돌아가는 동안
+    <b>「불렀다」가 「됐다」 자리에 앉은 것이 세 번</b> 걷어내졌다 —
+    <b>구현자가 그 형태에 이름을 붙여 남겼고, 그것이 이 프로젝트가 «일곱 번» 되풀이하는 결함형의 원점이 됐다.</b>
+  </p>
+
+  <div class="word">
+    <b>bare 모드</b> — Claude Code 가 <b>API 키로만</b> 인증하고 구독 로그인을 안 쓰는 모드입니다.
+    이 프로젝트는 <b>「대표의 구독으로 도는 것」</b>이 전제라, bare 가 기본값이 되는 순간
+    <b>전제가 무너집니다.</b> #13 은 그것을 <b>프로세스를 띄우기 직전 마지막 문</b>에서 막습니다.
+  </div>
+
+  <hr>
+
+  <h2>질문 2 · 무슨 일이</h2>
+  <div class="q">어떤 흐름으로 진행됐나?</div>
+
+  <p class="big">
+    <b>리뷰어가 「통과」를 세 번 냈고, 그중 한 번을 완결자가 뒤집었습니다.</b>
+  </p>
+
+  <figure>
+    <svg viewBox="0 0 860 752" role="img" aria-labelledby="t13-flow-title t13-flow-desc">
+      <title id="t13-flow-title">#13 의 되돌림 세 번</title>
+      <desc id="t13-flow-desc">구현에서 시작해 완결자 경계 게이트와 PR 인라인 지적 게이트를 지나고, 리뷰어가 이미 해소로 판정한 F4를 완결자가 뒤집어 보류시킨 뒤 세 번째 재리뷰로 닫히고 병합에 이르는 흐름도.</desc>
+      <defs>
+        <marker id="t13-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="var(--muted)"/>
+        </marker>
+        <marker id="t13-arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="var(--accent)"/>
+        </marker>
+        <marker id="t13-arrow-soft" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="var(--soft)"/>
+        </marker>
+      </defs>
+      <rect width="100%" height="100%" fill="var(--paper)"/>
+
+      <path d="M240 72 V116" fill="none" stroke="var(--muted)" stroke-width="1" marker-end="url(#t13-arrow)"/>
+      <path d="M380 172 H692 Q700 172 700 164 V128" fill="none" stroke="var(--muted)" stroke-width="1" marker-end="url(#t13-arrow)"/>
+      <path d="M480 96 H248" fill="none" stroke="var(--soft)" stroke-width="1" stroke-dasharray="5,4" marker-end="url(#t13-arrow-soft)"/>
+      <path d="M240 228 V296" fill="none" stroke="var(--muted)" stroke-width="1" marker-end="url(#t13-arrow)"/>
+
+      <path d="M380 352 H692 Q700 352 700 344 V308" fill="none" stroke="var(--muted)" stroke-width="1" marker-end="url(#t13-arrow)"/>
+      <path d="M480 276 H248" fill="none" stroke="var(--soft)" stroke-width="1" stroke-dasharray="5,4" marker-end="url(#t13-arrow-soft)"/>
+      <path d="M240 408 V476" fill="none" stroke="var(--muted)" stroke-width="1" marker-end="url(#t13-arrow)"/>
+
+      <path d="M380 532 H692 Q700 532 700 524 V488" fill="none" stroke="var(--accent)" stroke-width="1.2" marker-end="url(#t13-arrow-accent)"/>
+      <path d="M480 456 H248" fill="none" stroke="var(--soft)" stroke-width="1" stroke-dasharray="5,4" marker-end="url(#t13-arrow-soft)"/>
+      <path d="M240 588 V620" fill="none" stroke="var(--muted)" stroke-width="1" marker-end="url(#t13-arrow)"/>
+
+      <circle cx="240" cy="96" r="4" fill="var(--ink)"/>
+      <circle cx="240" cy="276" r="4" fill="var(--ink)"/>
+      <circle cx="240" cy="456" r="4" fill="var(--ink)"/>
+
+      <rect x="508" y="180" width="64" height="20" rx="2" fill="var(--paper)"/>
+      <text x="540" y="196" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">아니오</text>
+      <rect x="304" y="104" width="112" height="20" rx="2" fill="var(--paper)"/>
+      <text x="360" y="120" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">고친 뒤 다시</text>
+      <rect x="248" y="244" width="40" height="20" rx="2" fill="var(--paper)"/>
+      <text x="268" y="260" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">예</text>
+
+      <rect x="508" y="360" width="64" height="20" rx="2" fill="var(--paper)"/>
+      <text x="540" y="376" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">아니오</text>
+      <rect x="304" y="284" width="112" height="20" rx="2" fill="var(--paper)"/>
+      <text x="360" y="300" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">고친 뒤 다시</text>
+      <rect x="248" y="424" width="40" height="20" rx="2" fill="var(--paper)"/>
+      <text x="268" y="440" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">예</text>
+
+      <rect x="500" y="540" width="80" height="20" rx="2" fill="var(--paper)"/>
+      <text x="540" y="556" font-size="12" fill="var(--accent)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">아니었다</text>
+      <rect x="304" y="464" width="112" height="20" rx="2" fill="var(--paper)"/>
+      <text x="360" y="480" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">고친 뒤 다시</text>
+      <rect x="248" y="596" width="40" height="20" rx="2" fill="var(--paper)"/>
+      <text x="268" y="612" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">예</text>
+
+      <ellipse cx="240" cy="40" rx="176" ry="32" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="240" y="36" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">구현 — 84개 통과 · 변이 13/13</text>
+      <text x="240" y="58" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">6e0995e</text>
+
+      <path d="M240 116 L380 172 L240 228 L100 172 Z" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="240" y="166" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">경계 둘이 닫혔나?</text>
+      <text x="240" y="190" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">완결자 수정 요청</text>
+
+      <rect x="480" y="64" width="336" height="64" rx="6" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="648" y="94" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">해석된 경로 · 출력 폐기를 고침</text>
+      <text x="648" y="116" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">d3b6dfc · 86 tests</text>
+
+      <path d="M240 296 L380 352 L240 408 L100 352 Z" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="240" y="346" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">지적 다섯이 결함인가?</text>
+      <text x="240" y="370" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">PR #23 인라인</text>
+
+      <rect x="480" y="244" width="336" height="64" rx="6" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="648" y="274" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">셋은 결함 · 하나는 권고</text>
+      <text x="648" y="296" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">40b6bb1 · 101 tests</text>
+
+      <path d="M240 476 L380 532 L240 588 L100 532 Z" fill="var(--accent-tint)" stroke="var(--accent)" stroke-width="1.2"/>
+      <text x="240" y="520" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">F4 가 «정말» 닫혔나?</text>
+      <text x="240" y="544" font-size="12" fill="var(--accent)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">리뷰어는 「해소」라 했는데</text>
+      <text x="240" y="566" font-size="12" fill="var(--accent)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">완결자가 뒤집었다</text>
+
+      <rect x="480" y="424" width="336" height="64" rx="6" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="648" y="454" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">죽인 것을 «증명»하게 고침</text>
+      <text x="648" y="476" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">767551c · 106 tests</text>
+
+      <ellipse cx="240" cy="652" rx="176" ry="32" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="240" y="648" font-size="16" fill="var(--ink)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">병합 — e84ccc1</text>
+      <text x="240" y="670" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">PR #23</text>
+
+      <line x1="40" y1="704" x2="820" y2="704" stroke="var(--rule)" stroke-width="1"/>
+      <text x="40" y="736" font-size="12" fill="var(--soft)" letter-spacing="0.14em"
+            font-family="'Geist Mono',ui-monospace,monospace">범례</text>
+      <path d="M128 724 L144 732 L128 740 L112 732 Z" fill="none" stroke="var(--muted)" stroke-width="1"/>
+      <text x="156" y="736" font-size="12" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">게이트</text>
+      <rect x="240" y="724" width="40" height="16" rx="4" fill="none" stroke="var(--muted)" stroke-width="1"/>
+      <text x="292" y="736" font-size="12" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">되돌림 뒤의 수정</text>
+      <line x1="440" y1="732" x2="496" y2="732" stroke="var(--soft)" stroke-width="1" stroke-dasharray="5,4"/>
+      <text x="508" y="736" font-size="12" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">같은 게이트로 다시</text>
+      <path d="M660 724 L676 732 L660 740 L644 732 Z" fill="var(--accent-tint)" stroke="var(--accent)" stroke-width="1"/>
+      <text x="688" y="736" font-size="12" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">판정이 뒤집힌 자리</text>
+    </svg>
+    <figcaption>
+      앞 두 게이트는 <b>「아직 안 닫혔다」</b>였고, 마지막 하나는
+      <b>「닫혔다고 이미 판정한 것이 사실은 안 닫혔다」</b>였습니다.
+    </figcaption>
+  </figure>
+
+  <hr>
+
+  <h2>이 편의 머리기사</h2>
+  <div class="q">리뷰어가 「해소」라 쓴 것을, 완결자가 뒤집었다</div>
+
+  <p>
+    PR 인라인 지적 중 <b>F4</b> 는 「시간이 다 됐을 때 프로세스 트리를 안 죽인다」였습니다.
+    구현자가 고쳤고 <b>리뷰어가 「해소」로 판정</b>했습니다. <b>완결자가 그것을 뒤집었습니다.</b>
+  </p>
+
+  <blockquote>
+    「The first F4 implementation at <code>40b6bb1</code> only called <code>taskkill</code>;
+    <b>it did not prove success or reap the started process.</b>
+    Closer rejected completion, and Reviewer withdrew the initial pass.」<sup><a href="#t3">[3]</a></sup>
+  </blockquote>
+
+  <p>
+    <b><code>check=False</code> 였습니다.</b> <code>taskkill</code> 이 실패해도 그 실패를 삼키고,
+    죽었는지 기다려 보지도 않고 <b>「깨끗한 timeout」을 반환</b>했습니다.
+  </p>
+
+  <div class="card warn">
+    <div class="tag">리뷰어 자신이 적은 진단 — 이 편에서 제일 값진 한 줄</div>
+    <p class="big" style="margin:8px 0 12px">
+      「내 검증은 <b>「호출 존재 + 세 경로 테스트 존재」까지만</b> 봤고
+      <b>kill 실패 경로의 «의미»를 안 봤다</b> —
+      <b>호출 존재 확인과 실패 경로 의미 확인은 다른 검사다.</b>」<sup><a href="#t2">[2]</a></sup>
+    </p>
+    <p style="margin:0" class="note">
+      그리고 3차 재리뷰를 <b>「이번에는 실패 경로 의미부터 검증」</b>으로 시작했습니다.<sup><a href="#t2">[2]</a></sup>
+      <b>고친 것이 코드만이 아니라 자기 검사 순서였습니다.</b>
+    </p>
+  </div>
+
+  <p class="note">
+    <b>이 형태가 이 프로젝트에서 계속 나옵니다.</b>
+    <a href="12_2026-08-24_G4_%EC%8A%A4%ED%8E%99%EC%97%90%EC%84%9C_%EC%B2%AB_%EB%B3%91%ED%95%A9%EA%B9%8C%EC%A7%80.html">제12편</a>이
+    <b>「정의·테스트는 있는데 실제 조립 경로에서 도달하지 않는다」</b>로 이름 붙인 것과 같은 축입니다 —
+    <b>여기서는 「죽이라고 불렀는데 죽었는지는 안 봤다」</b>입니다.
+  </p>
+
+  <hr>
+
+  <h2>이 티켓이 남긴 것</h2>
+  <div class="q">구현자가 그 형태에 이름을 붙였다</div>
+
+  <p>
+    구현자가 자기 보고에 <b>「이 티켓의 실질 산출물 — 반복된 결함형 하나」</b>라는 절을 따로 두고,
+    <b>이 티켓 안에서만 세 번 반복했다</b>고 적었습니다.<sup><a href="#t1">[1]</a></sup>
+  </p>
+
+  <div class="card">
+    <table class="tbl">
+      <thead><tr><th>주장</th><th>실제로 검증한 것</th></tr></thead>
+      <tbody>
+        <tr><td>「같은 binary 임을 증명한다」</td><td class="note"><b>hash 한 파일이 안 바뀐 것</b> — 실행됐다는 것이 아님</td></tr>
+        <tr><td>「출력을 버린다」</td><td class="note"><b>읽지 않은 것</b> — <code>capture_output</code> 이 메모리에 들고 있었음</td></tr>
+        <tr><td>「트리를 종료한다」</td><td class="note"><b><code>kill</code> 을 «호출»한 것</b> — 죽었다는 것이 아님</td></tr>
+      </tbody>
+    </table>
+    <p style="margin:16px 0 0">
+      구현자의 진단 — <b>「약한 사실이 강한 사실 자리에 조용히 들어앉은 것」.</b><sup><a href="#t1">[1]</a></sup>
+      그리고 다음 티켓에서 물을 질문까지 적어 두었습니다.
+    </p>
+    <p class="big" style="margin:16px 0 0">
+      <b>「이 테스트가 통과할 때, 내가 주장하려는 문장이 거짓일 수 있는 세계가 있는가?」</b><sup><a href="#t1">[1]</a></sup>
+    </p>
+  </div>
+
+  <p class="note">
+    <b>세 번째 줄이 곧바로 다시 났습니다.</b> 위 F4 가 바로 그 「트리를 종료한다」이고,
+    <b>구현자가 이름을 붙인 뒤에도 같은 자리에서 한 번 더 났습니다.</b>
+    <b>이름을 붙이는 것과 막는 것은 다릅니다.</b>
+  </p>
+
+  <hr>
+
+  <h2>덧붙임</h2>
+  <div class="q">사람의 승인이 문서를 읽은 것을 대신하지 않는다</div>
+
+  <p>
+    구현자가 <b>실측 설계를 채널에 올려 승인까지 받은 뒤에</b> 사양을 읽었습니다.
+    읽어 보니 <b>사양 §5 가 같은 설계를 이미 지정</b>하고 있었고, 절차 정본으로
+    다른 문서를 가리키고 있었습니다.<sup><a href="#t1">[1]</a></sup>
+  </p>
+
+  <blockquote>
+    「교훈: <b>사람의 승인은 정본 문서를 읽은 것을 대신하지 않는다.</b> 우연히 일치했을 뿐이다.」<sup><a href="#t1">[1]</a></sup>
+  </blockquote>
+
+  <p class="note">
+    <b>승인이 났으니 맞다</b>가 아니라 <b>사양이 그렇게 정해 뒀으니 맞다</b>여야 합니다.
+    이번에는 우연히 같았고, <b>달랐으면 승인받은 채로 틀렸을 것</b>입니다.
+  </p>
+
+  <div class="card good">
+    <div class="tag">사양이 순서까지 정한 자리</div>
+    <p style="margin:8px 0 12px">
+      <code>bare_default</code> 검사가 allowlist 검사보다 <b>먼저</b> 돕니다.
+      사양이 「allowlist 통과 여부와 무관하게」 거부하라고 하기 때문입니다.
+    </p>
+    <p style="margin:0" class="note">
+      <b>순서를 뒤집으면 fail-open 이 됩니다</b> — <code>-p</code> 기본값이 bare 로 바뀐 릴리스가
+      allowlist 에 들어오는 순간 나머지 검사가 전부 통과하면서 <b>실행만 API 키를 요구</b>하게 됩니다.
+      구현자 본인의 문장 — <b>「코드만 보고 추론했으면 순서를 틀렸을 것이다」</b>.<sup><a href="#t1">[1]</a></sup>
+    </p>
+  </div>
+
+  <div class="card">
+    <p style="margin:0 0 10px"><b>그리고 변이가 사람 대신 잡았습니다.</b></p>
+    <p style="margin:0" class="note">
+      1회차 변이에서 <b>생존 1건</b>이 나왔습니다 — 검사를 함수로 빼지 않고 인라인으로 넣어
+      테스트가 없던 자리였습니다. 구현자 본인의 문장 —
+      <b>「「새 함수마다 테스트」를 내가 어겼다는 것을 사람이 아니라 변이가 잡았다」</b>.<sup><a href="#t1">[1]</a></sup>
+      <br><b>테스트를 고쳐 통과시킨 것이 아니라는 것</b>도 그 자리에 적혀 있습니다 —
+      #12 의 테스트 하나가 이 순서 변경으로 깨졌는데, <b>코드가 맞고 테스트의 입력 선택이 낡은 것</b>이라
+      원래 의도를 그대로 시험하도록 입력을 바꿨습니다.<sup><a href="#t1">[1]</a></sup>
+    </p>
+  </div>
+
+  <hr>
+
+  <h2>질문 6 · 7 · 다음은</h2>
+  <div class="q">다음 담당에게 무엇을, 왜 맡겼나?</div>
+
+  <p>
+    <b>이 티켓이 <code>#14</code> 에게 넷을 넘겼습니다.</b> 그리고 <b>넘길 수 있게 미리 잘라 두었습니다.</b>
+  </p>
+
+  <div class="card">
+    <p style="margin:0 0 10px"><b>왜 <code>#14</code> 인가 — 구현자가 seam 을 그 자리에 뒀기 때문입니다.</b></p>
+    <p style="margin:0 0 16px" class="note">
+      수용기준 6 이 <b>「조립된 turn-start 경로를 통과할 것, standalone predicate 통과는 증거로 안 침」</b>
+      이라고 못박는데 <code>start_turn</code> 전체는 <code>#14</code> 몫이었습니다.
+      그래서 <b>조립만 떼어 <code>assemble_launch_plan</code> 이라는 seam 으로 두고</b>,
+      테스트가 그 seam 을 타게 했습니다 — <b><code>#14</code> 는 <code>start_turn</code> 에서 둘을 이어 붙이면 됩니다.</b><sup><a href="#t1">[1]</a></sup>
+    </p>
+    <div class="term"><span class="d">#14 로 남긴 것 넷</span>
+start_turn 이 assemble_launch_plan + launch 를 잇는 것     <span class="g">← 이 seam 이 그 자리다</span>
+S-J1  수집기 shell=True vs no-shell runner
+잉여 allowlisted 제거
+미등재 Provider bare KeyError</div>
+  </div>
+
+  <p class="note">
+    <b>여기가 제05편(<code>#14</code>)이 이어받는 자리입니다.</b>
+    그리고 <a href="12_2026-08-24_G4_%EC%8A%A4%ED%8E%99%EC%97%90%EC%84%9C_%EC%B2%AB_%EB%B3%91%ED%95%A9%EA%B9%8C%EC%A7%80.html">제12편</a>이
+    적은 반복 결함형의 두 번째 사례가 <b>바로 그 <code>#14</code> 에서</b> 납니다 —
+    <b>「정의·테스트만 하고 배선을 안 한」</b> 모양으로.
+  </p>
+
+  <hr>
+
+  <h2>질문 8 · 다음은</h2>
+  <div class="q">왜 이걸 제안했나?</div>
+
+  <p>구현자가 스스로 낸 판단 둘이 있고, 둘 다 <b>「안 늘리는 쪽」</b>입니다.</p>
+
+  <div class="card">
+    <p style="margin:0 0 8px"><b>안 했다 — refusal code 를 세 개 만들지 않았다</b></p>
+    <p style="margin:0 0 20px" class="note">
+      사양이 이름을 준 것은 <code>BareModeDefault</code> 하나뿐입니다.
+      대칭적으로 셋을 두려면 <b>승인 기준선인 사양 문구를 고쳐야</b> 하는데,
+      그 해시가 <code>check-approved-baseline.sh</code> 에 고정돼 있습니다.
+      <b>「진단 대칭성을 위해 대표 승인 산출물을 건드릴 이유가 없다」</b>.<sup><a href="#t1">[1]</a></sup>
+      <br><b>보기 좋은 대칭보다 안 건드리는 쪽을 골랐습니다.</b>
+    </p>
+    <p style="margin:0 0 8px"><b>했다 — 조립만 떼어 seam 으로</b></p>
+    <p style="margin:0" class="note">
+      <b>수용기준이 요구하는 증명 경로를 지금 만들 수 있는 만큼만</b> 만든 것입니다.
+      <code>start_turn</code> 전체를 앞당겨 만들지 않았습니다 —
+      <b>「두 번째 실제 구현이 나타나기 전에는 자리를 만들지 않는다」</b>와 같은 자세입니다.
+    </p>
+  </div>
+
+  <hr>
+
+  <h2>질문 11 · 방향 점검</h2>
+  <div class="q">원점에 비춰, 이번 걸음이 그쪽으로 갔나?</div>
+
+  <p class="big">갔습니다.</p>
+
+  <p>
+    원점편의 「첫 계기」가 <b>「코덱스와 클로드를 쓸 때 … 세션 공유가 되면 좋겠다」</b>였고,
+    그 전제는 <b>「대표 자신의 구독으로 두 CLI 가 돈다」</b>입니다.
+    <b><code>#13</code> 은 그 전제가 조용히 깨지는 유일한 경로를 막습니다</b> —
+    bare 모드가 기본값이 되면 <b>구독이 아니라 API 키로</b> 돌게 되고,
+    그러면 <b>이 프로젝트가 무엇 위에 서 있는지가 바뀝니다.</b>
+  </p>
+
+  <p class="note">
+    <b>불변식 6</b> — 「인증은 정확히 소독된 자식 환경에서 검사하고 fail-closed 한다」 —
+    을 코드가 지키게 만든 티켓입니다.
+    <b>「모르면 진행하지 않는다」가 여기서 「모르면 띄우지 않는다」가 됩니다.</b>
+  </p>
+
+  <hr>
+
+  <h2>질문 12 · 방향 점검</h2>
+  <div class="q">처음 범위에서 새로 늘어난 것이 있나?</div>
+
+  <p class="big">늘어난 것 없음. <b>오히려 두 번 안 늘렸습니다.</b></p>
+
+  <div class="card">
+    <table class="tbl">
+      <tbody>
+        <tr><td>refusal code</td><td>셋으로 늘리지 않고 <b>하나 + 기존 것 재사용</b>. 승인 기준선을 안 건드리려고.<sup><a href="#t1">[1]</a></sup></td></tr>
+        <tr><td><code>start_turn</code></td><td>앞당겨 만들지 않고 <b>조립 seam 만</b>. 나머지는 <code>#14</code> 로.<sup><a href="#t1">[1]</a></sup></td></tr>
+      </tbody>
+    </table>
+    <p style="margin:16px 0 0" class="note">
+      리뷰어도 Spec 축에서 <b>「크립 0」</b>으로 적었습니다.<sup><a href="#t2">[2]</a></sup>
+      <b>사양 문서도 안 바뀌었습니다</b> — 승인 기준선 해시가 그대로입니다.
+    </p>
+  </div>
+
+  <hr>
+
+  <h2>아직 끝나지 않은 것</h2>
+  <div class="q">같은 이름의 함수가 둘이고, 계약이 서로 반대다</div>
+
+  <p>
+    이 편을 쓰는 동안 통치자가 재료 하나를 건네주었습니다 —
+    <b>「#13 의 F4 와 지금 도는 <code>#34</code> 가 같은 함수의 같은 계약이다」.</b>
+    <b>원본으로 확인해 보니 절반만 맞았습니다.</b> 사실은 이렇습니다.
+  </p>
+
+  <div class="card">
+    <table class="tbl">
+      <thead><tr><th>어디에 있는 <code>terminate_process_tree</code></th><th>실패했을 때</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="path">scripts/collect-conformance-evidence.py</span><br>
+            <span class="note"><code>#13</code> 이 고친 것 · <code>767551c</code></span></td>
+          <td class="note"><b>예외를 올린다.</b>
+            <span class="quote">「None of those may be reported as a tidy timeout, so」</span>
+            <span class="quote">「each raises instead.」</span><sup><a href="#t5">[5]</a></sup></td>
+        </tr>
+        <tr>
+          <td><span class="path">whole_life/runtime/lifecycle.py</span><br>
+            <span class="note"><code>#16</code> 이 «새로» 만든 것 · <code>8fb9aa4</code></span></td>
+          <td class="note"><b>예외를 안 올리고 <code>False</code> 로 보고한다.</b>
+            <span class="quote">「as False rather than raised, because the caller's next move is to record」</span><sup><a href="#t5">[5]</a></sup></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="note">
+    <b>이름이 같고 하는 일이 같은데 계약이 정반대입니다.</b> 그리고 둘 다 그렇게 하기로
+    <b>docstring 에 이유까지 적어 두었습니다</b> — 실수가 아니라 <b>서로 다른 자리에서 각각 옳은 선택</b>입니다.
+    스크립트는 증거를 모으는 도구라 <b>애매한 채로 통과시키면 안 되고</b>,
+    런타임은 애매함 자체를 <code>unknown_outcome</code> 으로 <b>기록해야 하는</b> 쪽입니다.
+  </p>
+
+  <p>
+    <b><code>#34</code> 가 걸린 자리는 그 둘 사이입니다.</b>
+    <code>#16</code> 이 런타임 모듈을 만들면서 <b>도우미 함수 <code>system_taskkill()</code> 을
+    스크립트에서 그대로 옮겨 왔는데</b> — docstring 첫 줄부터 오류 문구까지 거의 글자 그대로입니다 —
+    <b>그 도우미는 「올린다」쪽 계약에서 온 것이라 지금도 예외를 올립니다.</b><sup><a href="#t5">[5]</a></sup>
+    그리고 <b>「안 올린다」고 못박은 함수의 첫 줄이 바로 그 도우미를 부릅니다.</b>
+  </p>
+
+  <div class="term"><span class="d">whole_life/runtime/lifecycle.py — #16 이 만든 쪽</span>
+
+    """... That is reported
+    <span class="g">as False rather than raised</span>, because the caller's next move is to record
+    `unknown_outcome` — the ambiguity is the finding, not an exception.
+    """
+    if process.returncode is not None:
+        return True
+
+    killer = <span class="r">system_taskkill()</span>          <span class="d">&lt;- 이 줄이 예외를 올릴 수 있다</span></div>
+
+  <p class="note">
+    도우미가 예외를 올리는 길은 <b>둘</b>입니다 —
+    <code>SYSTEMROOT</code>·<code>WINDIR</code> 이 <b>둘 다 없을 때</b>, 그리고
+    <b>경로는 있는데 <code>taskkill.exe</code> 가 그 아래 없을 때</b>.<sup><a href="#t5">[5]</a></sup>
+    <b>통치자가 짚은 것은 앞의 하나이고, 뒤의 하나는 이 편이 세면서 찾았습니다.</b>
+  </p>
+
+  <div class="card warn">
+    <span class="tag">이 편이 모르는 것</span>
+    <p style="margin:12px 0 0">
+      <b><code>#34</code> 는 지금 도는 중이고, 이 편은 그 결말을 모릅니다.</b>
+      고쳐질 수도, 「그대로 두는 것이 맞다」로 끝날 수도 있습니다 —
+      <b>런타임 계약을 도우미까지 밀어 내릴 수도 있고, 부르는 쪽에서 감쌀 수도 있습니다.</b>
+      <b>어느 쪽이 될지는 <code>#34</code> 의 편이 씁니다.</b>
+      여기 적는 것은 <b>「#13 에서 시작한 실이 아직 끊기지 않았다」</b>는 사실 하나뿐입니다.
+    </p>
+  </div>
+
+  <p class="note">
+    <b>그리고 <code>#13</code> 이 쓴 계약은 깨지지 않았습니다.</b>
+    <code>#13</code> 쪽 함수는 지금도 <span class="path">scripts/</span> 에 그대로 있고,
+    <b>거기서는 도우미가 예외를 올리는 것이 계약과 «맞습니다».</b>
+    <b>이름이 같다고 같은 함수가 아니고, 같은 도우미를 쓴다고 같은 계약이 아닙니다</b> —
+    이 편이 처음부터 말한 <b>「불렀다」와 「됐다」를 가르는 일</b>이,
+    <b>이번에는 「같은 이름」과 「같은 것」을 가르는 자리에서 한 번 더 필요했습니다.</b>
+  </p>
+
+  <p class="note">
+    <b>여기에 그림을 넣지 않았습니다.</b> 이 대목의 내용은 <b>두 계약의 대조</b>이고,
+    <b>두 줄짜리 표가 흐름도보다 정확하게 같은 말을 합니다.</b>
+    시간 순서(<code>#13</code>→<code>#16</code>→<code>#34</code>)는 세 걸음뿐이라 그림이 벌 값을 못 합니다.
+  </p>
+
+  <hr>
+
+  <h2>이 편이 답하지 않는 것</h2>
+  <div class="q">해당 없음 — 그리고 왜 없나</div>
+
+  <p>
+    일지편은 열두 질문 중 <b>1 · 2 · 6 · 7 · 8 · 11 · 12</b>에 답합니다.
+    <b>3 · 4 · 5 · 9 · 10 은 기편의 몫</b>이고,
+    이 대상이 속한 구간의 기편은
+    <a href="12_2026-08-24_G4_%EC%8A%A4%ED%8E%99%EC%97%90%EC%84%9C_%EC%B2%AB_%EB%B3%91%ED%95%A9%EA%B9%8C%EC%A7%80.html">제12편</a>입니다.
+  </p>
+
+  <p class="note">
+    <b>그리고 이 구간에는 통치자 원장이 없었습니다.</b> 원장은 이 대상이 끝난 다음 날 열렸습니다.
+    <b>되돌림의 사유를 리뷰어·완결자 보고에서만 읽었고</b>, 그 둘이 안 적은 것은 이 편도 모릅니다.
+  </p>
+
+  <div class="fn">
+    <h3>각주 — 사료 출처</h3>
+    <ol>
+      <li id="t1"><span class="path">WORK_LOGS/IMP_13_BARE_MODE_GATE.md</span> — <span class="quote">「채널에 실측 설계를 올리고 승인까지 받은 뒤에 사양을 읽었더니」</span> · <span class="quote">「교훈: 사람의 승인은 정본 문서를 읽은 것을 대신하지 않는다」</span> · <span class="quote">「refusal code를 세 개 만들지 않았다」</span> · <span class="quote">「진단 대칭성을 위해 대표 승인 산출물을 건드릴 이유가 없다」</span> · <span class="quote">「`assemble_launch_plan` 을 seam으로 뺐다」</span> · <span class="quote">「코드만 보고 추론했으면 순서를 틀렸을 것이다」</span> · <span class="quote">「테스트를 고쳐 통과시킨 것이 아니다」</span> · <span class="quote">「이 티켓의 실질 산출물 — 반복된 결함형 하나」</span> · <span class="quote">「같은 모양을 **세 번** 반복했다」</span> · <span class="quote">「약한 사실이 강한 사실 자리에 조용히 들어앉은」</span> · <span class="quote">「이 테스트가 통과할 때, 내가 주장하려는 문장이 거짓일 수 있는 세계가 있는가?」</span></li>
+      <li id="t2"><span class="path">WORK_LOGS/REV_13_BARE_MODE_GATE.md</span> — <span class="quote">「F4 「해소」 판정을 철회한다」</span> · <span class="quote">「자손이 살아 있어도 수집기는 깨끗한 timeout으로 판정」</span> · <span class="quote">「호출 존재 확인과 실패 경로 의미 확인은 다른 검사다」</span> · <span class="quote">「이번에는 실패 경로 의미부터 검증」</span> · <span class="quote">「3차 재리뷰 판정: F4 포함 전부 해소」</span> · <span class="quote">「크립 0」</span></li>
+      <li id="t3"><span class="path">WORK_LOGS/CLS_13_BARE_MODE_GATE.md</span> — <span class="quote">「The first F4 implementation at `40b6bb1` only called `taskkill`; it did not prove success or reap the started process. Closer rejected completion, and Reviewer withdrew the initial pass.」</span></li>
+      <li id="t4">조회 — <span class="path">git log -1 e84ccc1</span> · <span class="path">gh issue view 13</span> (2026-08-24 09:33). <span class="quote">「Enforce Claude bare mode at the final pre-spawn gate (#13) (#23)」</span> · <span class="quote">「CLOSED」</span><br><span class="note">파일이 아니라 <b>저장소·원격 조회</b>다. 커밋 쪽은 SHA 로 얼려 있고, 이슈 상태는 조회 시점을 함께 적는다.</span></li>
+      <li id="t5">저장소 조회 — <span class="path">git show 4808bc1:whole_life/runtime/lifecycle.py</span> ·
+        <span class="path">git show 4808bc1:scripts/collect-conformance-evidence.py</span> (2026-08-24 09:47).
+        네 인용문 전부 <b>줄 전체 일치</b>(<code>grep -cxF</code>)로 1건씩 확인했고 음성 대조는 0건입니다.<br>
+        <span class="note"><b>인용문의 줄바꿈은 원본 그대로입니다.</b> docstring 한 문장이 네 줄에 걸쳐 있어
+        <b>이어 붙여 인용하면 <code>grep</code> 으로 못 찾습니다</b> — 본문에는 <b>한 줄에 담긴 조각만</b> 실었습니다.
+        도우미의 두 갈래는 <span class="path">lifecycle.py</span> 안 <code>raise LifecycleFailure</code> 두 줄이
+        <b>전수</b>이며 둘 다 <code>system_taskkill()</code> 안에 있습니다.</span></li>
+    </ol>
+
+    <p class="note" style="margin-top:20px">
+      각주에 줄 번호를 쓰지 않습니다. 인용문은 <code>grep</code> 으로 찾히고 사라졌으면
+      <b>사라졌다는 사실 자체가 신호</b>가 됩니다 — <b>다만 삭제 기록이 그 문구를 품으면
+      <code>grep</code> 이 성공합니다.</b> <b>히트 수가 아니라 히트한 줄을 보십시오.</b>
+      확인은 <code>grep -cxF</code>(줄 전체 일치)로 합니다.
+    </p>
+
+    <p class="note">
+      <span class="path">WORK_LOGS/</span> 로 시작하는 경로는 저장소가 아니라 팀 작업공간
+      (<span class="path">~/.buzz/</span>) 기준이고 <b>평면과 <span class="path">whole-life/</span> 두 곳</b>에 나뉘어 있습니다.
+      <b>이 편의 사료 셋은 전부 평면 쪽입니다.</b>
+    </p>
+
+    <div class="term">Nest 사료 — <span class="g">동결.</span> <span class="d">sha256(앞 16자) + 바이트</span>
+<span class="d">  831be374ddebf11d   12781B  WORK_LOGS/IMP_13_BARE_MODE_GATE.md     t1
+  6102368ba437619d   18760B  WORK_LOGS/REV_13_BARE_MODE_GATE.md     t2
+  35a331be3188f924   10575B  WORK_LOGS/CLS_13_BARE_MODE_GATE.md     t3</span>
+
+저장소 사료 — <span class="g">동결.</span> <span class="d">커밋 blob (t5)</span>
+<span class="d">  4808bc1  whole_life/runtime/lifecycle.py          (#16 이 만듦 · 8fb9aa4)
+  4808bc1  scripts/collect-conformance-evidence.py  (#13 이 고침 · 767551c)</span>
+
+저장소·원격 조회 — <span class="d">커밋은 SHA 로 얼려 있음 · 이슈 상태는 조회 시점으로 (t4)</span></div>
+  </div>
+
+</div>
+</body>
+</html>
