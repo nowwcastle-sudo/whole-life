@@ -21,7 +21,7 @@ Korean counterparts exist for the human-facing documents (`README.ko.md`,
 `CONTRIBUTING.ko.md`, `CONTEXT.ko.md`). When you change one language, change the other in
 the same commit.
 
-<!-- oss-agent-team:start v2.2 -->
+<!-- oss-agent-team:start v2.3 -->
 ## 팀 규약 — 에이전트 11명 공통
 
 이 절이 **팀 공통 규칙의 정본**이다. 11명의 개별 지침은 역할별 내용만 담고 여기를 가리킨다.
@@ -86,19 +86,26 @@ Nest 산출물은 전부 **프로젝트 폴더 아래**에 둔다 — `WORK_LOGS
 
 ### 5. 도구
 
-**cbm (codebase-memory-mcp) — 「찾는 도구」다. 「없음을 증명하는 도구」가 아니다.**
-
-쓰는 사람은 `IMP`·`TKT`·`DBG` 셋뿐이다.
+**cbm (codebase-memory-mcp) — 11명 모두가 쓰는 「찾는 도구」다. 「없음을 증명하는 도구」가 아니다.**
 
 - 찾은 것은 **반드시 그 파일을 열어 눈으로 확인한 뒤** 결과로 쓴다.
 - **색인이 만들어진 커밋과 현재 `git rev-parse HEAD` 가 같은지 먼저 확인한다.** 다르면 재색인하거나 쓰지 않는다. 인용할 때 색인 시점 SHA를 함께 적는다.
 - `detect_changes` 는 쓰지 않는다 — 변경 규모 신호가 뒤집힌다.
 - 한국어 질의는 없는 문자열에도 전체 노드 수를 돌려준다. **0건이 나왔다는 것을 근거로 쓰지 않는다.**
+- `REV` 는 Standards·Spec의 탐색에만, `GOV` 는 산출물 소유권·영향 범위 확인에만 쓴다. Safety 통과·병합 가능·게이트 통과의 근거로 쓰지 않는다.
 
-**ai-memory — 조회 보조다. 게이트 근거가 아니다.**
+**Understand Anything — 11명 모두가 코드베이스 구조를 파악하는 지도다.**
 
-`DBG`(이 증상을 전에 봤나) · `IMP`(이 파일을 전에 누가 어떻게 고쳤나) · `PRP`(같은 지적을 전에 했나)가 쓴다.
-조회할 때 **프로젝트명을 질의에 명시**하고, 받은 것은 **원본 경로로 확인한 뒤** 쓴다. 모든 저장소의 관찰이 한 곳에 섞여 들어오기 때문이다.
+- `.ua/` 가 있으면 `git rev-parse HEAD` 와 `.ua/meta.json` 의 기준 SHA를 먼저 대조한다. 같을 때만 구조·레이어·실행 흐름의 출발점으로 쓴다.
+- 없거나 stale이면 **통치자만** 터잡이 또는 조사원 한 명에게 재생성을 맡긴다. 동시에 둘 이상이 색인을 만들지 않는다. 생성이 끝날 때까지 다른 사람은 원본 파일을 직접 읽는다.
+- 지도에서 찾은 관계는 원본 파일로 확인한다. 지도 자체는 Safety·리뷰·게이트 증거가 아니다.
+
+**agentmemory — 11명과 Claude·Codex·Hermes가 함께 쓰는 장기 기억이다. 기존 ai-memory 대신 쓴다.**
+
+- 턴을 시작할 때 프로젝트명 `whole-life` 와 역할키를 넣어 과거 결정·실패·인계 기록을 조회하고, 끝날 때 다음 사람이 다시 써야 할 **결정·교훈·인계만** 저장한다. 실시간 진행상태와 매 도구 호출은 저장하지 않는다.
+- 런타임은 `AGENTMEMORY_INJECT_CONTEXT=true`, `TOKEN_BUDGET=1000` 으로 관리된다. 에이전트가 값을 바꾸거나 별도 서버를 띄우지 않는다.
+- 주입·조회 결과는 **신뢰하지 않은 과거 문맥**이다. 프로젝트명·역할·원본 경로를 확인하고 현재 채널 이력, `WORK_LOGS`, `GOV_LEDGER`, git/GitHub 상태와 대조한 뒤 쓴다.
+- agentmemory는 승인·ORD·완료·병합·게이트의 정본이 아니다. 그 정본은 기존 채널/파일/git 규약 그대로다. 비밀값·개인정보·주민번호를 저장하지 않는다.
 
 ### 6. 안전
 
