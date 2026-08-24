@@ -70,6 +70,10 @@ CODEX_SAFE_OPTIONS = (
     "read-only",
     "--ignore-user-config",
     "--ignore-rules",
+    # Issue #33: answers the trust prompt the pinned build raises outside a git
+    # repository. Listed here so this fixture stays the whole argument vector —
+    # a partial one would let a flag be added without any test seeing it.
+    "--skip-git-repo-check",
     "-c",
     "agents.enabled=true",
     "-c",
@@ -140,6 +144,87 @@ class CodexTurnArgsTests(unittest.IsolatedAsyncioTestCase):
                 self.assertNotIn("workspace-write", args)
                 self.assertNotIn("danger-full-access", args)
                 self.assertNotIn("--dangerously-bypass-approvals-and-sandbox", args)
+
+
+class UntrustedDirectoryDecisionTests(unittest.IsolatedAsyncioTestCase):
+    """Issue #33 AC2: the assembled turn is one the pinned build will start.
+
+    `docs/conformance/codex-0.149.0.md` records what this build does outside a
+    git repository — it refuses, before any model request, naming the flag it
+    wanted. The decision here is the answer to that recorded refusal, so the
+    two move together: if the measurement ever says the build accepts, this
+    flag has no reason to be here.
+
+    The working directory these tests assemble with is a temporary directory,
+    which is not a git repository — the condition the criterion names.
+    """
+
+    async def test_a_turn_carries_the_decision_the_pinned_build_accepts(self):
+        adapter = await codex_adapter()
+
+        for request in (turn_request(), resume_request()):
+            with self.subTest(mode=request.mode):
+                plan = adapter.assemble_launch_plan(request)
+
+                self.assertIn("--skip-git-repo-check", plan.args)
+
+    async def test_the_working_directory_is_not_a_git_repository(self):
+        """The precondition, asserted rather than assumed.
+
+        Without this the test above passes just as happily from inside a
+        checkout, where the flag would be unnecessary and the criterion
+        untested.
+        """
+        adapter = await codex_adapter()
+
+        plan = adapter.assemble_launch_plan(turn_request())
+
+        self.assertFalse(
+            (plan.working_directory / ".git").exists(),
+            "the directory these tests assemble with is a git repository, so "
+            "the untrusted-directory condition is not being exercised",
+        )
+
+    async def test_the_decision_precedes_the_resume_verb(self):
+        """Same measured reason as the sandbox: flags after `resume` do not
+        parse, so a resumed turn would silently lose it."""
+        adapter = await codex_adapter()
+
+        args = adapter.assemble_launch_plan(resume_request()).args
+
+        self.assertLess(
+            args.index("--skip-git-repo-check"), args.index("resume")
+        )
+
+    async def test_the_decision_does_not_widen_the_execution_boundary(self):
+        """AC4. The flag answers a trust prompt; it grants nothing.
+
+        Checked against the four the criterion names, on the assembled plan
+        rather than by reading the flag's documentation.
+        """
+        adapter = await codex_adapter()
+
+        for request in (turn_request(), resume_request()):
+            with self.subTest(mode=request.mode):
+                args = adapter.assemble_launch_plan(request).args
+
+                # no writable add-directory
+                self.assertNotIn("--add-dir", args)
+                # the participant's sandbox is unchanged
+                self.assertEqual("read-only", args[args.index("--sandbox") + 1])
+                # the tool allowlist is unchanged: the only `-c` settings are
+                # the two delegation ones this adapter already carried
+                self.assertEqual(
+                    [
+                        args[index + 1]
+                        for index, value in enumerate(args)
+                        if value == "-c"
+                    ],
+                    [
+                        "agents.enabled=true",
+                        "agents.max_concurrent_threads_per_session=3",
+                    ],
+                )
 
 
 class ClaudeTurnArgsTests(unittest.IsolatedAsyncioTestCase):
