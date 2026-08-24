@@ -1,7 +1,37 @@
 # Recorded provider turns
 
-Real `claude` turns captured once and replayed by the test suite. They are evidence,
-not fixtures. The delegation limits live in the normative table of
+Real provider turns captured once and replayed by the test suite. They are evidence,
+not fixtures.
+
+## `codex-0.149.0-agents-enabled-turn.jsonl` — how it was captured
+
+Recorded 2026-08-24 for ticket #35, which required the Codex enforcement row to come
+from an observation rather than from reading the stream schema.
+
+- **Argument vector:** `CODEX_TURN_ARGS` verbatim — `exec --json --sandbox read-only
+  --ignore-user-config --ignore-rules -c agents.enabled=true
+  -c agents.max_concurrent_threads_per_session=3`. The subagent workflow the ticket
+  asks for is already in the production vector; nothing was added for the recording.
+- **Environment:** `build_child_env(os.environ, extra={"CODEX_HOME": …})`, the same
+  sanitized child environment the adapter builds — 15 variables.
+- **Working directory:** inside a git worktree, so the build's trusted-directory check
+  passed without `--skip-git-repo-check` (that flag lands with #33).
+- **Prompt:** asked for three independent subagents launched concurrently, one per
+  question, and told the model not to answer them itself.
+- **Result:** exit `0`. Stderr was 29 bytes and was never written to this file.
+
+**Redacted by value, not by silence.** One identifier appeared — the thread UUID, as
+`thread_id` on `thread.started` and `sender_thread_id` on four items, five occurrences
+of one value. All five were replaced with `00000000-0000-0000-0000-000000000000`, the
+placeholder the Claude recordings use. A field-by-field walk of the whole stream found
+nothing else to redact: no path, no account identifier, no authentication output. What
+remains is item ids, tool names, statuses, token counts, and the model's own prose.
+
+**Reproducing it costs a billed turn.** There is no script here that does it; the steps
+above are the record. The redaction is asserted by
+`tests/runtime/test_codex_delegation_measurement.py`, which also pins what the stream
+showed — including that the collaboration call carried no receivers and no agent
+states, which is why every Codex enforcement axis stays `unsupported`. The delegation limits live in the normative table of
 [`docs/spec/whole-life-v0.md`](../../docs/spec/whole-life-v0.md), which reads:
 
 ```
