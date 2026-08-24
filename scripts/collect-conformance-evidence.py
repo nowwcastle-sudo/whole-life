@@ -23,6 +23,7 @@ import hashlib
 import json
 import shutil
 import subprocess
+import tempfile
 import sys
 from datetime import date
 from typing import NamedTuple
@@ -44,10 +45,15 @@ from whole_life.runtime.preflight import (  # noqa: E402
 OUT_DIR = Path(__file__).resolve().parent.parent / "docs" / "conformance"
 FAKE_KEY = "sk-conformance-probe-not-a-real-key"
 
+#: Never reaches a model on the path this probe measures — the refusal
+#: happens first. Present only so the CLI gets past its own argument check.
+UNTRUSTED_PROBE_PROMPT = "Reply with exactly: ok"
 
-def run(executable, args, env):
+
+def run(executable, args, env, cwd=None, stdin_text=None):
     completed = subprocess.run(
-        [executable, *args], capture_output=True, text=True, env=dict(env), shell=True
+        [executable, *args], capture_output=True, text=True, env=dict(env),
+        shell=True, cwd=None if cwd is None else str(cwd), input=stdin_text,
     )
     return completed.returncode, completed.stdout.strip(), completed.stderr.strip()
 
@@ -336,7 +342,7 @@ def collect_claude():
     return version_out, measured, carried
 
 
-def codex_measurement_lines(version_exit, version_out, clean, probed):
+def codex_measurement_lines(version_exit, version_out, clean, probed, untrusted):
     """Split computed lines from carried claims, or refuse to describe the run.
 
     The `therefore` line is the sentence AC 8 rests on. It is emitted only when
@@ -365,6 +371,13 @@ def codex_measurement_lines(version_exit, version_out, clean, probed):
         "- therefore the status output cannot distinguish a subscription sign-in from "
         "an API-key credential path, and excluding the variable from the child "
         "environment is the only detection this build has",
+        f"- started from a directory that is not a git repository, with no "
+        f"`--skip-git-repo-check`: exit `{untrusted[0]}`, first stderr line "
+        f"`{untrusted[1]}`",
+        f"- therefore this build **{'refuses' if untrusted[0] != 0 else 'accepts'}** "
+        "a turn whose working directory is untrusted, before any model request — "
+        "so a Broker that lets the child inherit its own directory decides whether "
+        "every turn on that machine can start at all (issue #33)",
     ]
     carried = [
         "- `CODEX_HOME` is set explicitly rather than inherited; `--ignore-user-config` "
@@ -373,6 +386,36 @@ def codex_measurement_lines(version_exit, version_out, clean, probed):
         "probe, so it does not confirm that separation.",
     ]
     return measured, carried
+
+
+def probe_untrusted_directory(env):
+    """Does this build start a turn from a directory that is not a git repo?
+
+    Issue #33. The Broker inherits whatever directory an operator launched it
+    from, so "the CLI refuses outside a trusted directory" decides whether
+    every turn on such a machine dies before the model runs. That is a claim
+    about this exact build, so it is measured rather than read from
+    documentation — the version's own behaviour is the record.
+
+    Costs no model turn either way: the refusal arrives before the request is
+    made. The probe deliberately sends no prompt, so the accepted path ends at
+    end-of-input rather than in a billed turn.
+    """
+    with tempfile.TemporaryDirectory() as outside:
+        exit_code, _out, err = run(
+            "codex",
+            ["exec", "--json", "--sandbox", "read-only",
+             "--ignore-user-config", "--ignore-rules", "-"],
+            env,
+            cwd=outside,
+            # A prompt is required, and the missing-prompt check fires
+            # *before* the trusted-directory one: without this the probe
+            # records a true nonzero exit for the wrong reason. Safe to
+            # send, because the directory guarantees the refusal — the
+            # request is never made.
+            stdin_text=UNTRUSTED_PROBE_PROMPT,
+        )
+        return exit_code, err.splitlines()[0] if err else ""
 
 
 def collect_codex():
@@ -386,8 +429,10 @@ def collect_codex():
     probed_env = dict(env) | {"OPENAI_API_KEY": FAKE_KEY}
     probed = run("codex", ["login", "status"], probed_env)
 
+    untrusted = probe_untrusted_directory(env)
+
     measured, carried = codex_measurement_lines(
-        version_exit, version_out, clean, probed
+        version_exit, version_out, clean, probed, untrusted
     )
     return version_out, measured, carried
 
