@@ -47,5 +47,9 @@ def with_a_root_that_has_no_killer():
 #: refusals are the thing being told apart.
 KILLER_UNAVAILABLE = (
     ("no root variable", without_windows_roots, "SYSTEMROOT is not set"),
-    ("root without taskkill", with_a_root_that_has_no_killer, "taskkill.exe was not found"),
+    (
+        "root without taskkill",
+        with_a_root_that_has_no_killer,
+        "taskkill.exe was not found",
+    ),
 )
