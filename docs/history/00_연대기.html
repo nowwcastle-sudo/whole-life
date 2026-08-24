@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>연대기 — whole-life</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:       #282828;
+    --paper-2:     #32302f;
+    --zone:        #302e2c;
+    --ink:         #ebdbb2;
+    --muted:       #a89984;
+    --soft:        #928374;
+    --rule:        rgba(235,219,178,0.12);
+    --rule-solid:  #504945;
+    --accent:      #fe8019;
+    --accent-tint: rgba(254,128,25,0.12);
+    --link:        #83a598;
+    --green:       #b8bb26;
+    --red:         #fb4934;
+    --yellow:      #fabd2f;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--paper); color:var(--ink);
+       font-family:"Geist","Pretendard","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;
+       line-height:1.75; -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:880px; margin:0 auto; padding:64px 28px 120px}
+  .kicker{font-size:13px; letter-spacing:.14em; color:var(--soft); text-transform:uppercase;
+          font-family:"Geist Mono",ui-monospace,"Consolas",monospace}
+  h1{font-family:"Instrument Serif","Malgun Gothic",serif;
+     font-size:52px; line-height:1.15; margin:14px 0 10px; letter-spacing:-.01em; font-weight:400}
+  .sub{font-size:18px; color:var(--muted); margin:0 0 8px}
+  p{font-size:17px; margin:0 0 18px}
+  .note{font-size:15px; color:var(--muted)}
+  hr{border:0; border-top:1px solid var(--rule); margin:44px 0}
+  code{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; font-size:.9em;
+       background:var(--zone); color:var(--ink); padding:1px 6px; border-radius:4px}
+
+  .card{background:var(--paper-2); border:1px solid var(--rule-solid); border-radius:8px;
+        padding:24px 26px; margin:26px 0}
+  .warn{border-color:var(--yellow)}
+  .warn .tag{color:var(--yellow); font-weight:600; font-size:13px; letter-spacing:.1em;
+             font-family:"Geist Mono",ui-monospace,monospace}
+
+  h2{font-size:14px; letter-spacing:.16em; color:var(--soft); text-transform:uppercase;
+     margin:56px 0 18px; font-weight:500;
+     font-family:"Geist Mono",ui-monospace,"Consolas",monospace}
+
+  .tbl{width:100%; border-collapse:collapse; font-size:15px}
+  .tbl td{padding:13px 12px 13px 0; border-bottom:1px solid var(--rule);
+          vertical-align:top; line-height:1.6}
+  .tbl tr:last-child td{border-bottom:0}
+  .tbl td:first-child{font-weight:600; width:32%; white-space:nowrap}
+  figure{margin:34px 0}
+  figcaption{font-size:14px; color:var(--muted); margin-top:12px; text-align:center; line-height:1.6}
+  svg{display:block; width:100%; height:auto}
+
+  .toc{list-style:none; padding:0; margin:0}
+  .toc li{border-top:1px solid var(--rule); padding:20px 0 20px 96px; position:relative}
+  .toc li:last-child{border-bottom:1px solid var(--rule)}
+  .num{position:absolute; left:0; top:20px; font-family:"Geist Mono",ui-monospace,"Consolas",monospace;
+       font-size:13px; color:var(--soft); letter-spacing:.06em}
+  .kind{display:inline-block; font-size:11px; letter-spacing:.12em; text-transform:uppercase;
+        border:1px solid var(--rule-solid); border-radius:4px; padding:2px 10px; color:var(--soft);
+        vertical-align:2px; margin-left:8px;
+        font-family:"Geist Mono",ui-monospace,monospace}
+  .toc a{color:var(--ink); text-decoration:none; font-size:20px; font-weight:600;
+         border-bottom:2px solid var(--rule-solid)}
+  .toc a:hover{border-bottom-color:var(--link); color:var(--link)}
+  .toc .one{font-size:16px; color:var(--muted); margin:10px 0 0}
+  .toc .date{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; font-size:13px; color:var(--soft)}
+  a{color:var(--link); text-underline-offset:3px; text-decoration-thickness:1px}
+  .term{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; font-size:14px; line-height:1.7;
+        background:var(--zone); color:var(--ink); border:1px solid var(--rule-solid);
+        border-radius:8px; padding:20px 22px; margin:0 0 18px; overflow-x:auto; white-space:pre-wrap}
+  .term .g{color:var(--green)}
+  .term .d{color:var(--soft)}
+  .term .r{color:var(--red)}
+  .toc li.empty .title{font-size:20px; font-weight:600; color:var(--soft)}
+  .toc li.empty .one{color:var(--soft)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kicker">whole-life · 역사 기록</div>
+  <h1>연대기</h1>
+  <p class="sub">이 폴더를 위에서 아래로 읽으면, 이 프로젝트를 모르는 사람도<br>시작부터 지금까지 어떻게 왔는지 알 수 있게 하는 것이 목표입니다.</p>
+
+  <div class="card warn">
+    <div class="tag">지금 이 색인의 상태</div>
+    <p style="margin:8px 0 12px">
+      <b>이 폴더는 프로젝트가 한참 진행된 뒤인 2026-08-24에 처음 만들어졌습니다.</b>
+      같은 날 <b>원점편</b>이 나와 <b>자는 섰습니다.</b>
+      <b>터닦기편(01)도 뒤늦게 씌어 이제 앞이 이어집니다.</b>
+      여덟 대상 중 <b><code>#13</code>·<code>#14</code>·<code>#15</code>(제04~06편)가 쓰였고</b>,
+      나머지 다섯 자리가 비어 있습니다.
+      <b>이 셋은 한 지시(<code>ORD-EDU-log-13-14-15</code>)가 낸 것이고, 남은 다섯은 아직 배정 전입니다.</b>
+    </p>
+    <p style="margin:0 0 12px" class="note">
+      <b>제11편은 세 회차가 이어 붙은 편입니다</b> — 구현 · 리뷰 · 완결.
+      <b>제01편에는 이틀 뒤의 대표 결정이 붙었고, 제04편에는 아직 안 끝난 <code>#34</code> 가 붙어 있습니다.</b>
+      대상 #17 은 2026-08-24 에 병합돼 닫혔고, 그 게이트(G4)를 다루는 <b>기편이 제12편</b>입니다.
+      <b>0단계(터닦기)의 기편은 아직 없습니다.</b>
+    </p>
+    <p style="margin:0" class="note">
+      제11편은 원점편보다 먼저 쓰여 <code>docs/project-context.md</code>의 v0 불변식을 임시 자로 삼았고,
+      원점편이 나온 뒤 <b>질문 11·12를 그 자로 다시 쟀습니다</b> — 답은 같았습니다.
+      원점편은 <b>2026-08-24 02:17 에 대표 승인을 받아 확정됐습니다.</b>
+      같은 회신에 <b>「첫 계기」 칸의 원문</b>이 함께 왔고, 한 글자도 고치지 않고 실었습니다.
+      이제 고치지 않습니다.
+    </p>
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 860 440" role="img" aria-labelledby="chronicle-timeline-title chronicle-timeline-desc">
+      <title id="chronicle-timeline-title">whole-life 역사 기록 타임라인</title>
+      <desc id="chronicle-timeline-desc">2026-08-22부터 2026-08-24까지의 시간축 위에, 0단계 터닦기편과 여덟 대상의 구간, 그리고 2026-08-24에 함께 나온 원점편·제11편·제12편을 표시한 타임라인. 여덟 대상은 점 여덟으로 놓았고 그중 13·14·15번이 채워져 있다 — 편이 쓰인 셋이다.</desc>
+      <rect width="100%" height="100%" fill="var(--paper)"/>
+
+      <text x="40" y="40" font-size="12" fill="var(--soft)" letter-spacing="0.14em"
+            font-family="'Geist Mono',ui-monospace,monospace">2026-08-22  →  2026-08-24</text>
+
+      <!-- 01 터닦기 : 아직 쓰이지 않음 -->
+      <line x1="140" y1="128" x2="140" y2="192" stroke="var(--muted)" stroke-width="1"/>
+      <rect x="80" y="48" width="280" height="76" rx="8" fill="var(--paper-2)"
+            stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="104" y="80" font-size="16" fill="var(--ink)" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">01 터닦기 · 터닦기편</text>
+      <text x="104" y="104" font-size="12" fill="var(--soft)"
+            font-family="'Geist Mono',ui-monospace,monospace">0단계 · 커밋 12개 · 2026-08-24 에 씀</text>
+
+      <!-- 2026-08-24 : 원점편 + 제11편 -->
+      <line x1="700" y1="164" x2="700" y2="192" stroke="var(--accent)" stroke-width="1"/>
+      <rect x="480" y="48" width="320" height="112" rx="8" fill="var(--accent-tint)"
+            stroke="var(--accent)" stroke-width="1"/>
+      <text x="504" y="80" font-size="12" fill="var(--accent)" letter-spacing="0.08em"
+            font-family="'Geist Mono',ui-monospace,monospace">2026-08-24 · 이 폴더가 열린 날</text>
+      <text x="504" y="116" font-size="16" fill="var(--ink)" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">00 원점편 · 11 일지편 · 12 기편</text>
+      <text x="504" y="144" font-size="12" fill="var(--accent)"
+            font-family="'Geist Mono',ui-monospace,monospace">세 편이 같은 날 · #17 병합 · G4</text>
+
+      <!-- 시간축 -->
+      <line x1="80" y1="200" x2="800" y2="200" stroke="var(--rule-solid)" stroke-width="1"/>
+      <line x1="140" y1="196" x2="140" y2="204" stroke="var(--soft)" stroke-width="1"/>
+      <line x1="420" y1="196" x2="420" y2="204" stroke="var(--soft)" stroke-width="1"/>
+      <line x1="700" y1="196" x2="700" y2="204" stroke="var(--soft)" stroke-width="1"/>
+      <text x="140" y="224" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">2026-08-22</text>
+      <text x="420" y="224" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">2026-08-23</text>
+      <text x="700" y="224" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">2026-08-24</text>
+
+      <circle cx="140" cy="200" r="4" fill="var(--ink)"/>
+      <circle cx="700" cy="200" r="6" fill="var(--accent)"/>
+
+      <!-- 02–10 : 날짜가 적히지 않은 구간 -->
+      <path d="M180 240 V272 H660 V240" fill="none" stroke="var(--soft)" stroke-width="1" stroke-dasharray="4,4"/>
+      <circle cx="210" cy="272" r="4" fill="var(--paper)" stroke="var(--muted)" stroke-width="1"/>
+      <text x="210" y="256" font-size="10" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">#11</text>
+      <circle cx="270" cy="272" r="4" fill="var(--paper)" stroke="var(--muted)" stroke-width="1"/>
+      <text x="270" y="256" font-size="10" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">#12</text>
+      <circle cx="330" cy="272" r="4" fill="var(--ink)"/>
+      <text x="330" y="256" font-size="10" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">#13</text>
+      <circle cx="390" cy="272" r="4" fill="var(--ink)"/>
+      <text x="390" y="256" font-size="10" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">#14</text>
+      <circle cx="450" cy="272" r="4" fill="var(--ink)"/>
+      <text x="450" y="256" font-size="10" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">#15</text>
+      <circle cx="510" cy="272" r="4" fill="var(--paper)" stroke="var(--muted)" stroke-width="1"/>
+      <text x="510" y="256" font-size="10" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">#16</text>
+      <circle cx="570" cy="272" r="4" fill="var(--paper)" stroke="var(--muted)" stroke-width="1"/>
+      <text x="570" y="256" font-size="10" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">#28</text>
+      <circle cx="630" cy="272" r="4" fill="var(--paper)" stroke="var(--muted)" stroke-width="1"/>
+      <text x="630" y="256" font-size="10" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">#32</text>
+      <text x="420" y="300" font-size="16" fill="var(--muted)" text-anchor="middle" font-weight="600"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">02 – 10  여덟 대상 — 셋 씀 · 다섯 미작성</text>
+      <text x="420" y="324" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">이 여덟을 닫은 PR — #19 #20 #21 #23 #29 #31 #36 · #14·#15 는 PR 없음</text>
+      <text x="420" y="352" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">이 색인에 날짜가 적혀 있지 않아 구간으로 표시</text>
+
+      <!-- 범례 -->
+      <line x1="40" y1="392" x2="820" y2="392" stroke="var(--rule)" stroke-width="1"/>
+      <text x="40" y="420" font-size="12" fill="var(--soft)" letter-spacing="0.14em"
+            font-family="'Geist Mono',ui-monospace,monospace">범례</text>
+      <circle cx="128" cy="416" r="6" fill="var(--accent)"/>
+      <text x="144" y="420" font-size="12" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">이 폴더가 열린 날</text>
+      <circle cx="272" cy="416" r="4" fill="var(--ink)"/>
+      <text x="288" y="420" font-size="12" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">쓰인 편</text>
+      <circle cx="380" cy="416" r="4" fill="var(--paper)" stroke="var(--muted)" stroke-width="1"/>
+      <text x="396" y="420" font-size="12" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">아직 쓰이지 않은 편</text>
+      <line x1="548" y1="416" x2="604" y2="416" stroke="var(--soft)" stroke-width="1" stroke-dasharray="4,4"/>
+      <text x="620" y="420" font-size="12" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">날짜가 적히지 않은 구간</text>
+    </svg>
+    <figcaption>
+      <b>가로축은 진짜 날짜입니다.</b> 가운데 <b>여덟 대상</b>은 <b>일이 먼저 일어나고 편이 나중에 붙는 자리</b>이고,
+      <b>채워진 점 셋이 지금까지 붙은 것</b>이고 <b>한 지시가 낸 것</b>입니다. 오른쪽 끝 하루에 <b>세 편</b>이 한꺼번에 나와 있습니다 —
+      <b>이 색인은 여전히 가운데가 성깁니다.</b>
+    </figcaption>
+  </figure>
+
+  <h2>편 목록</h2>
+
+  <ol class="toc">
+    <li>
+      <span class="num">00</span>
+      <a href="00_%EC%99%9C_%EC%8B%9C%EC%9E%91%ED%96%88%EB%82%98.html">왜 시작했나</a><span class="kind">원점편 · 확정</span>
+      <p class="one">이벤트를 흘려보내고 세션을 이어 붙이고 새끼 작업자를 부리는 도구는 이미 여럿 있는데,
+        서로 다른 회사의 AI 둘이 같은 상태를 공유하며 협업하고 그 협업이 다시 재생되고 남는 자리가 비어 있었다 —
+        그 사이만 채우려고 시작했다. 대표가 직접 채운 「첫 계기」 칸에는 <b>버리기로 한 길 둘</b>이
+        이름까지 적혀 있다 — 워크트리 분기 + <code>diff</code> 합치기, 그리고 터미널 멀티플렉서로 관리하기.</p>
+      <p class="date">2026-08-24 · 기획자 소환 없이 저장소 문서로 씀 ·
+        <b>대표 승인 02:17 · 확정</b> · <code>ORD-EDU-origin-fill</code></p>
+    </li>
+
+    <li>
+      <span class="num">01</span>
+      <a href="01_2026-08-22_%ED%84%B0%EB%8B%A6%EA%B8%B0.html">터닦기 — 0단계</a><span class="kind">터닦기편</span>
+      <p class="one">코드가 한 줄도 없는 상태에서 스펙과 문(門)부터 세웠다. 사람 앞의 문과 문서의 문 둘을 세웠고,
+        코드의 문은 코드가 없어 못 세웠으며, 착지의 문(<code>main</code> 분기 보호)은 끝내 세우지 않았다 —
+        그리고 세운 문 하나가 그 구간 안에서 병합 순서에 조용히 덮여 별도 PR 로 되살려야 했다.</p>
+      <p class="one" style="margin-top:10px"><b>뒷날 붙임(2026-08-24)</b> — 그 넷째 문에 대표 결정이 붙었습니다.
+        <b>「규칙은 명문화하고 기계는 안 막는다」</b> — 네 갈래 중 <b>가장 가벼운 하나</b>를 골랐습니다 — <b>댄 이유는 「무겁다」 하나</b>입니다.
+        통치자가 추천한 쪽(분기 보호)의 근거는 <b>결정 51분 전에 통치자 스스로 「안 잰 것」으로 갈라 올렸는데</b>,
+        <b>그것이 판단에 들어갔는지는 사료가 말하지 않습니다.</b>
+        <b>「왜 <span style="white-space:nowrap">0단계</span>가 안 세웠나」는 지금도 비어 있습니다</b> —
+        이틀 뒤의 결정이 답한 것은 그것과 다른 질문입니다.</p>
+      <p class="date">2026-08-20 ~ 08-22 · 커밋 12개 · <code>4e38cee</code> → <code>35ecb97</code> ·
+        2026-08-24 에 뒤늦게 씀 · <code>ORD-EDU-gate-0</code> · 붙임 <code>대표 결정 1번</code></p>
+    </li>
+
+    <li class="empty">
+      <span class="num">02 · 03</span>
+      <span class="title">#11 · #12</span><span class="kind">일지편 자리</span>
+      <p class="one">아직 쓰이지 않음. 둘 다 병합돼 종료됐습니다.</p>
+    </li>
+
+    <li>
+      <span class="num">04</span>
+      <a href="04_2026-08-23_%ED%8B%B0%EC%BC%9313_bare%EB%AA%A8%EB%93%9C%EA%B2%8C%EC%9D%B4%ED%8A%B8.html">#13 bare 모드 게이트</a><span class="kind">일지편</span>
+      <p class="one">구현자가 사양을 읽기 전에 사람의 승인부터 받았는데, 읽어 보니 사양이 같은 설계를 이미 지정해 두고 있었다.
+        그리고 리뷰가 세 번 되돌아가는 동안 「불렀다」가 「됐다」 자리에 앉은 것이 세 번 걷어내졌다 —
+        <b>구현자가 그 형태에 이름을 붙여 남겼고, 그것이 이 프로젝트가 일곱 번 되풀이하는 결함형의 원점이 됐다.</b></p>
+      <p class="date">2026-08-23 · <code>e84ccc1</code> (PR #23) · 2026-08-24 에 뒤늦게 씀 ·
+        <code>ORD-EDU-log-13-14-15</code></p>
+    </li>
+
+    <li>
+      <span class="num">05</span>
+      <a href="05_2026-08-23_%ED%8B%B0%EC%BC%9314_%EC%95%88%EC%A0%84%ED%95%9C%ED%84%B4%EC%8B%9C%EC%9E%91.html">#14 안전한 턴 시작</a><span class="kind">일지편</span>
+      <p class="one">실행파일을 검사하는 가드를 만들고 테스트까지 붙였는데 정작 실행 경로에 잇지 않았고,
+        그것을 지킨다던 테스트 둘은 각각 「이 컴퓨터라서」와 「엉뚱한 이유로」 초록이었다 —
+        <b>그리고 통합한 뒤 <code>main</code> 이 8분 1초 동안 빨갰다.</b></p>
+      <p class="date">2026-08-23 · <code>9e4c076</code> + <code>4a2fe80</code> · <b>둘 다 PR 없음</b> ·
+        2026-08-24 에 뒤늦게 씀 · <code>ORD-EDU-log-13-14-15</code></p>
+    </li>
+
+    <li>
+      <span class="num">06</span>
+      <a href="06_2026-08-23_%ED%8B%B0%EC%BC%9315_%EA%B2%BD%EA%B3%84%EC%95%88%EC%9D%98%EC%8A%A4%ED%8A%B8%EB%A6%BC.html">#15 경계 안의 스트림</a><span class="kind">일지편</span>
+      <p class="one">같은 결함이 「해소됐다」로 두 번 판정됐다가 두 번 다 뒤집혔고,
+        두 번 다 뒤집은 근거는 「고장난 코드」가 아니라 「전제를 만들지 않은 검사」였다 —
+        <b>그리고 그 사실을 판정한 사람이 스스로 적었다.</b></p>
+      <p class="date">2026-08-23 · <code>73f3b31</code> · <b>PR 없음</b> ·
+        2026-08-24 에 뒤늦게 씀 · <code>ORD-EDU-log-13-14-15</code></p>
+    </li>
+
+    <li class="empty">
+      <span class="num">07 – 09</span>
+      <span class="title">#16 · #28 · #32</span><span class="kind">일지편 자리</span>
+      <p class="one">아직 쓰이지 않음. 전부 병합돼 종료된 대상들입니다.
+        <b>자리는 <code>02</code>–<code>10</code> 아홉인데 대상은 여덟입니다</b> —
+        처음에 <code>#31</code> 을 대상으로 셌는데 <b><code>#31</code> 은 이슈가 아니라
+        <code>#28</code> 을 닫은 PR</b> 이었습니다.
+        저장소 이슈 전수는 <code>10 11 12 13 14 15 16 17 28 32 33 34 35</code> 이고 <code>#31</code> 이 없습니다.
+        <b>자리 배치는 대표 결정 뒤에 한 번에 정리합니다</b> — 지금 번호를 만지면 제12편 각주가 흔들립니다.</p>
+    </li>
+
+    <li>
+      <span class="num">11</span>
+      <a href="11_2026-08-24_%ED%8B%B0%EC%BC%9317_%EB%84%A4%EC%9D%B4%ED%8B%B0%EB%B8%8C%EC%9B%8C%EC%BB%A4%EA%B0%95%EC%A0%9C.html">#17 네이티브 워커 강제 — 구현 레그</a><span class="kind">일지편</span>
+      <p class="one">안전장치를 만들어 붙였는데 전선을 잇지 않아 실제 제품에서는 꺼져 있었고,
+        테스트가 그 전선을 건너뛰고 장치만 따로 만져 보는 바람에 전부 초록불이었다.
+        게이트 여섯이 차례로 막았고 — 마지막 하나는 대표가 병합을 누르려던 순간이었다 —
+        여섯 번 되돌아간 끝에 병합됐다.</p>
+      <p class="date">2026-08-24 · 구현 · 리뷰 · 완결 세 레그 · <b>병합됨</b>
+        <code>main</code> = <code>4808bc1</code> · <code>ORD-EDU-IMP-17</code></p>
+    </li>
+
+    <li>
+      <span class="num">12</span>
+      <a href="12_2026-08-24_G4_%EC%8A%A4%ED%8E%99%EC%97%90%EC%84%9C_%EC%B2%AB_%EB%B3%91%ED%95%A9%EA%B9%8C%EC%A7%80.html">G4 — 스펙에서 첫 병합까지</a><span class="kind">기편</span>
+      <p class="one">스펙 하나가 일곱 티켓으로 쪼개져 차례로 병합되기까지 같은 모양의 결함이 일곱 번 되풀이됐는데,
+        그것을 막는 규칙은 저장소가 첫날부터 적어 두고 있었다 — 다만 완료 「보고」에만 있고
+        완료 「기준」에는 없었고, 이 게이트를 지나며 기준으로 옮겨졌다.</p>
+      <p class="date">2026-08-24 · 구간 <code>#10</code> → <code>#11</code>~<code>#17</code> → G4 ·
+        <code>main</code> = <code>4808bc1</code> · <code>ORD-EDU-gate-17</code></p>
+    </li>
+  </ol>
+
+  <hr>
+
+  <h2>이 폴더를 읽는 법</h2>
+
+  <p>
+    편은 다섯 종류입니다.
+    <b>원점편</b>(프로젝트당 한 번 · 왜 시작했나) ·
+    <b>터닦기편</b>(0단계) ·
+    <b>일지편</b>(대상 하나마다) ·
+    <b>기편</b>(게이트 G1~G6 통과마다) ·
+    <b>요청편</b>(대표가 부를 때).
+  </p>
+
+  <p>
+    <b>일지편의 단위는 「지시 하나」가 아니라 「대상 하나」입니다.</b>
+    한 티켓이 구현 → 리뷰 → 되돌림 → 재구현을 거쳐도 편은 하나이고, 회차마다 그 편에 이어 붙습니다.
+    지시마다 새 편을 만들면 티켓 스무 개짜리 프로젝트가 백 편이 되어 아무도 통독하지 못합니다.
+  </p>
+
+  <p>
+    <b>모든 사실 진술에는 각주가 붙고, 각주는 「경로 + 인용문」입니다.</b>
+    줄 번호는 쓰지 않습니다 — 파일이 바뀌면 줄 번호는 조용히 다른 곳을 가리키지만,
+    인용문은 <code>grep</code>으로 찾히고 사라졌으면 사라졌다는 사실 자체가 신호가 됩니다.
+  </p>
+
+  <p>
+    <b>편은 이어 붙습니다. 그래서 나중에 틀리는 줄이 생깁니다 — 두 종류이고, 하나만 고칩니다.</b>
+  </p>
+
+  <div class="card">
+    <table class="tbl">
+      <tbody>
+        <tr>
+          <td>그때는 맞았던 줄</td>
+          <td><b>고치지 않습니다.</b> 「이 편을 쓰는 동안 재리뷰가 도착했습니다(01:32)」처럼
+            <b>그때 무엇을 알고 있었는지의 기록</b>입니다. 고치면 <b>그 시점이 사라집니다.</b></td>
+        </tr>
+        <tr>
+          <td>그때도 틀렸던 줄</td>
+          <td><b>고칩니다.</b> 쓸 때 이미 사실이 아니었고 <b>확인을 안 했을 뿐</b>인 줄입니다.
+            고치면서 <b>무엇이 어떻게 틀렸는지를 각주에 남깁니다</b> — 지우지 않습니다.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="margin:16px 0 0" class="note">
+      <b>낱말로 훑는 것은 후보를 모으는 것이고, 판정이 아닙니다.</b>
+      둘은 같은 낱말을 품고 있어서 <b>검색으로는 안 갈립니다</b> — 한 줄씩 읽어야 갈립니다.
+      그리고 훑을 낱말은 <b>기억이 아니라 그 주장에서</b> 뽑습니다.
+      <b>기억이 검사 범위가 되면 잊은 것은 검사 밖에 남습니다.</b>
+    </p>
+  </div>
+
+  <p class="note">
+    <b>각주는 문구의 «존재»를 보증하지, 그 문구의 «자격»을 보증하지 않습니다.</b>
+    각주가 하는 말은 <b>「이 문구가 저 자리에 있다」</b> 하나뿐입니다.
+    <b>자격은 세 갈래로 따로 물어야 합니다</b> — 셋 다 이 폴더에서 한 번씩 걸린 적이 있습니다.
+  </p>
+
+  <div class="term"><span class="d">주인인가</span>   인용문이 그 파일에 있다      <span class="r">≠</span>  그 파일이 그 «사실»의 주인이다
+<span class="d">그때인가</span>   그 문구가 그 이벤트에 있다   <span class="r">≠</span>  그 이벤트가 그 문장을 받칠 «시각»에 있다
+<span class="d">아직인가</span>   그 문구가 원문에 있다        <span class="r">≠</span>  그것이 아직 «살아 있는» 주장이다</div>
+
+  <p class="note">
+    <b>「주인인가」</b> — 문구는 맞는데 <b>출처가 틀린</b> 자리입니다.
+    어떤 계약 문구를 <code>#13</code> 이 쓴 것으로 적었는데, 그 파일은 <code>#16</code> 이 만든 것이었습니다.
+    <b>문구가 있다는 것과 그 문구가 그 사람 것이라는 것은 다릅니다.</b>
+  </p>
+
+  <p class="note">
+    <b>「그때인가」</b> — 문구도 출처도 맞는데 <b>시각이 거꾸로인</b> 자리입니다.
+    「결정 전에 단서가 상에 있었다」를 <b>결정 74초 «뒤»의 말</b>로 받치고 있었습니다
+    (<a href="01_2026-08-22_%ED%84%B0%EB%8B%A6%EA%B8%B0.html">제01편</a>).
+    <b>같은 사람이 같은 말을 두 번 했다고 두 번이 같은 사실을 증명하지 않습니다</b> —
+    <b>언제 했는지가 그 말이 무엇을 받칠 수 있는지를 정합니다.</b>
+  </p>
+
+  <p class="note">
+    <b>「아직인가」</b> — 문구는 원문에 있는데 <b>그 주장은 이미 거둬진</b> 자리입니다.
+    리뷰어가 자기 판정을 <s>취소선</s>으로 지운 줄이 <code>grep</code> 에 그대로 잡힙니다
+    (<a href="06_2026-08-23_%ED%8B%B0%EC%BC%9315_%EA%B2%BD%EA%B3%84%EC%95%88%EC%9D%98%EC%8A%A4%ED%8A%B8%EB%A6%BC.html">제06편</a>).
+    <b>「찾았다」와 「살아 있다」는 다릅니다. 히트 수가 아니라 히트한 줄을 봐야 합니다.</b>
+  </p>
+
+  <p class="note">
+    <b>각주가 붙은 문장은 사료로 확인한 것이고, 안 붙은 문장은 사관의 이해입니다.</b>
+    표·명령 출력·인용문은 <b>잰 것</b>이고, 그 사이를 잇는 산문은 대체로 <b>안 잰 것</b>입니다.
+    <b>같은 편 안에서도 그 둘이 나란히 서 있으니, 무거운 것을 읽을 때는 각주를 보십시오.</b>
+    <span class="note">— 이걸 적으면 이 폴더의 신뢰도를 스스로 낮추는 것처럼 보이지만 반대입니다.
+    <b>어느 줄이 단단한지 말해 주지 않으면, 읽는 사람은 전부를 똑같이 믿거나 똑같이 의심합니다.</b></span>
+  </p>
+
+  <p class="note">
+    <b>고쳤다는 「표시」와 「고친 것」은 같은 자리에 있어야 합니다.</b>
+    절 머리에 「대체됨」만 달고 아래의 틀린 문장을 두거나,
+    새 실측을 카드로 붙이고 바로 위 그림을 그대로 두면 —
+    <b>표시를 읽은 사람만 안 틀리고, 안 읽은 사람은 그대로 틀립니다.</b>
+    <b>특히 눈에 잘 안 띄는 자리를 따로 봅니다</b> — 요약 그림, 머리말 한 문장,
+    그리고 그림의 <code>desc</code>(화면 낭독기로만 드러납니다).
+  </p>
+
+  <p class="note">
+    이 폴더는 교육자(사관)만 씁니다. 기록하되 판정하지 않습니다 —
+    방향이 어긋나 보이면 편을 만들고 통치자에게 알리는 데까지가 몫입니다.
+  </p>
+
+</div>
+</body>
+</html>
