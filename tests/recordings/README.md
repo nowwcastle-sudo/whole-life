@@ -1,11 +1,49 @@
 # Recorded provider turns
 
 Real `claude` turns captured once and replayed by the test suite. They are evidence,
-not fixtures: the delegation limits reported in
-[`docs/conformance/claude-2.1.240.md`](../../docs/conformance/claude-2.1.240.md) are
-`cooperative` rather than `hard` because these recordings show the provider refusing
-nothing, and the normalizer is tested by replaying them rather than by hand-written
-JSON that could agree with the code and disagree with the provider.
+not fixtures. The delegation limits live in the normative table of
+[`docs/spec/whole-life-v0.md`](../../docs/spec/whole-life-v0.md), which reads:
+
+```
+Claude는 concurrency `cooperative`·total starts `cooperative`·depth `cooperative`다.
+depth는 2026-08-23 실측으로 정정했다
+```
+
+The measurement it was corrected by is in this directory.
+`claude-2.1.240-nested-delegation-turn.jsonl` runs a worker that launches another
+worker, and reports:
+
+```json
+"max_depth": 2, "completed": 2, "failed": 0,
+"refused": {"budget": 0, "concurrency_limit": 0, "depth_limit": 0}
+```
+
+Nothing was refused two levels deep, so depth is not provider-enforced — which is why
+the table says `cooperative` and not `hard`. The normalizer is tested by replaying
+these turns rather than by hand-written JSON that could agree with the code and
+disagree with the provider.
+
+The conformance documents under `docs/conformance/` do not carry these limits and are
+not meant to. `#12` AC7 scopes that evidence to what came *"from the sanitized child
+environment"*, meaning what `scripts/collect-conformance-evidence.py` executed itself.
+Its only turn is the bare-mode probe:
+
+```python
+BARE_PROBE_ARGS = (
+    "-p",
+    "--no-session-persistence",
+    "--tools",
+    "",
+```
+
+With the tool list emptied there is no `Agent` tool, so that turn cannot delegate and
+therefore cannot observe a delegation limit.
+
+An earlier version of this paragraph cited that folder as the place the limits are
+reported. It was wrong, and the link resolved anyway: `scripts/check-markdown-links.sh`
+tests `[ ! -e "$resolved" ]`, so it proves a path exists and says nothing about whether
+the sentence around it is true. Quoting the source, as above, is what makes a citation
+checkable — a paraphrase cannot be grepped.
 
 ## What is redacted, and what is deliberately not
 
