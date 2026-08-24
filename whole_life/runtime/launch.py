@@ -48,6 +48,7 @@ class RefusalCode(StrEnum):
     AUTH_STATUS_UNSUPPORTED = "AuthStatusUnsupported"
     SUBSCRIPTION_AUTH_REQUIRED = "SubscriptionAuthRequired"
     DELEGATION_UNSUPPORTED = "DelegationUnsupported"
+    WORKING_DIRECTORY_UNDECIDED = "WorkingDirectoryUndecided"
 
 
 class PreStartRefusal(Exception):
@@ -113,6 +114,12 @@ class LaunchPlan:
     child_env: Mapping[str, str]
     version_conformance: VersionConformance
     turn_request: TurnRequest
+    #: Where the child process runs. `None` means nobody decided, which is
+    #: refused rather than allowed to become "inherit whatever the Broker was
+    #: launched from" — the pinned Codex CLI declines to start outside a
+    #: trusted directory, so an inherited value turns an operator's choice of
+    #: launch directory into a provider that appears to be down.
+    working_directory: Path | None = None
     #: What preflight reported this runtime can hold, per limit. `None` means
     #: no preflight said — which the gate treats the same as `unsupported`,
     #: because "nobody reported" and "reported as not held" are the same

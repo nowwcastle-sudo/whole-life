@@ -24,6 +24,7 @@ from tests.support.launch_fixtures import (
     turn_request,
 )
 from tests.support.preflight_fixtures import (
+    WORKING_DIRECTORY,
     CLAUDE_EXECUTABLE,
     CODEX_EXECUTABLE,
     CODEX_HOME,
@@ -80,6 +81,7 @@ async def claude_adapter():
     runtime = ClaudeRuntime(
         executable=CLAUDE_EXECUTABLE,
         runner=claude_runner(),
+        working_directory=WORKING_DIRECTORY,
         parent_env=CLEAN_PARENT_ENV,
     )
     await runtime.preflight()
@@ -90,6 +92,7 @@ async def codex_adapter():
     runtime = CodexRuntime(
         executable=CODEX_EXECUTABLE,
         runner=codex_runner(),
+        working_directory=WORKING_DIRECTORY,
         parent_env=CLEAN_PARENT_ENV,
         codex_home=CODEX_HOME,
     )

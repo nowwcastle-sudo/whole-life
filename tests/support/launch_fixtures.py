@@ -4,6 +4,7 @@ The recording spawner is the acceptance seam for this slice and the ones that
 follow: every pre-start refusal must leave ``calls`` empty.
 """
 
+import tempfile
 from pathlib import Path
 from unittest import mock
 
@@ -79,6 +80,10 @@ def launch_plan(**overrides) -> LaunchPlan:
             bare_default=False,
         ),
         "turn_request": turn_request(),
+        # Decided, like a real plan. Tests that care about the boundary
+        # pass their own; everything else just needs a directory that
+        # exists so the spawn is not refused for an unrelated reason.
+        "working_directory": Path(tempfile.gettempdir()),
         # A plan carrying no delegation report is refused by the gate,
         # which is that control working. Fixtures carry the row a real
         # Claude preflight reports, so a test has to opt into a refusal.
