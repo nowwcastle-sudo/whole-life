@@ -300,7 +300,7 @@ b03b919            Add AgentRuntime launch safety seam and Python CI (#11)   <sp
   <figure>
     <svg viewBox="0 0 860 360" role="img" aria-labelledby="bst-18-title bst-18-desc">
       <title id="bst-18-title">세운 게이트가 병합 순서에 덮인 일</title>
-      <desc id="bst-18-desc">8번과 9번 PR로 세운 SHA 고정과 승인 기준선 검증 단계가 병합 순서에 덮여 사라졌는데, 검사 자체가 사라진 탓에 CI는 계속 통과했고, 결국 사람이 별도 PR로 되살렸다는 네 단계 그림.</desc>
+      <desc id="bst-18-desc">8번과 9번 PR로 세운 SHA 고정과 승인 기준선 검증 단계가 병합 순서에 덮여 사라졌고, 그 결과 워크플로가 시작조차 못 해 검사 결과가 하나도 남지 않았으며, 결국 사람이 별도 PR로 되살렸다는 네 단계 그림.</desc>
       <defs>
         <marker id="bst18-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
           <polygon points="0 0, 8 3, 0 6" fill="var(--muted)"/>
@@ -333,11 +333,11 @@ b03b919            Add AgentRuntime launch safety seam and Python CI (#11)   <sp
 
       <rect x="432" y="80" width="164" height="112" rx="6" fill="var(--red-tint)" stroke="var(--red)" stroke-width="1"/>
       <text x="514" y="108" font-size="12" fill="var(--red)" text-anchor="middle"
-            font-family="'Geist Mono',ui-monospace,monospace">CI</text>
+            font-family="'Geist Mono',ui-monospace,monospace">startup_failure</text>
       <text x="514" y="140" font-size="16" fill="var(--red)" text-anchor="middle" font-weight="600"
-            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">그래도 초록</text>
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">check-run 0건</text>
       <text x="514" y="166" font-size="12" fill="var(--red)" text-anchor="middle"
-            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">검사가 없으면 통과다</text>
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">빨간 X 조차 안 뜬다</text>
 
       <rect x="628" y="80" width="164" height="112" rx="6" fill="var(--accent-tint)" stroke="var(--accent)" stroke-width="1.2"/>
       <text x="710" y="108" font-size="12" fill="var(--accent)" text-anchor="middle"
@@ -351,9 +351,9 @@ b03b919            Add AgentRuntime launch safety seam and Python CI (#11)   <sp
       <text x="40" y="264" font-size="16" fill="var(--ink)" font-weight="600"
             font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">사라진 것이 «검사 자체»였다</text>
       <text x="40" y="292" font-size="14" fill="var(--muted)"
-            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">검사가 실패하면 빨개진다. 검사가 사라지면 «초록»이다 — 화면에서 둘은 같아 보인다.</text>
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">검사가 실패하면 빨개진다. 검사가 «사라지면» 그것조차 안 뜬다 — 화면에 아무것도 없다.</text>
       <text x="40" y="318" font-size="14" fill="var(--muted)"
-            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">그래서 이 구간의 CI 기록만 보면 이 사건은 «일어나지 않은 것처럼» 보인다.</text>
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">초록이면 「통과했다」는 «거짓 정보»라도 남는다. 0건이면 «아무 정보도» 안 남는다.</text>
     </svg>
     <figcaption>
       <b>「검사해서 0건」과 「검사가 없었던 0건」</b> — 제11편이 티켓 하나에서 잡아낸 그 구별이,
