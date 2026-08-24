@@ -36,7 +36,7 @@
   .big{font-size:26px; line-height:1.5; font-weight:500; margin:0 0 18px}
   p{font-size:17px; margin:0 0 18px}
   .note{font-size:15px; color:var(--muted)}
-  a{color:var(--link)}
+  a{color:var(--link); text-underline-offset:3px; text-decoration-thickness:1px}
   .card{background:var(--paper-2); border:1px solid var(--rule-solid); border-radius:8px;
         padding:26px 28px; margin:26px 0}
   .warn{border-color:var(--yellow)}
@@ -390,7 +390,7 @@
 
   <p class="note">
     <b>이 테스트는 「인자가 펼쳐지면 안 된다」를 보는 것</b>이라, <b>탐침이 죽으면 「안 펼쳐졌다」로 읽힙니다.</b>
-    구현자가 고친 방향이 정확합니다 — <b>테스트가 «스스로 정의한» 변수로 바꾸고</b>,
+    구현자는 <b>테스트가 «스스로 정의한» 변수로</b> 바꿨고, 그 이유를 이렇게 적었습니다 —
     <b>「단언이 <code>assertNotEqual</code>이라 탐침이 무력해지면 통과가 아니라 실패하는 방향이다」.</b><sup><a href="#v1">[1]</a></sup>
     <b>검사가 고장 났을 때 어느 쪽으로 기우는지를 «고르는» 것</b> — 이 편이 각주 미끼를 다는 이유와 같습니다.
   </p>

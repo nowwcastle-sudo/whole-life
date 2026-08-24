@@ -45,7 +45,7 @@
   .big{font-size:26px; line-height:1.5; font-weight:500; margin:0 0 18px}
   p{font-size:17px; margin:0 0 18px}
   .note{font-size:15px; color:var(--muted)}
-  a{color:var(--link)}
+  a{color:var(--link); text-underline-offset:3px; text-decoration-thickness:1px}
   .card{background:var(--paper-2); border:1px solid var(--rule-solid); border-radius:8px;
         padding:26px 28px; margin:26px 0}
   .warn{border-color:var(--yellow)}
@@ -95,7 +95,7 @@
 <div class="wrap">
 
   <div class="kicker">제 12 편 · 기편 · G4</div>
-  <h1>규칙은 첫날부터 있었다.<br>걸려 있던 자리가 틀렸다</h1>
+  <h1>규칙은 첫날부터 있었다.<br>있던 자리가 기준이 아니라 보고였다</h1>
   <p class="sub">스펙 하나가 일곱 티켓으로 쪼개져 첫 병합에 이르기까지</p>
   <p class="meta">
     구간 <code>#10</code> 스펙 승인 → <code>#11</code>~<code>#17</code> → G4 · <code>main</code> = <code>4808bc1</code><br>
@@ -427,6 +427,7 @@ e84ccc1  #13  Enforce Claude bare mode at the final pre-spawn gate       <span c
     <p style="margin:8px 0 12px">
       <b>#13 의 구현자가 이 결함형을 스스로 발견해 「이 티켓의 실질 산출물」로 적었습니다.</b>
       그 티켓 안에서만 <b>세 번</b> 반복했다고 썼습니다.<sup><a href="#g3">[3]</a></sup>
+      <b>그 대상의 전모는 <a href="04_2026-08-23_%ED%8B%B0%EC%BC%9313_bare%EB%AA%A8%EB%93%9C%EA%B2%8C%EC%9D%B4%ED%8A%B8.html">제04편</a>에 있습니다</b> — 이 편은 <b>세는 자리</b>만 다룹니다.
     </p>
     <div class="term"><span class="d">주장</span>                      <span class="d">실제로 검증한 것</span>
 「같은 binary 임을 증명한다」   <span class="r">hash 한 파일이 안 바뀐 것 (실행됐다는 것이 아님)</span>
@@ -523,8 +524,9 @@ e84ccc1  #13  Enforce Claude bare mode at the final pre-spawn gate       <span c
   <p>
     리뷰어는 #14 에서 이것을 <b>일반화해 구현자에게 전달</b>했습니다 —
     <b>「검증했다고 말한 것 ≠ 실제로 검증/실행한 것」</b>.<sup><a href="#g4">[4]</a></sup>
+    (<a href="05_2026-08-23_%ED%8B%B0%EC%BC%9314_%EC%95%88%EC%A0%84%ED%95%9C%ED%84%B4%EC%8B%9C%EC%9E%91.html">제05편</a>)
     #15 에서는 <b>리뷰어 자신이 걸렸습니다</b> — 「내 first-terminal PASS 는 outcome 만 assert 한
-    거짓통과」.<sup><a href="#g5">[5]</a></sup>
+    거짓통과」.<sup><a href="#g5">[5]</a></sup> (<a href="06_2026-08-23_%ED%8B%B0%EC%BC%9315_%EA%B2%BD%EA%B3%84%EC%95%88%EC%9D%98%EC%8A%A4%ED%8A%B8%EB%A6%BC.html">제06편</a>)
     #17 에서는 <b>리뷰어의 검사도 같은 함정에 빠질 뻔했습니다</b> —
     「내 하드축 probe 도 같은 함정에 빠질 뻔 … 그 테스트가 <code>start_turn</code> 우회」.<sup><a href="#g6">[6]</a></sup>
   </p>
@@ -623,8 +625,8 @@ e84ccc1  #13  Enforce Claude bare mode at the final pre-spawn gate       <span c
   </p>
 
   <p class="note">
-    통치자가 이것을 <b>「구조 신호」</b>라고 이름 붙여 올린 것이 정확합니다 —
-    개별 결함 보고가 아니라 <b>절차가 같은 자리에서 계속 새고 있다</b>는 신호였습니다.
+    통치자는 이것을 <b>「구조 신호」</b>라고 이름 붙여 대표에게 올렸습니다 —
+    개별 결함 보고가 아니라 <b>절차가 같은 자리에서 계속 새고 있다</b>는 신호로 다뤘다는 뜻입니다.
     <b>개인의 실수를 세는 대신 절차의 구멍을 세는 순간</b>, 대응이 사람에서 게이트로 옮겨집니다.
   </p>
 
@@ -702,14 +704,73 @@ e84ccc1  #13  Enforce Claude bare mode at the final pre-spawn gate       <span c
     아직 결과가 없습니다 — <b>다음 게이트의 기편이 답합니다.</b>
   </p>
 
+  <hr>
+
+  <h2>뒷날 붙임 — 2026-08-24</h2>
+  <div class="q">이 편의 머리기사를 고쳤습니다</div>
+
+  <div class="term"><span class="d">처음</span>   규칙은 첫날부터 있었다. <span class="r">걸려 있던 자리가 «틀렸다»</span>
+<span class="d">지금</span>   규칙은 첫날부터 있었다. <span class="g">있던 자리가 기준이 아니라 «보고»였다</span></div>
+
+  <p>
+    통치자가 <b>「사관이 판정에 가까운 문장을 쓰고 있지 않은지」</b>를 훑어 <b>이 한 줄을 후보로</b> 남겼습니다.
+    <b>판단은 편 주인 몫이라며 답을 정하지 않았습니다.</b> 다시 읽고 <b>고치기로 했습니다.</b>
+  </p>
+
+  <p class="note">
+    <b>「틀렸다」는 잰 것이 아니라 잰 것에 대한 «평가»입니다.</b>
+    <b>사관은 기록하되 판정하지 않습니다</b> — 무엇이 잘잘못인지는 읽는 사람과 통치자가 정합니다.
+    <b>바꾼 쪽은 확인할 수 있는 사실입니다</b> — 그 규칙이 완료 <b>「보고」</b> 항목에 있었고
+    완료 <b>「기준」</b> 항목에는 없었다는 것은 <b>문서를 열어 보면 그 자리에 있습니다.</b>
+  </p>
+
+  <p class="note">
+    <b>그리고 잃는 것이 없습니다.</b> 같은 구간에 <b>같은 형의 결함이 일곱 번</b> 났다는 것도 이 편에 있고,
+    <b>그 규칙이 「보고」에 있었다는 것</b>도 이 편에 있습니다.
+    <b>둘을 나란히 놓으면 「그래서 안 걸렸다」는 읽는 사람이 스스로 잇습니다</b> —
+    <b>사관이 대신 이어 주면 그 줄만 남고 근거는 안 읽힙니다.</b>
+  </p>
+
+  <p class="note">
+    <b>이 폴더의 색인은 이미 그렇게 적고 있었습니다</b> —
+    <a href="00_%EC%97%B0%EB%8C%80%EA%B8%B0.html">연대기</a>의 이 편 한 문장은 처음부터
+    <b>「완료 「보고」에만 있고 완료 「기준」에는 없었고」</b>입니다.
+    <b>머리기사만 한 걸음 더 나가 있었습니다.</b>
+  </p>
+
+  <div class="card warn">
+    <span class="tag" style="color:var(--yellow);font-weight:600">같은 축으로 넷을 더 고쳤습니다</span>
+    <p style="margin:12px 0 0" class="note">
+      <b>낱말을 기억이 아니라 «주장»에서 뽑아</b> 편 여덟을 전수로 훑었습니다
+      (<code>틀렸/옳/잘못/나았/부족/했어야/정확합니다/…</code> 스물넷).
+      <b>후보 50 건이 나왔고 눈으로 갈랐습니다</b> — 대부분은 <b>인용문이거나 사료가 적은 것</b>이었고,
+      <b>사관 «자신»의 평가는 다섯이었습니다.</b>
+    </p>
+    <div class="term" style="margin-top:14px"><span class="d">제12편</span>  걸려 있던 자리가 「틀렸다」          <span class="d">-&gt; 「보고였다」</span>
+<span class="d">제12편</span>  구조 신호로 올린 것이 「정확합니다」  <span class="d">-&gt; 「그렇게 다뤘다는 뜻입니다」</span>
+<span class="d">제06편</span>  고친 방향이 「정확합니다」           <span class="d">-&gt; 「그 이유를 이렇게 적었습니다」</span>
+<span class="d">제04편</span>  각각 「옳은」 선택입니다             <span class="d">-&gt; 「이유가 적힌」 선택입니다</span>
+<span class="d">제01편</span>  두 변경 다 「옳았고」                <span class="d">-&gt; 「각각 자기 의도대로였고」</span></div>
+    <p style="margin:14px 0 0" class="note">
+      <b>훑기의 범위를 밝힙니다</b> — <b>이 「다섯」은 저 스물넷으로 훑어서 다섯</b>이지
+      <b>「평가가 다섯뿐」이 아닙니다.</b> <b>낱말 없이 평가하는 문장은 이 훑기가 못 잡습니다.</b>
+    </p>
+  </div>
+
   <div class="fn">
     <h3>각주 — 사료 출처</h3>
     <ol>
       <li id="g1"><span class="path">docs/project-context.md</span> — <span class="quote">「Tests are evidence only after a deliberate mutation of the protected invariant makes them fail.」</span> · <span class="quote">「Every step starts from the corresponding conformance failures in the normative specification.」</span> · <span class="quote">「Unknown CLI versions, unsupported delegation observation, ambiguous process outcomes, and concurrent native-session resumes fail closed.」</span> · <span class="quote">「Authentication is checked in the exact sanitized child environment and fails closed.」</span></li>
       <li id="g2"><span class="path">docs/project-context.md</span> — <span class="quote">「Pin and test safe argv/auth/version preflight for both real CLIs.」</span> · <span class="quote">「Implement process lifecycle, bounded stdout/stderr drain, cancellation, and Windows process-tree cleanup.」</span> · <span class="quote">「Add a seam only after a second real implementation or process makes the existing concrete module leak complexity to callers.」</span></li>
-      <li id="g3"><span class="path">WORK_LOGS/IMP_13_BARE_MODE_GATE.md</span> — <span class="quote">「이 티켓의 실질 산출물 — 반복된 결함형 하나」</span> · <span class="quote">「같은 모양을 **세 번** 반복했다」</span> · <span class="quote">「약한 사실이 강한 사실 자리에 조용히 들어앉은」</span> · <span class="quote">「이 테스트가 통과할 때, 내가 주장하려는 문장이 거짓일 수 있는 세계가 있는가?」</span> · <span class="quote">「개수를 함께 보지 않으면 「0건」은 근거가 아니다」</span></li>
-      <li id="g4"><span class="path">WORK_LOGS/REV_14_SAFE_TURN_START.md</span> — <span class="quote">「이건 이번 티켓에서 세 번째로 반복된 결함형」</span> · <span class="quote">「정의·테스트한 가드 ≠ 배선된 가드」</span> · <span class="quote">「검증했다고 말한 것 ≠ 실제로 검증/실행한 것」</span></li>
-      <li id="g5"><span class="path">WORK_LOGS/REV_15_BOUNDED_STREAMS.md</span> — <span class="quote">「내 first-terminal PASS는 outcome만 assert한 거짓통과」</span></li>
+      <li id="g3"><span class="path">WORK_LOGS/IMP_13_BARE_MODE_GATE.md</span> — <span class="quote">「이 티켓의 실질 산출물 — 반복된 결함형 하나」</span> · <span class="quote">「같은 모양을 **세 번** 반복했다」</span> · <span class="quote">「약한 사실이 강한 사실 자리에 조용히 들어앉은」</span> · <span class="quote">「이 테스트가 통과할 때, 내가 주장하려는 문장이 거짓일 수 있는 세계가 있는가?」</span> · <span class="quote">「개수를 함께 보지 않으면 「0건」은 근거가 아니다」</span><br>
+        <span class="note"><b>이 사실의 주인은 <a href="04_2026-08-23_%ED%8B%B0%EC%BC%9313_bare%EB%AA%A8%EB%93%9C%EA%B2%8C%EC%9D%B4%ED%8A%B8.html">제04편</a>입니다</b> — 대상 <code>#13</code> 의 일지편이고,
+        이 결함형이 처음 이름을 얻은 자리입니다. <b>경로를 지우지 않고 함께 둡니다</b> —
+        <b>각주의 일은 「원본에서 확인할 수 있게 하는 것」이고, 편은 그 위에 「이 사실의 주인이 누구인가」를 얹습니다.</b></span></li>
+      <li id="g4"><span class="path">WORK_LOGS/REV_14_SAFE_TURN_START.md</span> — <span class="quote">「이건 이번 티켓에서 세 번째로 반복된 결함형」</span> · <span class="quote">「정의·테스트한 가드 ≠ 배선된 가드」</span> · <span class="quote">「검증했다고 말한 것 ≠ 실제로 검증/실행한 것」</span><br>
+        <span class="note"><b>이 사실의 주인은 <a href="05_2026-08-23_%ED%8B%B0%EC%BC%9314_%EC%95%88%EC%A0%84%ED%95%9C%ED%84%B4%EC%8B%9C%EC%9E%91.html">제05편</a>입니다</b> — 대상 <code>#14</code> 의 일지편입니다.</span></li>
+      <li id="g5"><span class="path">WORK_LOGS/REV_15_BOUNDED_STREAMS.md</span> — <span class="quote">「내 first-terminal PASS는 outcome만 assert한 거짓통과」</span><br>
+        <span class="note"><b>이 사실의 주인은 <a href="06_2026-08-23_%ED%8B%B0%EC%BC%9315_%EA%B2%BD%EA%B3%84%EC%95%88%EC%9D%98%EC%8A%A4%ED%8A%B8%EB%A6%BC.html">제06편</a>입니다</b> — 대상 <code>#15</code> 의 일지편이고,
+        <b>리뷰어가 같은 라운드에서 자기 통과 판정 셋을 물린</b> 자리입니다. 이 각주가 인용한 것은 그중 하나입니다.</span></li>
       <li id="g6"><span class="path">WORK_LOGS/REV_17_NATIVE_WORKER_ENFORCEMENT.md</span> — <span class="quote">「내 하드축 probe(test_delegation 33 OK)도 같은 함정에 빠질 뻔」</span> · <span class="quote">「그 테스트가 start_turn 우회」</span></li>
       <li id="g7"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — <span class="quote">「공통형: **「정의·테스트는 있는데 실제 조립 경로에서 도달하지 않는다」.**」</span> · <span class="quote">「#14·#15·#17×2 로 네 번 반복된 결함형」</span> · <span class="quote">「수용기준은 조립 경로(`start_turn`→`wait`)로 증명한다」</span> · <span class="quote">「이 티켓부터 게이트로 건다」</span></li>
       <li id="g8">조회 — <span class="path">gh api repos/{owner}/{repo}/commits/&lt;SHA&gt;/check-runs</span> (2026-08-24 08:19). <span class="quote">「9e4c076 → unit-tests=failure · docs-checks=success」</span> · <span class="quote">「4a2fe80 → unit-tests=success」</span> · <span class="quote">「73f3b31 → unit-tests=success」</span> · <span class="quote">「4808bc1 → unit-tests=success · docs-checks=success」</span> · <span class="quote">「e84ccc1(PR #23) → claude=skipped」</span> · <span class="quote">「8fb9aa4(PR #29) → claude=skipped」</span><br><span class="note">파일 사료가 아니라 <b>GitHub 조회 결과</b>다. 조회 시점을 함께 적는다 — 되풀어 재려면 같은 명령을 다시 돌려야 하고, 값이 달라지면 그 사이에 무언가 다시 돌았다는 뜻이다.</span></li>
@@ -746,6 +807,8 @@ Nest 사료 — <span class="g">동결됨.</span> <span class="d">sha256(앞 16�
   85ef10b38e91cd48   16221B   REV_14_SAFE_TURN_START.md                g4
   959f940abc2d6238   13613B   REV_15_BOUNDED_STREAMS.md                g5
   39ff003e4026ee07    4352B   REV_17_NATIVE_WORKER_ENFORCEMENT.md   g6</span>
+
+<span class="d">  #13·#14·#15 의 사료는 이제 각각 제04·05·06편이 «주인»이다 — 경로는 그대로 두고 편을 함께 단다 (g3·g4·g5)</span>
 
 살아 있는 장부 — <span class="d">해시를 쓰지 않는다. <b>절 제목 줄 전문</b>으로 가리킨다</span>
 <span class="d">  WORK_LOGS/whole-life/GOV_LEDGER.md                       g7</span></div>
