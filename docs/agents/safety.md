@@ -13,9 +13,11 @@ project scope only) that blocks `git push` (all variants), `git reset --hard`,
 and the owner runs them.) This is deliberate: a human stands in front of
 anything that leaves this machine.
 
-`.claude/settings.local.json` is owner-managed (ai-memory hooks live there) —
-never edit it. Claude Code merges it with `.claude/settings.json`, so both
-hook sets run together.
+`.claude/settings.local.json` and user-scoped MCP/plugin configuration are
+owner-managed and outside this repository. Never edit them, and never assume a
+particular local hook or memory provider is present. The shared-memory behavior
+agents may rely on is defined in `AGENTS.md`; current repository and GitHub state
+remain the evidence for every safety gate.
 
 ## Secret scan — reviewer (REV) gate
 
