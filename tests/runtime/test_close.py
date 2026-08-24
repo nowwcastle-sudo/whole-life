@@ -17,10 +17,16 @@ import sys
 import unittest
 from pathlib import Path
 
+from tests.runtime.test_lifecycle import still_running
+from tests.runtime.test_spawner import force_stop, settled
 from tests.support.launch_fixtures import (
     codex_delegation_measured,
     launch_plan,
     turn_request,
+)
+from tests.support.lifecycle_fixtures import (
+    KILLER_UNAVAILABLE,
+    without_windows_roots,
 )
 from tests.support.preflight_fixtures import CODEX_HOME, codex_runner
 from whole_life.runtime.codex import CodexRuntime
@@ -407,6 +413,118 @@ class _NeverExits:
 
     async def wait(self):
         await asyncio.sleep(3600)
+
+
+class TreeKillUnavailableTests(unittest.IsolatedAsyncioTestCase):
+    """Spec section 6 via issue #34: a failed cleanup must not become the story.
+
+    When the escalation cannot run, the caller is still owed the answer it asked
+    for. A cleanup failure that arrives *instead* of that answer sends the
+    operator after the wrong thing while the child is still running.
+    """
+
+    async def started_unresponsive_run(self):
+        runtime = await adapter(UNRESPONSIVE)
+        handle = await runtime.start_turn(turn_request())
+        pid = runtime._runs[handle.run_id]._process.pid
+        # Registered before the environment is touched, so it runs after the
+        # patch has been lifted and can locate the killer it needs.
+        self.addCleanup(force_stop, pid)
+        return runtime, handle, pid
+
+    async def test_a_cancel_reports_its_outcome_when_the_tree_killer_is_missing(self):
+        for name, broken, _reason in KILLER_UNAVAILABLE:
+            with self.subTest(name):
+                runtime, handle, _pid = await self.started_unresponsive_run()
+
+                with broken():
+                    outcome = await runtime.cancel(handle, graceful_wait=0.2)
+
+                self.assertEqual(CancelOutcome.UNKNOWN, outcome)
+                await runtime.close(graceful_wait=0.2)
+
+    async def test_why_the_escalation_failed_is_still_available(self):
+        """Alongside, not instead. `UNKNOWN` says the tree was not confirmed
+        dead; it does not say the killer could not be located, and the two want
+        different things from an operator. Both refusals name themselves, so the
+        reason is kept where the run that hit it can be asked for it.
+        """
+        for name, broken, reason in KILLER_UNAVAILABLE:
+            with self.subTest(name):
+                runtime, handle, _pid = await self.started_unresponsive_run()
+                observer = runtime._runs[handle.run_id]
+
+                with broken():
+                    await runtime.cancel(handle, graceful_wait=0.2)
+
+                self.assertIn(reason, observer.cleanup_failure or "")
+                await runtime.close(graceful_wait=0.2)
+
+    async def test_a_cancellation_that_could_tree_kill_reports_no_failure(self):
+        """The control. A run whose escalation worked has nothing to explain,
+        and a field that is always populated says nothing when it matters.
+        """
+        runtime, handle, _pid = await self.started_unresponsive_run()
+        observer = runtime._runs[handle.run_id]
+
+        outcome = await runtime.cancel(handle, graceful_wait=0.2)
+
+        self.assertEqual(CancelOutcome.FORCED, outcome)
+        self.assertIsNone(observer.cleanup_failure)
+        await runtime.close(graceful_wait=0.2)
+
+    async def test_close_still_leaves_nothing_when_the_escalation_failed(self):
+        """Spec section 6 does not get an exemption for a bad environment.
+
+        `shutdown` cancels first and cancels the drain tasks afterwards, so an
+        escalation that raised out of `cancel` took the rest of that method with
+        it — the counts `close()` promises were never made zero, they were
+        never reached.
+        """
+        runtime, handle, _pid = await self.started_unresponsive_run()
+
+        with without_windows_roots():
+            await runtime.cancel(handle, graceful_wait=0.2)
+
+        await asyncio.wait_for(runtime.close(graceful_wait=0.2), timeout=40)
+
+        self.assertEqual(0, runtime.active_child_count())
+        self.assertEqual(0, runtime.drain_task_count())
+
+    async def test_close_alone_leaves_nothing_when_the_escalation_failed(self):
+        """The same promise for the path that never calls `cancel` directly.
+
+        `close` reaches the escalation through `shutdown`, so a failure there
+        has to be survived at that entry point too, not only when a caller
+        cancelled first.
+        """
+        runtime, _handle, _pid = await self.started_unresponsive_run()
+
+        with without_windows_roots():
+            await asyncio.wait_for(runtime.close(graceful_wait=0.2), timeout=40)
+
+        self.assertEqual(0, runtime.active_child_count())
+        self.assertEqual(0, runtime.drain_task_count())
+
+    async def test_the_child_does_not_survive_a_failed_escalation(self):
+        """Reporting the failure honestly is not enough on its own.
+
+        `taskkill /T` is what reaches descendants, and without it the run keeps
+        whatever it started. Killing the process we do have a handle on is still
+        strictly better than leaving the whole tree alive, and it is the part we
+        can do without the helper.
+        """
+        runtime, handle, pid = await self.started_unresponsive_run()
+        self.assertTrue(still_running(pid), "the fixture child never started")
+
+        with without_windows_roots():
+            await runtime.cancel(handle, graceful_wait=0.2)
+
+        self.assertFalse(
+            await settled(pid, False),
+            "the child outlived a cancellation that could not tree-kill it",
+        )
+        await runtime.close(graceful_wait=0.2)
 
 if __name__ == "__main__":
     unittest.main()

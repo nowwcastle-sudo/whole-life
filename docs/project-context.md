@@ -41,6 +41,21 @@ Independent Codex and Claude Fable 5 audits applied architecture-improvement, co
 9. Provider-reported token fields are nullable telemetry, not subscription quota or billing.
 10. The dossier is deterministic and preserves conflicts instead of asking another model to synthesize them away.
 
+## Environment preconditions
+
+The broker requires `SYSTEMROOT` (or `WINDIR`) in **its own** environment, pointing at a
+Windows directory that contains `System32\taskkill.exe`. That executable is how a run's
+process *tree* is ended; without it only the process the broker holds a handle on can be
+stopped, and a provider's descendants keep running — and keep being billed.
+
+The broker starts and runs without it. What degrades is cleanup: cancellation reports
+`CancelOutcome.UNKNOWN` instead of `FORCED`, and `RunObserver.cleanup_failure` names the
+reason. This is stated as a precondition rather than left to be discovered because the
+symptom appears at shutdown, far from the cause, and looks like a stuck provider.
+
+Not read from `PATH`, deliberately: a `taskkill` found on `PATH` could be a shim, and the
+result of that call is the evidence a run stopped.
+
 ## Keep v0 small
 
 Do not add FastAPI, A2A, AG-UI, CloudEvents, Redis, NATS, Kafka, ULID packages, a transactional outbox, a dynamic adapter registry, a web UI, or a generalized storage interface. Add a seam only after a second real implementation or process makes the existing concrete module leak complexity to callers.

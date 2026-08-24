@@ -50,6 +50,44 @@ def system_taskkill(environ=None) -> Path:
     return killer
 
 
+async def terminate_process_only(
+    process, *, forced_wait: float = FORCED_WAIT_SECONDS
+) -> bool:
+    """End this process alone, for when the tree killer cannot be located.
+
+    Strictly weaker than `terminate_process_tree`: Windows does not cascade a
+    kill, so descendants are left running. It is still the part we can do
+    without `taskkill`, and doing nothing because we cannot do everything would
+    leave the whole tree alive rather than only what we never had a handle on.
+
+    Reaping is the reason this is a function rather than a bare `kill()`. A
+    killed process whose exit has not been collected still reports
+    `returncode is None`, so `close()` counts it as a live child and the
+    promise that nothing is left cannot be kept. The transport is closed first
+    for the reason measured in #15: asyncio releases the exit waiter only once
+    every pipe reports disconnected, so a run nobody was reading parks here
+    forever otherwise.
+    """
+    if process.returncode is not None:
+        return True
+
+    try:
+        process.kill()
+    except ProcessLookupError:
+        return True
+
+    transport = getattr(process, "_transport", None)
+    if transport is not None:
+        transport.close()
+
+    try:
+        await asyncio.wait_for(process.wait(), timeout=forced_wait)
+    except (asyncio.TimeoutError, TimeoutError):
+        return False
+
+    return True
+
+
 async def terminate_process_tree(
     process, *, forced_wait: float = FORCED_WAIT_SECONDS
 ) -> bool:

@@ -18,7 +18,11 @@ import shutil
 from pathlib import Path
 
 from whole_life.runtime.launch import LaunchPlan, PreStartRefusal, RefusalCode
-from whole_life.runtime.lifecycle import terminate_process_tree
+from whole_life.runtime.lifecycle import (
+    LifecycleFailure,
+    terminate_process_only,
+    terminate_process_tree,
+)
 
 #: Only a real image. Spec line 132 permits `.cmd` or `.exe` and line 202
 #: requires shell=False with split argv — and a `.cmd` cannot deliver the
@@ -119,7 +123,7 @@ class SubprocessSpawner:
             await hand_over_prompt(
                 process.stdin, plan.turn_request.prompt.encode("utf-8")
             )
-        except BaseException:
+        except BaseException as original:
             # Two ways in. One is live today: an error the tolerance above
             # does not accept — an `OSError` that is not a reader that left —
             # arrives here on every turn that hits it.
@@ -136,7 +140,22 @@ class SubprocessSpawner:
             # has a descendant by the time this window opens. The result is
             # deliberately not inspected — the exception on its way out is the
             # finding, and replacing it with a lifecycle error would lose it.
-            await terminate_process_tree(process)
+            #
+            # Which is also why the escalation cannot be left to raise. Inside
+            # an `except`, anything it raises leaves in its place, and the
+            # caller is handed a complaint about cleanup for a spawn it never
+            # learned had been cancelled. The child is still ended as far as we
+            # can reach without the helper: our own process, though not the
+            # descendants only `taskkill /T` gets to.
+            try:
+                await terminate_process_tree(process)
+            except LifecycleFailure as cleanup:
+                await terminate_process_only(process)
+                # A note rather than a replacement or a chain: the exception on
+                # its way out keeps its type and its place, and the one fact
+                # that explains why descendants may still be running rides
+                # with it instead of being dropped.
+                original.add_note(f"process tree not terminated: {cleanup}")
             raise
 
         return process
