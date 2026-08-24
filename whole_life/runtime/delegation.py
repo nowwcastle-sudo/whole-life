@@ -51,11 +51,17 @@ DELEGATION_AXES = frozenset(
 #: documented as `hard` until a recorded turn ran a worker at depth 2 and
 #: refused nothing.
 #:
-#: Codex 0.149.0 is `unsupported` on all three because the delegation
-#: measurement has not been made: the live attempt hit a subscription usage
-#: limit before the model ran, so what the stream announces about workers is
-#: unknown rather than known-absent. Spec line 119 turns an uncountable start
-#: into `unsupported`, and section 12 turns `unsupported` into a refusal. The
+#: Codex 0.149.0 is `unsupported` on all three because its stream gives the
+#: counter nothing to count. Measured, not read off the schema: the recorded
+#: turn (#35) ran the production argument vector with the subagent workflow
+#: enabled and asked for three concurrent subagents — the model answered as
+#: though it had launched them, yet the one collaboration call it made carried
+#: no receivers and no agent states, and no other line names a worker. The
+#: recording lives at
+#: tests/recordings/codex-0.149.0-agents-enabled-turn.jsonl, and what it
+#: showed is pinned by tests/runtime/test_codex_delegation_measurement.py.
+#: Spec line 119 turns an uncountable start into `unsupported`, and section 12
+#: turns `unsupported` into a refusal. The
 #: concurrency cap set by inline config is not listed as `hard` either: a cap
 #: nobody has watched being enforced is a claim, not a measurement.
 REPORTED_ENFORCEMENT = {
