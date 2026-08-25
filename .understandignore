@@ -1,0 +1,14 @@
+.git/
+.ua/
+.audit/
+scratch/
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+NVIDIA Corporation/
+docs/history/
+tests/recordings/
