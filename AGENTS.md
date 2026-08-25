@@ -21,7 +21,7 @@ Korean counterparts exist for the human-facing documents (`README.ko.md`,
 `CONTRIBUTING.ko.md`, `CONTEXT.ko.md`). When you change one language, change the other in
 the same commit.
 
-<!-- oss-agent-team:start v2.6 -->
+<!-- oss-agent-team:start v2.6.1 -->
 ## 팀 규약 — 에이전트 11명 공통
 
 이 절이 **팀 공통 규칙의 정본**이다. 11명의 개별 지침은 역할별 내용만 담고 여기를 가리킨다.
@@ -84,7 +84,11 @@ Nest 산출물은 전부 **프로젝트 폴더 아래**에 둔다 — `WORK_LOGS
 
 어느 경우든 **방법은 스킬 본문이 정본**이다. 스킬 이름은 **플러그인 한정**으로 쓴다(`mattpocock-skills:code-review`) — 같은 이름의 다른 스킬이 있고 그중에는 워킹트리를 고치는 것도 있다.
 
-**코드를 생성·수정하는 작업은 항상 Ponytail `full` 모드로 한다.** 역할 스킬을 먼저 불러온 뒤 실제 코드를 쓰기 전에 `/ponytail full`을 호출한다. 스킬 목록에 없으면 위 폴백 절차로 `ponytail/SKILL.md`를 찾아 읽고 `full` 규칙을 그대로 적용한다. 최소 구현을 택하되 코드베이스와 실제 흐름의 사전 통독, 신뢰 경계의 입력 검증, 데이터 손실 방지 오류 처리, 보안·접근성, 대표가 명시한 요구, 비자명한 로직의 실행 가능한 검사는 줄이지 않는다.
+**코드를 생성·수정하는 작업은 항상 Ponytail `full` 모드로 한다.** 역할 스킬을 먼저 불러온 뒤 실제 코드를 쓰기 전에 `/ponytail full`을 호출한다. 스킬 목록에 없으면 Claude 전용 캐시만 보지 말고 공용·러너별 등록 경로에서 본문을 찾는다:
+  ```
+  find ~/.agents/skills ~/.claude/skills ~/.codex/skills -path "*/ponytail/SKILL.md" 2>/dev/null | sort
+  ```
+본문을 찾으면 읽고 `full` 규칙을 그대로 적용하며, 어느 경로에서도 찾지 못하면 「현재 러너에 Ponytail이 미설치」라고 통치자에게 보고하고 멈춘다. 최소 구현을 택하되 코드베이스와 실제 흐름의 사전 통독, 신뢰 경계의 입력 검증, 데이터 손실 방지 오류 처리, 보안·접근성, 대표가 명시한 요구, 비자명한 로직의 실행 가능한 검사는 줄이지 않는다.
 
 ### 5. 도구
 
