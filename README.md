@@ -84,7 +84,7 @@ Technical feasibility is not the same as provider-policy approval. The public-re
 
 ## How this repository is developed
 
-Work is carried out by a fixed team of eight AI agents in a dedicated project channel, following an eleven-stage flow with an explicit gate at each stage. Pre-existing files are extended, never replaced. A branch is pushed by the agent that verified it; **merging into `main` is a human decision**, and destructive git operations stay with a human as well.
+Work is carried out by a fixed team of eleven AI agents in a dedicated project channel, following an eleven-stage flow with an explicit gate at each stage. The Governor coordinates handoffs through channel mentions, while the durable report lives in `WORK_LOGS`. Pre-existing files are extended, never replaced. The Closer verifies the branch and prepares copy-paste-ready push commands; **the owner performs the push and decides whether to merge into `main`**. Destructive git operations stay with the owner as well.
 
 [`AGENTS.md`](AGENTS.md) tells an agent where this repository keeps its issue tracker and domain docs; the details sit in [`docs/agents/`](docs/agents/). The working agreement — what is already established, what is deliberately absent, and how agents are expected to behave here — is in [CONTRIBUTING.md](CONTRIBUTING.md).
 

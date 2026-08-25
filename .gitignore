@@ -41,4 +41,5 @@ Desktop.ini
 
 # Local audit and scratch material
 .audit/
+.ua/
 scratch/
