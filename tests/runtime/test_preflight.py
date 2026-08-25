@@ -8,6 +8,7 @@ import json
 import unittest
 
 from tests.support.preflight_fixtures import (
+    WORKING_DIRECTORY,
     CLAUDE_AUTH_OK,
     CLAUDE_EXECUTABLE,
     CODEX_EXECUTABLE,
@@ -41,6 +42,7 @@ def claude(runner=None, parent_env=None) -> ClaudeRuntime:
     return ClaudeRuntime(
         executable=CLAUDE_EXECUTABLE,
         runner=runner or claude_runner(),
+        working_directory=WORKING_DIRECTORY,
         parent_env=PARENT_ENV if parent_env is None else parent_env,
     )
 
@@ -49,6 +51,7 @@ def codex(runner=None, parent_env=None) -> CodexRuntime:
     return CodexRuntime(
         executable=CODEX_EXECUTABLE,
         runner=runner or codex_runner(),
+        working_directory=WORKING_DIRECTORY,
         parent_env=PARENT_ENV if parent_env is None else parent_env,
         codex_home=CODEX_HOME,
     )

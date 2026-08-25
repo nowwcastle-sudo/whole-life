@@ -39,24 +39,56 @@ def result(exit_code=0, stdout="", stderr=PINNED):
     return exit_code, stdout, stderr
 
 
+#: What the pinned build printed when started outside a git repository.
+#: Carried as a fixture so these tests describe the rendering, not the CLI.
+UNTRUSTED_REFUSAL = (1, "Not inside a trusted directory and --skip-git-repo-check was not specified.")
+
+
 class CodexMeasurementTests(unittest.TestCase):
     def test_identical_outputs_yield_the_conclusion(self):
         measured, _carried = collector.codex_measurement_lines(
-            0, "codex-cli 0.149.0", result(), result()
+            0, "codex-cli 0.149.0", result(), result(), UNTRUSTED_REFUSAL
         )
 
         self.assertTrue(any("therefore" in line for line in measured))
 
+    def test_the_untrusted_directory_observation_is_recorded(self):
+        """Issue #33 AC3: what the pinned build does, in its own words.
+
+        The exit code alone would not distinguish this refusal from any other
+        nonzero exit — the first run of this probe exited 1 because it sent no
+        prompt, which is a true nonzero for an unrelated reason. So the line
+        carries the message the build printed, and the conclusion is derived
+        from the observation rather than asserted alongside it.
+        """
+        measured, _carried = collector.codex_measurement_lines(
+            0, "codex-cli 0.149.0", result(), result(), UNTRUSTED_REFUSAL
+        )
+
+        rendered = "\n".join(measured)
+        self.assertIn("not a git repository", rendered)
+        self.assertIn(UNTRUSTED_REFUSAL[1], rendered)
+        self.assertIn("**refuses**", rendered)
+
+    def test_a_build_that_accepts_is_recorded_as_accepting(self):
+        """The control. A conclusion that can only say one word says nothing,
+        so a build that started the turn has to render the other one."""
+        measured, _carried = collector.codex_measurement_lines(
+            0, "codex-cli 0.149.0", result(), result(), (0, "")
+        )
+
+        self.assertIn("**accepts**", "\n".join(measured))
+
     def test_a_differing_exit_code_stops_the_collection(self):
         with self.assertRaises(collector.CollectionFailed):
             collector.codex_measurement_lines(
-                0, "codex-cli 0.149.0", result(), result(exit_code=1)
+                0, "codex-cli 0.149.0", result(), result(exit_code=1), UNTRUSTED_REFUSAL
             )
 
     def test_a_differing_stdout_stops_the_collection(self):
         with self.assertRaises(collector.CollectionFailed):
             collector.codex_measurement_lines(
-                0, "codex-cli 0.149.0", result(), result(stdout="leaked")
+                0, "codex-cli 0.149.0", result(), result(stdout="leaked"), UNTRUSTED_REFUSAL
             )
 
     def test_a_differing_stderr_stops_the_collection(self):
@@ -66,13 +98,14 @@ class CodexMeasurementTests(unittest.TestCase):
                 "codex-cli 0.149.0",
                 result(),
                 result(stderr="Logged in using an API key"),
+                UNTRUSTED_REFUSAL,
             )
 
     def test_the_failure_carries_no_command_output(self):
         """The refusal names the condition, never what the command printed."""
         with self.assertRaises(collector.CollectionFailed) as caught:
             collector.codex_measurement_lines(
-                0, "codex-cli 0.149.0", result(), result(stdout="SENTINEL-STDOUT")
+                0, "codex-cli 0.149.0", result(), result(stdout="SENTINEL-STDOUT"), UNTRUSTED_REFUSAL
             )
 
         rendered = f"{caught.exception}{caught.exception!r}{caught.exception.args}"

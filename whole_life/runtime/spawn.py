@@ -52,6 +52,24 @@ def assert_directly_executable(candidate: Path) -> None:
         raise PreStartRefusal(RefusalCode.EXECUTABLE_UNRESOLVED)
 
 
+def assert_working_directory(candidate: Path | None) -> None:
+    """Refuse a plan whose working directory was never decided, or is not there.
+
+    `None` is the case this exists for. Passing it through would mean the child
+    inherits the Broker's own directory, which is wherever an operator happened
+    to start it — and the pinned Codex CLI refuses to run outside a trusted
+    directory, so that inheritance turns into a provider that looks down.
+
+    A directory that does not exist is refused here too, so it arrives as a
+    pre-start refusal like every other decision checked on this boundary rather
+    than as an operating-system error from the spawn itself.
+    """
+    if candidate is None:
+        raise PreStartRefusal(RefusalCode.WORKING_DIRECTORY_UNDECIDED)
+    if not candidate.is_dir():
+        raise PreStartRefusal(RefusalCode.WORKING_DIRECTORY_UNDECIDED)
+
+
 def resolve_executable(name, *, which=shutil.which) -> Path:
     """The absolute path `name` runs, or refuse before anything starts.
 
@@ -107,6 +125,7 @@ class SubprocessSpawner:
         # point before a process exists, and the plan may have been assembled
         # by something that never went through the resolver.
         assert_directly_executable(plan.executable)
+        assert_working_directory(plan.working_directory)
 
         process = await asyncio.create_subprocess_exec(
             str(plan.executable),
@@ -115,6 +134,7 @@ class SubprocessSpawner:
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
             env=dict(plan.child_env),
+            cwd=str(plan.working_directory),
         )
 
         # From here on a process exists, so every way out of this function has

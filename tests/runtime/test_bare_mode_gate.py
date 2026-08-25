@@ -22,7 +22,11 @@ import dataclasses
 import unittest
 
 from tests.support.launch_fixtures import RecordingSpawner, turn_request
-from tests.support.preflight_fixtures import CLAUDE_EXECUTABLE, claude_runner
+from tests.support.preflight_fixtures import (
+    WORKING_DIRECTORY,
+    CLAUDE_EXECUTABLE,
+    claude_runner,
+)
 from whole_life.runtime.claude import ClaudeRuntime
 from whole_life.runtime.launch import (
     PreStartRefusal,
@@ -44,6 +48,7 @@ async def assembled_plan():
     runtime = ClaudeRuntime(
         executable=CLAUDE_EXECUTABLE,
         runner=claude_runner(),
+        working_directory=WORKING_DIRECTORY,
         parent_env=CLEAN_PARENT_ENV,
     )
     await runtime.preflight()

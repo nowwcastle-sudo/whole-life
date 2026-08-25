@@ -22,6 +22,7 @@ from tests.support.launch_fixtures import (
     turn_request,
 )
 from tests.support.preflight_fixtures import (
+    WORKING_DIRECTORY,
     CLAUDE_EXECUTABLE,
     CODEX_EXECUTABLE,
     CODEX_HOME,
@@ -378,6 +379,7 @@ class ReportedEnforcementTests(unittest.IsolatedAsyncioTestCase):
         runtime = ClaudeRuntime(
             executable=CLAUDE_EXECUTABLE,
             runner=claude_runner(),
+            working_directory=WORKING_DIRECTORY,
             parent_env=PARENT_ENV,
         )
 
@@ -393,6 +395,7 @@ class ReportedEnforcementTests(unittest.IsolatedAsyncioTestCase):
         runtime = ClaudeRuntime(
             executable=CLAUDE_EXECUTABLE,
             runner=claude_runner(),
+            working_directory=WORKING_DIRECTORY,
             parent_env=PARENT_ENV,
         )
 
@@ -416,6 +419,7 @@ class ReportedEnforcementTests(unittest.IsolatedAsyncioTestCase):
         runtime = CodexRuntime(
             executable=CODEX_EXECUTABLE,
             runner=codex_runner(),
+            working_directory=WORKING_DIRECTORY,
             parent_env=PARENT_ENV,
             codex_home=CODEX_HOME,
         )
@@ -443,6 +447,7 @@ class ReportedEnforcementTests(unittest.IsolatedAsyncioTestCase):
         runtime = CodexRuntime(
             executable=CODEX_EXECUTABLE,
             runner=codex_runner(),
+            working_directory=WORKING_DIRECTORY,
             parent_env=PARENT_ENV,
             codex_home=CODEX_HOME,
         )
@@ -470,6 +475,7 @@ class FailClosedCapabilityTests(unittest.IsolatedAsyncioTestCase):
         runtime = CodexRuntime(
             executable=CODEX_EXECUTABLE,
             runner=codex_runner(),
+            working_directory=WORKING_DIRECTORY,
             parent_env=PARENT_ENV,
             codex_home=CODEX_HOME,
         )
@@ -488,6 +494,7 @@ class FailClosedCapabilityTests(unittest.IsolatedAsyncioTestCase):
         runtime = ClaudeRuntime(
             executable=CLAUDE_EXECUTABLE,
             runner=claude_runner(),
+            working_directory=WORKING_DIRECTORY,
             parent_env=PARENT_ENV,
         )
         await runtime.preflight()
@@ -664,6 +671,7 @@ class ProductionPathTests(unittest.IsolatedAsyncioTestCase):
         runtime = ClaudeRuntime(
             executable=Path(sys.executable),
             runner=claude_runner(),
+            working_directory=WORKING_DIRECTORY,
             parent_env=PARENT_ENV,
             spawner=SubprocessSpawner(),
         )
@@ -720,6 +728,7 @@ class ProductionPathTests(unittest.IsolatedAsyncioTestCase):
             runtime = CodexRuntime(
                 executable=Path(sys.executable),
                 runner=codex_runner(),
+                working_directory=WORKING_DIRECTORY,
                 parent_env=PARENT_ENV,
                 codex_home=CODEX_HOME,
                 spawner=SubprocessSpawner(),

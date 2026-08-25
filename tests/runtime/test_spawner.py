@@ -335,6 +335,72 @@ async def settled(pid, expected, *, timeout=5.0):
     return still_running(pid)
 
 
+
+class WorkingDirectoryBoundaryTests(unittest.IsolatedAsyncioTestCase):
+    """Issue #33 AC1: the child's directory is decided, not inherited.
+
+    Inheriting is not a neutral default. The Broker's own directory is wherever
+    an operator happened to launch it from, and the pinned Codex CLI refuses to
+    start at all when that is not a trusted directory — so a turn dies before
+    the model runs and the failure reads as a provider outage.
+
+    Asserted at the last point before a process exists, for the same reason the
+    executable is: the plan may have been assembled by something that never
+    went through the adapter.
+    """
+
+    async def test_a_plan_that_never_decided_a_directory_is_refused(self):
+        plan = launch_plan(
+            executable=Path(sys.executable),
+            args=("-c", "pass"),
+            working_directory=None,
+        )
+
+        with self.assertRaises(PreStartRefusal) as caught:
+            await SubprocessSpawner().spawn(plan)
+
+        self.assertEqual(
+            RefusalCode.WORKING_DIRECTORY_UNDECIDED, caught.exception.code
+        )
+
+    async def test_the_child_runs_in_the_directory_the_plan_named(self):
+        """The decision has to reach the process, not just sit in the plan."""
+        with tempfile.TemporaryDirectory() as chosen:
+            plan = launch_plan(
+                executable=Path(sys.executable),
+                args=("-c", "import os, sys; sys.stdout.write(os.getcwd())"),
+                working_directory=Path(chosen),
+            )
+
+            process = await SubprocessSpawner().spawn(plan)
+            stdout, _stderr = await process.communicate()
+
+            self.assertEqual(
+                Path(chosen).resolve(), Path(stdout.decode("utf-8")).resolve()
+            )
+
+    async def test_a_directory_that_does_not_exist_is_refused(self):
+        """Refused here rather than surfacing as an OS error from the spawn.
+
+        A missing directory is a decision that was made wrongly, which is a
+        pre-start condition — the same kind of thing every other refusal on
+        this boundary reports.
+        """
+        plan = launch_plan(
+            executable=Path(sys.executable),
+            args=("-c", "pass"),
+            working_directory=Path(tempfile.gettempdir())
+            / "no-such-working-directory-anywhere",
+        )
+
+        with self.assertRaises(PreStartRefusal) as caught:
+            await SubprocessSpawner().spawn(plan)
+
+        self.assertEqual(
+            RefusalCode.WORKING_DIRECTORY_UNDECIDED, caught.exception.code
+        )
+
+
 class PromptHandoverTests(unittest.IsolatedAsyncioTestCase):
     """Handing the prompt over must not turn a provider outcome into a crash.
 

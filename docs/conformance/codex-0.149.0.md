@@ -1,6 +1,6 @@
 # Conformance evidence — codex codex-cli 0.149.0
 
-Collected 2026-08-22 on Windows, in the child environment built by `whole_life.runtime.childenv.build_child_env`.
+Collected 2026-08-24 on Windows, in the child environment built by `whole_life.runtime.childenv.build_child_env`.
 
 Redacted by construction: no environment values, no credentials, no full authentication payload, no raw stderr, no account identifiers.
 
@@ -15,6 +15,8 @@ Every line below was computed from a command this run executed.
 - with `OPENAI_API_KEY` present, stdout identical: **True**
 - with `OPENAI_API_KEY` present, stderr identical: **True**
 - therefore the status output cannot distinguish a subscription sign-in from an API-key credential path, and excluding the variable from the child environment is the only detection this build has
+- started from a directory that is not a git repository, with no `--skip-git-repo-check`: exit `1`, first stderr line `Not inside a trusted directory and --skip-git-repo-check was not specified.`
+- therefore this build **refuses** a turn whose working directory is untrusted, before any model request — so a Broker that lets the child inherit its own directory decides whether every turn on that machine can start at all (issue #33)
 
 ## Not measured by this script
 

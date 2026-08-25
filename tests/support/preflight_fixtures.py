@@ -6,6 +6,7 @@ that a test can prove they did not survive parsing.
 
 import json
 from collections.abc import Mapping
+import tempfile
 from pathlib import Path
 
 from whole_life.runtime.preflight import CommandResult
@@ -13,6 +14,11 @@ from whole_life.runtime.preflight import CommandResult
 CLAUDE_EXECUTABLE = Path(r"C:\tools\claude\claude.cmd")
 CODEX_EXECUTABLE = Path(r"C:\tools\codex\codex.cmd")
 CODEX_HOME = Path(r"D:\codex-home")
+
+#: A directory that exists and is nobody's workspace. Real plans get this
+#: from the caller; tests only need the spawn not to be refused for a
+#: reason they are not about.
+WORKING_DIRECTORY = Path(tempfile.gettempdir())
 
 SENTINEL_EMAIL = "SENTINEL-EMAIL-ADDRESS"
 SENTINEL_ORG_ID = "SENTINEL-ORG-ID"

@@ -28,7 +28,11 @@ from tests.support.lifecycle_fixtures import (
     KILLER_UNAVAILABLE,
     without_windows_roots,
 )
-from tests.support.preflight_fixtures import CODEX_HOME, codex_runner
+from tests.support.preflight_fixtures import (
+    WORKING_DIRECTORY,
+    CODEX_HOME,
+    codex_runner,
+)
 from whole_life.runtime.codex import CodexRuntime
 from whole_life.runtime.delegation import REPORTED_ENFORCEMENT
 from whole_life.runtime.contract import (
@@ -82,6 +86,7 @@ async def adapter(script, *, sessions=None):
     runtime = CodexRuntime(
         executable=Path(sys.executable),
         runner=codex_runner(),
+        working_directory=WORKING_DIRECTORY,
         parent_env=CLEAN_PARENT_ENV,
         codex_home=CODEX_HOME,
         spawner=SubprocessSpawner(),

@@ -51,6 +51,16 @@ CODEX_TURN_ARGS = (
     "read-only",
     "--ignore-user-config",
     "--ignore-rules",
+    # Issue #33. Measured, not read: `docs/conformance/codex-0.149.0.md`
+    # records this build refusing to start outside a git repository, before any
+    # model request, naming this flag as what it wanted. The Broker's working
+    # directory is deliberately a neutral one rather than a repository, so the
+    # trust prompt has to be answered here.
+    #
+    # It grants nothing. The alternative — pointing the working directory at a
+    # real repository — would make that repository the agent's working root and
+    # so widen what a participant can read, which is the boundary AC4 holds.
+    "--skip-git-repo-check",
     "-c",
     "agents.enabled=true",
     "-c",
@@ -81,6 +91,7 @@ class CodexRuntime:
         runner: CommandRunner,
         parent_env: Mapping[str, str],
         codex_home: Path,
+        working_directory: Path,
         spawner=None,
         sessions=None,
         journal=None,
@@ -91,6 +102,11 @@ class CodexRuntime:
             parent_env, extra={"CODEX_HOME": str(codex_home)}
         )
         self._conformance: VersionConformance | None = None
+        #: Decided by the caller, never inherited. Spec issue #33: the
+        #: Broker's own directory is wherever an operator started it, and
+        #: a provider that refuses to run outside a trusted directory
+        #: would fail every turn for a reason that reads as an outage.
+        self._working_directory = working_directory
         #: Injected so a turn can be started without a real process, and so the
         #: registry and journal are owned by the caller rather than this module.
         self._spawner = spawner
@@ -149,6 +165,7 @@ class CodexRuntime:
             child_env=self.child_env,
             version_conformance=self._conformance,
             turn_request=request,
+            working_directory=self._working_directory,
             delegation_enforcement=REPORTED_ENFORCEMENT[Provider.CODEX],
         )
 

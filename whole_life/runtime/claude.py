@@ -77,6 +77,7 @@ class ClaudeRuntime:
         executable: Path,
         runner: CommandRunner,
         parent_env: Mapping[str, str],
+        working_directory: Path,
         spawner=None,
         sessions=None,
         journal=None,
@@ -87,6 +88,11 @@ class ClaudeRuntime:
         #: this exact mapping, so they cannot diverge.
         self.child_env = build_child_env(parent_env)
         self._conformance: VersionConformance | None = None
+        #: Decided by the caller, never inherited. Spec issue #33: the
+        #: Broker's own directory is wherever an operator started it, and
+        #: a provider that refuses to run outside a trusted directory
+        #: would fail every turn for a reason that reads as an outage.
+        self._working_directory = working_directory
         #: Injected so a turn can be started without a real process, and so the
         #: registry and journal are owned by the caller rather than this module.
         self._spawner = spawner
@@ -155,6 +161,7 @@ class ClaudeRuntime:
             child_env=self.child_env,
             version_conformance=self._conformance,
             turn_request=request,
+            working_directory=self._working_directory,
             delegation_enforcement=REPORTED_ENFORCEMENT[Provider.CLAUDE],
         )
 
