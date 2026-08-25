@@ -13,9 +13,9 @@ Whole Life is in a documentation-first architecture phase. Contributions should 
 
 ## Working with the agent team
 
-Work on this repository is carried out by a fixed team of eight AI agents in a dedicated project channel, following an eleven-stage flow: bootstrap, discovery, mapping, specification, ticket breakdown, implementation, review, a safety gate, verification and merge, release and documentation, then operation. Each stage has an explicit gate, and a stage that has not passed its gate does not advance.
+Work on this repository is carried out by a fixed team of eleven AI agents in a dedicated project channel, following an eleven-stage flow: bootstrap, discovery, mapping, specification, ticket breakdown, implementation, review, a safety gate, verification and merge, release and documentation, then operation. Each stage has an explicit gate, and a stage that has not passed its gate does not advance.
 
-Two rules make the team safe rather than merely busy. Handoff happens through artifacts — an issue, a branch, a file — never through one agent calling another, so the trail of who passed what remains readable afterwards. And the fence is the ordering, not a list of prohibitions: the implementer's work ends at the commit, which is why nothing reaches the remote before the safety gate has run.
+Two rules make the team safe rather than merely busy. The Governor coordinates handoffs through channel mentions, and every completed handoff is recorded first in a durable artifact — an issue, a branch, or a `WORK_LOGS` report — so the trail remains readable afterwards. And the fence is the ordering, not a list of prohibitions: the implementer's work ends at the commit, and the owner does not push until the review and safety gates have run.
 
 Treat the following as **established, not as gaps to fill**:
 
@@ -34,7 +34,7 @@ Everything the table does not list is filled in progressively, as the flow reach
 
 **Contribution surface.** This file and `SECURITY.md` exist, but the repository stays private until the gates in the README's *Security and policy boundary* clear. No external triage process is in place, and none is created until distribution is unblocked.
 
-**Push is allowed; merge is not.** The agent that verified a branch pushes it and opens the pull request. Merging into `main` is a human decision, made on the evidence in that pull request. Destructive git operations — force push, `reset --hard`, history rewriting, remote branch deletion — are never performed by an agent: it stops and reports instead.
+**Push and merge are owner-gated.** The Closer verifies the branch and prepares complete copy-paste-ready push commands. The owner runs the push; after confirmation, the Closer may open the pull request. Merging into `main` is also the owner's decision, made on the evidence in that pull request. Destructive git operations — force push, `reset --hard`, history rewriting, remote branch deletion — are never performed by an agent: it stops and reports instead.
 
 A project-scoped guardrail in `.claude/settings.json` blocks those commands for a session whose project directory is this repository. It does not reach an agent working from another directory, so the rule above is the binding one — the guardrail is a backstop, not the boundary.
 
