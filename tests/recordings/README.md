@@ -30,7 +30,7 @@ remains is item ids, tool names, statuses, token counts, and the model's own pro
 **Reproducing it costs a billed turn.** There is no script here that does it; the steps
 above are the record. The redaction is asserted by
 `tests/runtime/test_codex_delegation_measurement.py`, which also pins what the stream
-showed — including that the collaboration call carried no receivers and no agent
+showed — including that the collaboration calls carried no receivers and no agent
 states, which is why every Codex enforcement axis stays `unsupported`. The delegation limits live in the normative table of
 [`docs/spec/whole-life-v0.md`](../../docs/spec/whole-life-v0.md), which reads:
 

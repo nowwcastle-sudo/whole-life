@@ -55,7 +55,7 @@ DELEGATION_AXES = frozenset(
 #: counter nothing to count. Measured, not read off the schema: the recorded
 #: turn (#35) ran the production argument vector with the subagent workflow
 #: enabled and asked for three concurrent subagents — the model answered as
-#: though it had launched them, yet the one collaboration call it made carried
+#: though it had launched them, yet the two collaboration calls it made carried
 #: no receivers and no agent states, and no other line names a worker. The
 #: recording lives at
 #: tests/recordings/codex-0.149.0-agents-enabled-turn.jsonl, and what it
