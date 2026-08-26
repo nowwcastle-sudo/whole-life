@@ -60,11 +60,20 @@ def assert_working_directory(candidate: Path | None) -> None:
     to start it — and the pinned Codex CLI refuses to run outside a trusted
     directory, so that inheritance turns into a provider that looks down.
 
+    A relative path is refused for the same reason even though it names a
+    directory that exists today: it resolves against the Broker's own current
+    directory at spawn time, so it does not decide where the child runs any
+    more than `None` does. Accepting one would hand the launch-directory
+    inheritance above a way back in, with nothing in the record saying where
+    the child landed.
+
     A directory that does not exist is refused here too, so it arrives as a
     pre-start refusal like every other decision checked on this boundary rather
     than as an operating-system error from the spawn itself.
     """
     if candidate is None:
+        raise PreStartRefusal(RefusalCode.WORKING_DIRECTORY_UNDECIDED)
+    if not candidate.is_absolute():
         raise PreStartRefusal(RefusalCode.WORKING_DIRECTORY_UNDECIDED)
     if not candidate.is_dir():
         raise PreStartRefusal(RefusalCode.WORKING_DIRECTORY_UNDECIDED)

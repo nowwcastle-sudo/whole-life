@@ -400,6 +400,33 @@ class WorkingDirectoryBoundaryTests(unittest.IsolatedAsyncioTestCase):
             RefusalCode.WORKING_DIRECTORY_UNDECIDED, caught.exception.code
         )
 
+    async def test_an_existing_relative_directory_is_refused(self):
+        """A directory that exists but is not absolute is refused pre-start.
+
+        A relative path resolves against the Broker's own current directory,
+        which is wherever an operator happened to start it — so accepting one
+        hands the launch-directory inheritance this boundary exists to remove
+        a way back in, and nothing in the record would say where the child
+        actually landed. The refusal belongs here, before a process exists,
+        like every other decision checked on this boundary.
+        """
+        plan = launch_plan(
+            executable=Path(sys.executable),
+            args=("-c", "pass"),
+            working_directory=Path("."),
+        )
+        # The case under test is exactly the hole: the directory is there
+        # today's checks accept it — yet never pins down a location.
+        self.assertTrue(plan.working_directory.is_dir())
+        self.assertFalse(plan.working_directory.is_absolute())
+
+        with self.assertRaises(PreStartRefusal) as caught:
+            await SubprocessSpawner().spawn(plan)
+
+        self.assertEqual(
+            RefusalCode.WORKING_DIRECTORY_UNDECIDED, caught.exception.code
+        )
+
 
 class PromptHandoverTests(unittest.IsolatedAsyncioTestCase):
     """Handing the prompt over must not turn a provider outcome into a crash.
