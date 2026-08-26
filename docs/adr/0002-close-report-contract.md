@@ -2,7 +2,7 @@
 유형: 의사결정기록
 영역: 도구
 사업: 법인
-갱신일: 2026-08-26
+갱신일: 2026-08-27
 태그: [도구, 런타임]
 ---
 
@@ -17,7 +17,7 @@
 ### close 는 CloseReport 를 반환한다
 
 - **날짜**: 2026-08-26
-- **정한 것**: `AgentRuntime.close()` 는 frozen dataclass `CloseReport(child_processes, drain_tasks, reasons)` 를 반환한다. 아무것도 남지 않으면 개수 0과 빈 `reasons` 로 조용하고, 남으면 개수와 사유를 말한다. killer 부재(cleanup failure)와 직접 킬 미거둠(fallback reap failure)은 별개 항목으로 둘 다 적는다.
+- **정한 것**: `AgentRuntime.close()` 는 frozen dataclass `CloseReport(child_processes, drain_tasks, reasons)` 를 반환한다. 아무것도 남지 않으면 개수 0과 빈 `reasons` 로 조용하고, 남으면 개수를 말한다. 사유는 코드가 관측해 보관한 실패에 한해 적는다: killer 부재(cleanup failure)와 직접 킬 미거둠(fallback reap failure)은 별개 항목으로 둘 다 적고, 트리 킬이 예외 없이 미확인으로 끝난 잔여는 사유 항목 없이 개수로만 드러난다.
 - **대신 버린 것**:
   - **예외로 알리기** — `close_all_runs` 가 return_exceptions=True 로 전 run 종료를 보장하는 것과 충돌하고, 미래 broker shutdown 을 try/except 로 강제한다.
   - **내부 기록만 남기기** — 관찰자 기록만으로는 외부 게이트가 사실을 보지 못한다(#46 변이 실험에서 내부 필터와 외부 0-게이트가 서로를 가렸다).
