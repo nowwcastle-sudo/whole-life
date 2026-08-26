@@ -9,6 +9,7 @@ from whole_life.runtime.childenv import build_child_env
 from whole_life.runtime.delegation import REPORTED_ENFORCEMENT
 from whole_life.runtime.contract import (
     CancelOutcome,
+    CloseReport,
     EnforcementLevel,
     Provider,
     RunHandle,
@@ -25,7 +26,10 @@ from whole_life.runtime.launch import (
     VersionConformance,
     launch,
 )
-from whole_life.runtime.lifecycle import GRACEFUL_WAIT_SECONDS
+from whole_life.runtime.lifecycle import (
+    FORCED_WAIT_SECONDS,
+    GRACEFUL_WAIT_SECONDS,
+)
 from whole_life.runtime.normalize import normalize_codex_line
 from whole_life.runtime.observe import RunObserver, close_all_runs
 from whole_life.runtime.preflight import (
@@ -236,13 +240,22 @@ class CodexRuntime:
         return await self._runs[run.run_id].outcome()
 
     async def close(
-        self, *, graceful_wait: float = GRACEFUL_WAIT_SECONDS
-    ) -> None:
-        """Cancel every active run and return only once nothing is left.
+        self,
+        *,
+        graceful_wait: float = GRACEFUL_WAIT_SECONDS,
+        forced_wait: float = FORCED_WAIT_SECONDS,
+    ) -> CloseReport:
+        """Cancel every active run and say what is left.
 
         Idempotent: a second call finds nothing to do, which matters because
         shutdown paths are exactly where a close gets called twice.
+
+        Zero counts mean the promise held. A child still counted comes back
+        named in `reasons` — a close that did not reach zero says so instead
+        of returning like one that did (issue #46).
         """
-        await close_all_runs(
-            list(self._runs.values()), graceful_wait=graceful_wait
+        return await close_all_runs(
+            list(self._runs.values()),
+            graceful_wait=graceful_wait,
+            forced_wait=forced_wait,
         )

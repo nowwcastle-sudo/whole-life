@@ -16,7 +16,12 @@ consumer slows the reader instead of growing this process.
 import asyncio
 from collections.abc import AsyncIterator
 
-from whole_life.runtime.contract import CancelOutcome, RunOutcome, RuntimeEvent
+from whole_life.runtime.contract import (
+    CancelOutcome,
+    CloseReport,
+    RunOutcome,
+    RuntimeEvent,
+)
 from whole_life.runtime.delegation import DelegationLedger
 from whole_life.runtime.lifecycle import (
     FORCED_WAIT_SECONDS,
@@ -86,6 +91,13 @@ class RunObserver:
         #: cleanup, and filing it under the turn's outcome would send a reader
         #: after the provider for something the broker's environment caused.
         self._cleanup_failure: str | None = None
+        #: Set when the direct kill — the fallback for a missing tree killer —
+        #: was issued but its bounded wait expired without reaping the child.
+        #: Kept apart from `_cleanup_failure` for the same reason that one is
+        #: kept apart from the outcome: a killer that cannot be located and a
+        #: kill that ran but did not finish are two different repairs, and both
+        #: facts can hold at once. Issue #46.
+        self._fallback_reap_failure: str | None = None
         #: The drain tasks, held so they can be counted and stopped from
         #: outside. `close()` has to promise there are none left, and a
         #: task nobody holds a reference to cannot be counted.
@@ -270,9 +282,20 @@ class RunObserver:
             # the helper that would have reached its descendants. Doing less
             # than we can because we cannot do everything would leave the whole
             # tree running instead of only what we never had a handle on.
-            await terminate_process_only(
+            #
+            # This time the answer is kept rather than discarded (issue #46):
+            # an expired bounded wait means the child was killed but never
+            # confirmed reaped, so a close reporting zero children would be
+            # lying. The reason is kept apart from `_cleanup_failure` above,
+            # and both are said when both hold.
+            reaped = await terminate_process_only(
                 self._process, forced_wait=forced_wait
             )
+            if not reaped:
+                self._fallback_reap_failure = (
+                    "the direct kill was issued but the child "
+                    "was not reaped within the forced wait"
+                )
             return CancelOutcome.UNKNOWN
         return CancelOutcome.FORCED if ended else CancelOutcome.UNKNOWN
 
@@ -281,6 +304,13 @@ class RunObserver:
         """Why ending this run's process tree could not be attempted, if it
         could not. `None` when the escalation ran, whatever it concluded."""
         return self._cleanup_failure
+
+    @property
+    def fallback_reap_failure(self) -> str | None:
+        """Why the direct kill did not confirm the child reaped, if it did
+        not. `None` when the child was reaped, whatever the escalation
+        concluded."""
+        return self._fallback_reap_failure
 
     def has_child(self) -> bool:
         """True while this run's process has not been reaped."""
@@ -291,7 +321,10 @@ class RunObserver:
         return sum(1 for task in self._readers if not task.done())
 
     async def shutdown(
-        self, *, graceful_wait: float = GRACEFUL_WAIT_SECONDS
+        self,
+        *,
+        graceful_wait: float = GRACEFUL_WAIT_SECONDS,
+        forced_wait: float = FORCED_WAIT_SECONDS,
     ) -> CancelOutcome:
         """End the run and everything this observer owns.
 
@@ -301,7 +334,9 @@ class RunObserver:
         are cancelled explicitly and awaited, and only then does this return.
         Whoever calls it can say the count is zero because it was made zero.
         """
-        outcome = await self.cancel(graceful_wait=graceful_wait)
+        outcome = await self.cancel(
+            graceful_wait=graceful_wait, forced_wait=forced_wait
+        )
 
         for task in self._readers:
             task.cancel()
@@ -415,8 +450,11 @@ class RunObserver:
 
 
 async def close_all_runs(
-    observers, *, graceful_wait: float = GRACEFUL_WAIT_SECONDS
-) -> None:
+    observers,
+    *,
+    graceful_wait: float = GRACEFUL_WAIT_SECONDS,
+    forced_wait: float = FORCED_WAIT_SECONDS,
+) -> CloseReport:
     """Shut down every run this runtime started. Spec 209.
 
     Concurrently, because each shutdown may spend the graceful window waiting
@@ -427,14 +465,43 @@ async def close_all_runs(
     surfaces are deliberately parallel implementations, but this one carries
     the promise that nothing is left behind, and two copies of that is two
     places for it to drift.
+
+    What closing found is returned, not claimed. Zero counts mean the promise
+    held and nothing more is said; when something survived, the runs still
+    holding it name why — a close that did not reach zero children saying so
+    instead of returning like one that did is issue #46.
     """
     if not observers:
-        return
+        return CloseReport(child_processes=0, drain_tasks=0)
 
     await asyncio.gather(
         *(
-            observer.shutdown(graceful_wait=graceful_wait)
+            observer.shutdown(
+                graceful_wait=graceful_wait, forced_wait=forced_wait
+            )
             for observer in observers
         ),
         return_exceptions=True,
+    )
+
+    child_processes = sum(1 for observer in observers if observer.has_child())
+    drain_tasks = sum(observer.pending_drain_tasks() for observer in observers)
+    # Only runs still holding something get to speak. A close that emptied
+    # everything returns zeros and no words, exactly as it always has.
+    reasons: list[str] = []
+    for observer in observers:
+        if not (observer.has_child() or observer.pending_drain_tasks()):
+            continue
+        reasons.extend(
+            fact
+            for fact in (
+                observer.cleanup_failure,
+                observer.fallback_reap_failure,
+            )
+            if fact is not None
+        )
+    return CloseReport(
+        child_processes=child_processes,
+        drain_tasks=drain_tasks,
+        reasons=tuple(reasons),
     )

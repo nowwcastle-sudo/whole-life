@@ -160,6 +160,22 @@ class RunOutcome:
     diagnostic: str | None = None
 
 
+@dataclass(frozen=True, slots=True)
+class CloseReport:
+    """What closing every run found. Section 6.
+
+    Zero counts are the promise kept. When they are not, ``reasons`` carries
+    each surviving fact and keeps them apart: why the tree killer could not
+    be located is a different repair from a kill that was issued and did not
+    reap the child, and both can hold at once. A close that could not reach
+    zero says so instead of returning like one that did.
+    """
+
+    child_processes: int
+    drain_tasks: int
+    reasons: tuple[str, ...] = ()
+
+
 @runtime_checkable
 class AgentRuntime(Protocol):
     """The only provider seam. Section 4."""
@@ -174,4 +190,4 @@ class AgentRuntime(Protocol):
 
     async def wait(self, run: RunHandle) -> RunOutcome: ...
 
-    async def close(self) -> None: ...
+    async def close(self) -> CloseReport: ...

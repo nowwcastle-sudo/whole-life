@@ -82,14 +82,14 @@ STREAMING = (
 )
 
 
-async def adapter(script, *, sessions=None):
+async def adapter(script, *, sessions=None, spawner=None):
     runtime = CodexRuntime(
         executable=Path(sys.executable),
         runner=codex_runner(),
         working_directory=WORKING_DIRECTORY,
         parent_env=CLEAN_PARENT_ENV,
         codex_home=CODEX_HOME,
-        spawner=SubprocessSpawner(),
+        spawner=spawner or SubprocessSpawner(),
         sessions=sessions,
     )
     await runtime.preflight()
@@ -420,6 +420,21 @@ class _NeverExits:
         await asyncio.sleep(3600)
 
 
+class _UnreapableSpawner:
+    """A spawner whose child never reports an exit.
+
+    The point is not that the child survives — Windows ends a process we
+    `kill()` — but that nothing ever *reports* it ended: the exit waiter the
+    bounded wait parks on never resolves. That is the case the bounded wait
+    exists for, and whether it holds is asyncio bookkeeping rather than a
+    property a real child can be asked to guarantee, so the documented
+    spawner seam carries it while everything above stays real.
+    """
+
+    async def spawn(self, plan):
+        return _NeverExits()
+
+
 class TreeKillUnavailableTests(unittest.IsolatedAsyncioTestCase):
     """Spec section 6 via issue #34: a failed cleanup must not become the story.
 
@@ -530,6 +545,118 @@ class TreeKillUnavailableTests(unittest.IsolatedAsyncioTestCase):
             "the child outlived a cancellation that could not tree-kill it",
         )
         await runtime.close(graceful_wait=0.2)
+
+
+class FallbackReapTimeoutTests(unittest.IsolatedAsyncioTestCase):
+    """Issue #46: a fallback kill that ran but did not finish the job cannot
+    pass for a close that reached zero.
+
+    #34 made the escalation survivable: when the tree killer cannot be
+    located, the child we hold a handle on is ended directly. Whether that
+    direct kill actually reaped the child was answered and then discarded,
+    so a close whose bounded wait expired returned exactly like one that
+    had emptied everything.
+
+    Per the ticket this is proven on the assembly path — the adapter's own
+    close, over a run started through `start_turn`, with the killer made
+    unavailable — not by calling the termination helper directly. What a
+    real subprocess cannot guarantee is that an expired bound *stays*
+    expired: whether a killed-but-unreaped child remains unreaped is asyncio
+    bookkeeping, and a bound set one tick under a natural reap measures the
+    race instead of the report. So the process at the end of the documented
+    spawner seam is `_Unreapable`, whose exit is never reported — the case
+    the bounded wait exists for — while preflight, launch, the run registry
+    and `close()` all run for real. The reaped controls below stay on real
+    children, because "the fallback reaped within its bound" is exactly the
+    property a real child does exhibit.
+    """
+
+    async def started_unresponsive_run(self):
+        runtime = await adapter(UNRESPONSIVE)
+        handle = await runtime.start_turn(turn_request())
+        pid = runtime._runs[handle.run_id]._process.pid
+        # Registered before the environment is touched, so it runs after the
+        # patch has been lifted and can locate the killer it needs.
+        self.addCleanup(force_stop, pid)
+        return runtime, handle, pid
+
+    async def started_unreapable_run(self):
+        runtime = await adapter(UNRESPONSIVE, spawner=_UnreapableSpawner())
+        handle = await runtime.start_turn(turn_request())
+        return runtime, handle
+
+    async def test_a_fallback_kill_that_expires_its_wait_is_not_reported_as_zero(self):
+        """The kill was issued; its bounded wait expired anyway. The close
+        that comes back may not look like one that reached zero children."""
+        for name, broken, _refusal in KILLER_UNAVAILABLE:
+            with self.subTest(name):
+                runtime, _handle = await self.started_unreapable_run()
+
+                with broken():
+                    report = await asyncio.wait_for(
+                        runtime.close(graceful_wait=0.2, forced_wait=0.05),
+                        timeout=40,
+                    )
+
+                self.assertEqual(1, report.child_processes)
+
+    async def test_the_report_says_the_missing_killer_and_the_unreaped_child_apart(self):
+        """Both facts hold at once on this path, and both are then said.
+
+        Why the escalation could not run and what the direct kill managed
+        are two different repairs. One reason covering both would send an
+        operator after the wrong one.
+        """
+        for name, broken, refusal in KILLER_UNAVAILABLE:
+            with self.subTest(name):
+                runtime, _handle = await self.started_unreapable_run()
+
+                with broken():
+                    report = await asyncio.wait_for(
+                        runtime.close(graceful_wait=0.2, forced_wait=0.05),
+                        timeout=40,
+                    )
+
+                said = list(report.reasons)
+                self.assertEqual(2, len(said), f"expected both facts, got {said}")
+                self.assertTrue(
+                    any(refusal in reason for reason in said),
+                    f"the missing killer went unsaid: {said}",
+                )
+                self.assertTrue(
+                    any("was not reaped" in reason for reason in said),
+                    f"the unreaped child went unsaid: {said}",
+                )
+
+    async def test_a_fallback_kill_that_reaps_still_reports_zero_children(self):
+        """The reaped case is unchanged. When the direct kill does reap the
+        child within its bound, close reports zero children and says nothing
+        extra — a close that reports failure everywhere would turn this red."""
+        for name, broken, _refusal in KILLER_UNAVAILABLE:
+            with self.subTest(name):
+                runtime, _handle, _pid = await self.started_unresponsive_run()
+
+                with broken():
+                    report = await asyncio.wait_for(
+                        runtime.close(graceful_wait=0.2), timeout=40
+                    )
+
+                self.assertEqual(0, report.child_processes)
+                self.assertEqual(0, report.drain_tasks)
+                self.assertEqual((), report.reasons)
+
+    async def test_an_ordinary_close_still_reports_nothing_left(self):
+        """The other control. A close that emptied everything returns the
+        zero it always has, with nothing invented for it."""
+        runtime = await adapter(UNRESPONSIVE)
+        await runtime.start_turn(turn_request())
+
+        report = await asyncio.wait_for(runtime.close(graceful_wait=0.2), timeout=40)
+
+        self.assertEqual(0, report.child_processes)
+        self.assertEqual(0, report.drain_tasks)
+        self.assertEqual((), report.reasons)
+
 
 if __name__ == "__main__":
     unittest.main()
