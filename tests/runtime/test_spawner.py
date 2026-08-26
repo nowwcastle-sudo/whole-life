@@ -403,20 +403,28 @@ class WorkingDirectoryBoundaryTests(unittest.IsolatedAsyncioTestCase):
     async def test_an_existing_relative_directory_is_refused(self):
         """A directory that exists but is not absolute is refused pre-start.
 
-        A relative path resolves against the Broker's own current directory,
-        which is wherever an operator happened to start it — so accepting one
-        hands the launch-directory inheritance this boundary exists to remove
-        a way back in, and nothing in the record would say where the child
-        actually landed. The refusal belongs here, before a process exists,
-        like every other decision checked on this boundary.
+        A path that is not absolute resolves against the Broker's own current
+        directory, which is wherever an operator happened to start it — so
+        accepting one hands the launch-directory inheritance this boundary
+        exists to remove a way back in, and the plan would no longer pin down
+        where the child actually landed. The refusal belongs here, before a
+        process exists, like every other decision checked on this boundary.
+
+        The mutation proof ran in both directions. Deleting the guard left
+        `spawn` succeeding and exactly this test failing with `PreStartRefusal
+        not raised` while the other boundary tests stayed green; inverting the
+        condition to refuse absolute paths instead killed
+        `test_the_child_runs_in_the_directory_the_plan_named`, so the guard is
+        pinned against over-blocking too.
         """
         plan = launch_plan(
             executable=Path(sys.executable),
             args=("-c", "pass"),
             working_directory=Path("."),
         )
-        # The case under test is exactly the hole: the directory is there
-        # today's checks accept it — yet never pins down a location.
+        # The case under test is exactly the hole: the directory is there, so
+        # an existence check alone would accept it — yet the path never pins
+        # down a location.
         self.assertTrue(plan.working_directory.is_dir())
         self.assertFalse(plan.working_directory.is_absolute())
 
