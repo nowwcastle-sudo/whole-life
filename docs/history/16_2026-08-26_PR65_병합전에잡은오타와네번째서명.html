@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>제16편 — 네 번째 서명, 병합 전에 잡힌 오타</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:       #282828;
+    --paper-2:     #32302f;
+    --zone:        #302e2c;
+    --ink:         #ebdbb2;
+    --muted:       #a89984;
+    --soft:        #928374;
+    --rule:        rgba(235,219,178,0.12);
+    --rule-solid:  #504945;
+    --accent:      #fe8019;
+    --accent-tint: rgba(254,128,25,0.12);
+    --link:        #83a598;
+    --green:       #b8bb26;
+    --red:         #fb4934;
+    --yellow:      #fabd2f;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--paper); color:var(--ink);
+       font-family:"Geist","Pretendard","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;
+       line-height:1.75; -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:880px; margin:0 auto; padding:64px 28px 120px}
+  .kicker{font-size:13px; letter-spacing:.14em; color:var(--soft); text-transform:uppercase;
+          font-family:"Geist Mono",ui-monospace,"Consolas",monospace}
+  h1{font-family:"Instrument Serif","Malgun Gothic",serif;
+     font-size:52px; line-height:1.15; margin:14px 0 10px; letter-spacing:-.01em; font-weight:400}
+  .sub{font-size:18px; color:var(--muted); margin:0 0 8px}
+  h2{font-family:"Instrument Serif","Malgun Gothic",serif;
+     font-size:32px; line-height:1.3; margin:56px 0 14px; font-weight:400; letter-spacing:-.01em}
+  h3{font-size:16px; letter-spacing:.06em; color:var(--ink); margin:34px 0 12px; font-weight:600}
+  p{font-size:17px; margin:0 0 18px}
+  .note{font-size:15px; color:var(--muted)}
+  hr{border:0; border-top:1px solid var(--rule); margin:44px 0}
+  code{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; font-size:.9em;
+       background:var(--zone); color:var(--ink); padding:1px 6px; border-radius:4px}
+  .card{background:var(--paper-2); border:1px solid var(--rule-solid); border-radius:8px;
+        padding:26px 28px; margin:26px 0}
+  .term{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; font-size:14px; line-height:1.7;
+        background:var(--zone); color:var(--ink); border:1px solid var(--rule-solid);
+        border-radius:8px; padding:20px 22px; margin:0 0 18px; overflow-x:auto; white-space:pre-wrap}
+  .term .d{color:var(--soft)}
+  .term .g{color:var(--green)}
+  .tbl{width:100%; border-collapse:collapse; font-size:15px}
+  .tbl td{padding:13px 12px 13px 0; border-bottom:1px solid var(--rule); vertical-align:top; line-height:1.6}
+  .tbl tr:last-child td{border-bottom:0}
+  .tbl td:first-child{white-space:nowrap; font-family:"Geist Mono",ui-monospace,"Consolas",monospace;
+       font-size:13px; color:var(--soft); width:112px}
+  figure{margin:34px 0}
+  figcaption{font-size:14px; color:var(--muted); margin-top:12px; text-align:center; line-height:1.6}
+  svg{display:block; width:100%; height:auto}
+  sup a{color:var(--link); text-decoration:none; font-size:12px; font-weight:600; padding:0 1px}
+  .fnotes{margin-top:64px; border-top:1px solid var(--rule-solid); padding-top:26px;
+          list-style:none; padding-left:0}
+  .fnotes li{font-size:14px; color:var(--muted); margin-bottom:11px; line-height:1.65}
+  .fnotes .path{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; color:var(--ink); font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kicker">제 16 편 · 일지편 · 당대에 씀</div>
+  <h1>네 번째 서명, 병합 전에 잡힌 오타</h1>
+  <p class="sub">제15편이 <code>main</code> 에 들어간 그 일 — PR#65 의 착지를 기록합니다.</p>
+
+  <div class="card">
+    <p style="margin:0 0 12px"><b>읽기 전에 — 이 편의 대상은 «편 하나의 착지»입니다.</b>
+      일지편의 단위는 「대상 하나」이고, 이번 대상은 제15편이라는 산출물의 완결,
+      곧 PR#65 의 squash 착지 그 자체입니다.[1]
+      지시는 이 편의 번호(제16편)와 덧붙임(TZ 스탬프 함정 한 줄)을 함께 정했습니다.[1]</p>
+    <p style="margin:0" class="note">
+      문장 옆의 <sup><a href="#f1">[n]</a></sup>은 「경로 + 인용문」 각주입니다.
+      <b>[내가 잰 것]</b> 블록은 이 편을 쓰는 교육자가 직접 돌려 출력을 받은 명령입니다.
+      각주는 문구의 «존재»만 보증합니다 — 자격은 따로 물어야 합니다.</p>
+  </div>
+
+  <h2>질문 1 · 무슨 일이</h2>
+  <h3>한 문장으로</h3>
+  <p>
+    제15편을 싣던 PR#65 는 병합 직전 재측정한 merge-tree 예측 트리(<code>2ca14261</code>)와 같은 채
+    squash 로 내려와 <code>main</code>=<code>9a94ebc</code> 가 됐고,[2][3]
+    claude-review 의 «한도 초과» 고장 서명은 네 번째 표본(duration_ms 664 → 391 → 52, 나머지 불변)을 쌓았으며,[4][5]
+    병합 본문 초안의 원문 인용 오타(«착지»를 «찾지»로)는 되돌리기 어려운 병합 «전»에 잡혀
+    시정·재판을 거친 뒤에 착지됐습니다.[6][7]
+  </p>
+
+  <h2>질문 2 · 어떤 흐름으로 진행됐나</h2>
+  <figure>
+    <svg viewBox="0 0 860 400" role="img" aria-labelledby="ch16-landing-title ch16-landing-desc">
+      <title id="ch16-landing-title">PR#65 착지 타임라인 — 2026-08-26 12:01 ~ 12:25</title>
+      <desc id="ch16-landing-desc">2026년 8월 26일 12시 01분부터 12시 25분까지 24분의 PR#65 착지 타임라인. 왼쪽 끝에서 완결자 착지 지시가 발행되고, 시각이 기록되지 않은 준비 구간에 병합 직전 재측정과 CI 고장 서명 판정, 병합 본문 오타 시정이 이어진 뒤, 12시 08분 31초에 merge-tree 예측 트리와 같은 채 squash 병합이 착지한다. 이어 12시 21분 통치자 재실측을 거쳐 12시 25분 다음 일지편 지시가 발행된다.</desc>
+      <rect width="100%" height="100%" fill="var(--paper)"/>
+
+      <text x="24" y="36" font-size="12" fill="var(--soft)" letter-spacing="0.08em"
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">2026-08-26 · KST (UTC 사료값에 +9h)</text>
+
+      <!-- 연결선 먼저 -->
+      <line x1="96" y1="164" x2="96" y2="196" stroke="var(--soft)" stroke-width="1" stroke-dasharray="4,3"/>
+      <line x1="288" y1="164" x2="288" y2="196" stroke="var(--soft)" stroke-width="1" stroke-dasharray="4,3"/>
+      <line x1="296" y1="208" x2="296" y2="264" stroke="var(--soft)" stroke-width="1"/>
+      <line x1="648" y1="196" x2="648" y2="144" stroke="var(--soft)" stroke-width="1"/>
+
+      <!-- 준비 구간(시각 미특정) 띠 -->
+      <rect x="96" y="112" width="192" height="48" rx="6" fill="var(--paper-2)"
+            stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="192" y="132" font-size="12" fill="var(--ink)" font-weight="600" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">재측정 · 서명 판정(A 적용)</text>
+      <text x="192" y="150" font-size="12" fill="var(--ink)" font-weight="600" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">오타 시정 → cat -A 재판</text>
+
+      <!-- 시간축 -->
+      <line x1="72" y1="200" x2="800" y2="200" stroke="var(--rule-solid)" stroke-width="1"/>
+      <line x1="88" y1="196" x2="88" y2="204" stroke="var(--soft)" stroke-width="1"/>
+      <line x1="296" y1="196" x2="296" y2="204" stroke="var(--soft)" stroke-width="1"/>
+      <line x1="648" y1="196" x2="648" y2="204" stroke="var(--soft)" stroke-width="1"/>
+      <line x1="760" y1="196" x2="760" y2="204" stroke="var(--soft)" stroke-width="1"/>
+
+      <!-- 사건 점 -->
+      <circle cx="88" cy="200" r="4" fill="var(--ink)"/>
+      <circle cx="296" cy="200" r="6" fill="var(--accent)"/>
+      <circle cx="648" cy="200" r="4" fill="var(--ink)"/>
+      <circle cx="760" cy="200" r="4" fill="var(--ink)"/>
+
+      <text x="88" y="228" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">12:01</text>
+      <text x="296" y="228" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">12:08:31</text>
+      <text x="648" y="228" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">12:21</text>
+      <text x="760" y="228" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">12:25</text>
+
+      <text x="88" y="252" font-size="12" fill="var(--ink)" font-weight="600" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">ORD-CLS-PR-65 발행</text>
+
+      <!-- 착지 상자 -->
+      <rect x="192" y="268" width="208" height="68" rx="6" fill="var(--paper-2)"
+            stroke="var(--green)" stroke-width="1"/>
+      <text x="296" y="288" font-size="12" fill="var(--ink)" font-weight="600" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">PR#65 squash 착지</text>
+      <text x="296" y="308" font-size="9" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">tree == 예측 2ca14261 · main=9a94ebc</text>
+      <text x="296" y="324" font-size="9" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">mergedAt 03:08:31Z = 12:08:31 KST</text>
+
+      <!-- 12:21 위쪽 사건 -->
+      <text x="648" y="120" font-size="9" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">main/tree 등식 · 원격 브랜치 부재</text>
+      <text x="648" y="140" font-size="12" fill="var(--ink)" font-weight="600" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">통치자 직접 재실측</text>
+
+      <!-- 12:25 아래 사건 -->
+      <text x="760" y="252" font-size="12" fill="var(--ink)" font-weight="600" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">ORD-EDU-log-65 발행</text>
+      <text x="760" y="270" font-size="9" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">이 편을 부른 지시</text>
+
+      <!-- 범례 -->
+      <line x1="24" y1="352" x2="836" y2="352" stroke="var(--rule)" stroke-width="1"/>
+      <text x="24" y="376" font-size="12" fill="var(--soft)" letter-spacing="0.14em"
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">범례</text>
+      <circle cx="116" cy="372" r="6" fill="var(--accent)"/>
+      <text x="132" y="376" font-size="12" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">되돌릴 수 없는 착지</text>
+      <rect x="304" y="364" width="32" height="16" rx="4" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="348" y="376" font-size="12" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">시각 미특정 구간(준비)</text>
+      <rect x="584" y="364" width="32" height="16" rx="4" fill="var(--paper-2)" stroke="var(--green)" stroke-width="1"/>
+      <text x="628" y="376" font-size="12" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">예측 == 착지 트리</text>
+    </svg>
+    <figcaption>
+      가로축은 실제 간격(28px/분 · 전체 24분)입니다. 착지 앞 준비 세 단계는 시작과 끝만 알 뿐
+      안쪽 시각이 사료에 없어 <b>점이 아니라 띠로</b> 표시했습니다.[8][9][6][7]
+    </figcaption>
+  </figure>
+
+  <table class="tbl">
+    <tbody>
+      <tr><td>12:01</td><td><b>ORD-CLS-PR-65 발행</b> — 담당 완결자.[15]</td></tr>
+      <tr><td>~12:08 직전</td><td><b>병합 직전 재측정</b> — ls-remote 로 base <code>870e610</code> · head
+        <code>4038c5dc</code> 불변 확인, merge-tree 예측 <code>2ca14261</code> 무충돌(exit=0).[8][2]</td></tr>
+      <tr><td>&nbsp;</td><td><b>CI 서명 판정</b> — claude-review fail · duration_ms=52 · is_error true ·
+        modelUsage {} · total_cost_usd 0 → 네 번째 표본. 대표 A 결정 문언 교차확인 후 적용.[9][10]</td></tr>
+      <tr><td>&nbsp;</td><td><b>병합 본문 초안의 인용 오타 시정</b> — «찾지»→«착지», str_replace 로 고치고
+        최종본을 <code>cat -A</code> 로 재판.</td></tr>
+      <tr><td>12:08:31</td><td><b>squash 착지</b> — <code>--match-head-commit 4038c5dc</code>, 본문 파일로
+        트레일러 2행(Co-authored-by 먼저 Signed-off-by) 직접 주입. <code>main</code>=<code>9a94ebc</code>. mergedAt 03:08:31Z.[11][12][3]</td></tr>
+      <tr><td>직후</td><td><b>독립 조회 넷 통과</b> — tree==예측 MATCH · MERGED(mergedAt 03:08:31Z) ·
+        원격 브랜치 소멸 · 연대기 카드 main 가독.[13]</td></tr>
+      <tr><td>12:21</td><td><b>통치자 직접 재실측</b> — main/tree 등식 · ls-remote 부재.[14]</td></tr>
+      <tr><td>~12:25</td><td><b>판정 «통과» 접수</b>(event <code>a42a98f0</code>) → <b>ORD-EDU-log-65 발행</b> — 이 편을 부른 지시.[16][1]</td></tr>
+      <tr><td>12:48</td><td>(위 그림 범위 밖)<b>RPT-ORD-CLS-PR-65 별첨 접수</b> — 착지 뒤 <code>main</code> 전체
+        재검증(393 tests OK · 421.710s). 이 재검증에서 <b>셸 실행 상한 함정</b>이 관측됐고,
+        이 편의 덧붙임 하나가 됐다.[17][18]</td></tr>
+    </tbody>
+  </table>
+
+  <h3>[내가 잰 것] — 이 편을 쓰면서 직접 돌린 명령</h3>
+  <div class="term"><span class="d">$ git rev-parse origin/main^{tree}</span>
+2ca1426140f459fd72cc58a58041960708d1e997      <span class="g">← 완결자 예측과 MATCH</span>
+<span class="d">$ git show -s --format=%B 9a94ebc | tail -2</span>
+Co-authored-by: nowwcastle-sudo &lt;nowwcastle@gmail.com&gt;
+Signed-off-by: nowwcastle-sudo &lt;nowwcastle@gmail.com&gt;
+<span class="d">$ git show -s --format=%B 9a94ebc | grep -o '«#35[^»]*»'</span>
+«#35 착지 뒤 #46, 그다음 #45»          <span class="d">← 시정된 인용이 착지 커밋 본문에 살아 있다</span>
+<span class="d">$ date -u '+%H:%M:%S %Z'; TZ=Asia/Seoul date '+%H:%M:%S %Z'</span>
+03:31:08 UTC
+03:31:08 GMT        <span class="r">← 값은 동일(+9h 환산 없음), 띠 이름만 다르다</span></div>
+
+  <h2>되돌리기 어려운 문 앞에서</h2>
+  <p>
+    squash 병합은 착지 «뒤»에 고칠 수 없습니다 — 도구 장부에 이미 박혀 있는 말입니다.
+    «착지 «뒤»에는 main 재작성 없이 못 고친다».[21]
+    그리고 gh 는 트레일러를 붙여주지 않으므로, 착지 커밋의 말미에 남는 요약과 트레일러는
+    <b>병합자가 준비한 본문 파일이 산다</b>. «gh 는 트레일러를 붙이지 않으므로(#59/#60 실측 계승)
+    본문 파일을 직접 준비해 <code>--body-file</code> 로 주입했다».[22]
+    이 본문이 곧 착지 커밋의 유해라는 것이 #59 의 0/0 편차가 증명한 것이고,[23]
+    이번 PR#65 에서 그 본문 초안 안에 <b>원문 인용 오타 하나</b>가 있었습니다 —
+    «초안에 원문 인용 «#35 **착지** 뒤»를 «찾지»로 잘못 적었다».[6]
+  </p>
+  <p>
+    발견과 시정은 병합 «전»에 이루어졌습니다 — «str_replace 로 시정하고 최종본을
+    <code>cat -A</code> 로 재판한 뒤 병합했다».[7] 위 [내가 잰 것] 세 번째 명령이 보여주듯,
+    시정된 인용 «#35 착지 뒤 #46, 그다음 #45» 는 지금 착지 커밋 <code>9a94ebc</code> 의
+    본문 안에 살아 있습니다. 완결자는 같은 자리에 교훈을 한 줄 붙였습니다 —
+    «인용은 원문 그대로 재판할 것».[7]
+  </p>
+  <p class="note">
+    내 이해를 덧붙이면 — 이 소재가 기록될 만한 것은 결과가 아니라 <b>순서</b>입니다.
+    «고쳐야 할 것»이 «되돌릴 수 없는 것»보다 먼저 검토됐고, 최종본을 마지막으로 다시 재었으며,
+    그다음 병합했습니다. 순서는 사실로 남지만, 그 순서가 왜 섰는지는 사료가 판단해 주지 않습니다.
+  </p>
+
+  <h2>네 번째 서명 — 감소하는 duration_ms</h2>
+  <p>
+    claude-review 의 «한도 초과» 고장 서명은 이번 착지에서 네 번째 표본을 쌓았습니다 —
+    «duration_ms 표본 네 번째 — 391(#64) → 52(이번). 서명 불변.»[4]
+    통치자 원장도 같은 사실을 적어 두었습니다 — ««한도 초과» 서명 네 번째 표본(664→391→52) — 서명 불변.»[5]
+    나머지 네 요소(is_error true · total_cost_usd 0 · modelUsage {} · buffered 코멘트 없음)도 함께 실측됐습니다.[9][4]
+    판정 방식도 변하지 않았습니다 — 매 회차 대표 A 결정의 문언을 릴레이에서 다시 꺼내 교차확인한 뒤 적용합니다.[10]
+    <span class="note">숫자만 줄어들 뿐, «사람이 문언을 다시 확인한다»는 절차는 네 번째에도 그대로였다는 기록입니다.</span>
+  </p>
+
+  <h2>같은 지시의 덧붙임 — 함정 두 줄</h2>
+  <p><b>하나, TZ 스탬프.</b>
+    통치자 지시가 가리킨 함정은 이렇습니다 — 이 하네스에서 <code>TZ=Asia/Seoul date</code> 가
+    «+9h 환산 없는 값을 «KST» 로 출력한다(date -u 는 03:04Z 인데 TZ 지정 시 03:00 KST 표기, 2026-08-26 재현)».[24]
+    내 재현에서는 값은 역시 환산 없이 그대로였고 띠 이름이 «GMT» 로 찍혔습니다(위 [내가 잰 것] 마지막 명령) —
+    관찰 둘이 다르게 가리키는 곳은 띠 이름이 아니라 <b>값을 믿으면 안 된다</b>는 곳입니다.
+    처방은 지시에 이미 있습니다 — «스탬프는 date -u 로 찍고 +9h 환산».[24]
+    nest 장부에 한 줄로 등록했고,[25] 이 편의 시각 표기(KST)도 이 처방대로 UTC 사료값에 +9h 를 더해 쓴 것입니다.</p>
+  <p><b>둘, 셸 실행 상한.</b>
+    별첨 접수(12:48)가 가져온 함정입니다 — 이 하네스의 셸 실행 상한(기본 300초)이 전체 스위트 재검증을
+    잘랐습니다. «전체 유닛 스위트는 이 PC에서 실측 ~7분(421.710s). 첫 시도를 300초 상한으로 돌렸다가»
+    «출력 0으로 잘림 — 전체 스위트 재실행 시 타임아웃 상한 10분 + <code>-v</code> 파일 리다이렉트를 쓴다.»[19][20]
+    실물 출력은 상한을 넗인 재실행으로 확보됐습니다 — «Ran 393 tests in 421.710s — OK».[18]
+    nest 장부에 같은 처방으로 한 줄 더 등록했습니다.[26]</p>
+  <p class="note">
+    두 함정은 겉이 다르지만 «출력이 없다고 없다고 읽지 않는다»는 축에서 이번 회차 안에서 함께 들어왔습니다 —
+    하나는 지시 본문에서, 하나는 별첨에서.[24][17]
+  </p>
+
+  <h2>질문 6 · 다음 담당에게 무엇을 위임하나</h2>
+  <p>
+    이번 대상에서 새로 넘길 일은 없습니다 — 판정 «통과» 접수로 닫혔고,[16] 그 뒤의 별첨(착지 뒤 main
+    전체 재검증 초록)까지 접수됐습니다.[17]
+    남아 있는 것은 둘입니다. <b>실행 큐</b>(#61 → #63 → #62 → #51 → #45)는 통치자가 이미 발행한
+    편성 몫이고,[28] <b>이번 회차에서 새로 생긴 규칙 하나</b> — «다음 EDU ORD 는 새 브랜치에서»[27] — 는
+    이미 이 편부터 적용됐습니다. 이 편은 새 브랜치 <code>docs/history-log-65</code>(base
+    <code>9a94ebc</code>) 위에서 쓰였습니다.
+  </p>
+
+  <h2>질문 7 · 왜 그 담당에게 맡기나</h2>
+  <p>
+    착지와 증명과 독립 조회의 RPT 주인은 완결자였고,[15] 병합 직후의 재실측과 다음 편성은
+    통치자 몫입니다.[14][1] 나에게 온 것은 그 기록이었습니다 — 저장소 규약이
+    «역사 기록(<code>docs/history/</code>)은 교육자만 쓴다»고 정하고 있기 때문입니다.[29]
+  </p>
+
+  <h2>질문 8 · 왜 이걸 제안했나</h2>
+  <p>
+    일지편은 «레그가 통과할 때» 나옵니다.[30] 이번 레그는 제15편이라는 산출물의 착지이므로
+    같은 규칙이 그대로 걸립니다. 편성 행이 달고 있는 조건 — «새 브랜치 필수», base
+    <code>9a94ebc</code> — 도 위임 내용의 일부입니다.[1]
+    덧붙임 둘은 같은 회차 안의 두 출처에서 왔습니다 — TZ 함정은 지시 본문에서,[24]
+    셸 상한 함정은 별첨 접수에서.[17]
+  </p>
+
+  <h2>질문 11 · 원점에 비춰, 이번 걸음이 그쪽으로 갔나</h2>
+  <p>
+    <b>아니오 — 어긋난 걸음 없음.</b>
+    이번 걸음은 제품 코드가 아니라 «이 프로젝트가 자신을 기록하는 축»의 유지입니다.
+    제15편이 같은 종류의 걸음에 답했던 자리와 같은 자리입니다.
+  </p>
+  <p class="note">
+    내 이해를 덧붙이면 — 이런 착지가 한 번씩 쌓일 때마다, 시작부터 지금까지의 협업이
+    «다시 재생되고 남는» 성질이 두꺼워집니다.[31] 원점편이 비어 있다고 적었던 바로 그 성질입니다.
+    또 하나 — 병합 본문의 오타 시정은 «되돌리기 어려운 작업 앞에서 원문을 다시 잰다»는 습관이
+    실제로 작동한 사례입니다.[6][7] 방향 걸음은 아니지만, 방향을 지킬 때 쓰는 손이 쓰인 기록입니다.
+  </p>
+
+  <h2>질문 12 · 처음 범위에서 새로 늘어난 것이 있나</h2>
+  <p>
+    <b>없습니다.</b> 저장소 쪽 변경은 <code>docs/history/</code> 아래 둘뿐입니다 — 신설 편과
+    연대기 색인. nest 장부 두 줄은 운영 지식이고 원점편의 «범위 밖» 목록 어느 항목도
+    건드리지 않습니다.[25][26]
+    «새 브랜치» 요건은 새 구조가 아니라 delete_branch_on_merge 설정의 필연적 결과이며,[24]
+    다음 ORD 도 같은 방식으로 시작하라는 기존 규칙의 계승입니다.[27]
+  </p>
+
+  <hr>
+  <p class="note">
+    여기서 멈춘다 — 기록(nest 함정 두 줄 포함)과 PR, 보고까지. 판정하지 않는다.
+    질문 11·12 모두 «아니오»라 통치자 에스컬레이션 의무는 발생하지 않았다.
+  </p>
+
+  <h2>각주</h2>
+  <ol class="fnotes">
+    <li id="f1"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «| `ORD-EDU-log-65` | 제16편 일지편+TZ 덧붙임 | 교육자 Educator | 12:25 KST | 발행 | **새 브랜치 필수**(완결자 요청 접수분). base `9a94ebc` |»</li>
+    <li id="f2"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-log-35-64__ORD-CLS-PR-65.md</span> — «(exit=0, 충돌 파일 목록 없음 = 무충돌 예측)» · «1) 병합 직전 재측정 — 좌표 불변»</li>
+    <li id="f3"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-log-35-64__ORD-CLS-PR-65.md</span> — «"state":"MERGED"» · «"mergedAt":"2026-08-26T03:08:31Z"}»</li>
+    <li id="f4"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-log-35-64__ORD-CLS-PR-65.md</span> — «특이: duration_ms 표본 네 번째 — 391(#64) → 52(이번). 서명 불변.»</li>
+    <li id="f5"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — ««한도 초과» 서명 네 번째 표본(664→391→52) — 서명 불변.»</li>
+    <li id="f6"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-log-35-64__ORD-CLS-PR-65.md</span> — «초안에 원문 인용 «#35 **착지** 뒤»를 «찾지»로 잘못 적었다. 병합 전 발견해»</li>
+    <li id="f7"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-log-35-64__ORD-CLS-PR-65.md</span> — «str_replace 로 시정하고 최종본을 `cat -A` 로 재판한 뒤 병합했다. 인용은 원문 그대로 재판할 것.»</li>
+    <li id="f8"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-log-35-64__ORD-CLS-PR-65.md</span> — «git ls-remote origin refs/heads/main refs/heads/docs/history-log-35-64» · «(ORD와 일치)»</li>
+    <li id="f9"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-log-35-64__ORD-CLS-PR-65.md</span> — «"is_error": true /» · «"total_cost_usd": 0 / "modelUsage": {}» · «duration_ms=52»</li>
+    <li id="f10"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-log-35-64__ORD-CLS-PR-65.md</span> — «결정 A 문언 교차확인: 릴레이 검색 → ORD-EDU-pr33-gate(event 3c87be99)» · «(event 6694fd6d, «한도 초과»)». PR#64 때와 동일 절차.»</li>
+    <li id="f11"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-log-35-64__ORD-CLS-PR-65.md</span> — «gh pr merge 65 --squash --match-head-commit 4038c5dc7482fbe9616c3fb07f211110f66c0395 \»</li>
+    <li id="f12"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-log-35-64__ORD-CLS-PR-65.md</span> — «요약 3단락 + 공백 한 줄 + 트레일러 2행(Co-authored-by 먼저 Signed-off-by):»</li>
+    <li id="f13"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «독립 조회 넷 | tree==예측 MATCH · MERGED(mergedAt 03:08:31Z) · 원격 브랜치 소멸 · 연대기 카드 main 가독 | 충족»</li>
+    <li id="f14"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «[통치자 직접 재실측 12:21 KST]»</li>
+    <li id="f15"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «`ORD-CLS-PR-65` | PR#65 제15편 squash 착지 | 완결자 Closer | 12:01 KST | **통과**»</li>
+    <li id="f16"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-log-35-64__ORD-CLS-PR-65.md</span> — «통치자 판정 «통과» 접수(event a42a98f0, 2026-08-26T03:26:51Z)»</li>
+    <li id="f17"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «RPT-ORD-CLS-PR-65 별첨 접수: **판정 불변(통과)** · EDU-log-65 에 함정 덧붙임»</li>
+    <li id="f18"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-log-35-64__ORD-CLS-PR-65.md</span> — «→ Ran 393 tests in 421.710s — OK»</li>
+    <li id="f19"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-log-35-64__ORD-CLS-PR-65.md</span> — «전체 유닛 스위트는 이 PC에서 실측 ~7분(421.710s). 첫 시도를 300초 상한으로 돌렸다가»</li>
+    <li id="f20"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-log-35-64__ORD-CLS-PR-65.md</span> — «출력 0으로 잘림 — 전체 스위트 재실행 시 타임아웃 상한 10분 + `-v` 파일 리다이렉트를 쓴다.»</li>
+    <li id="f21"><span class="path">GUIDES/whole-life/도구_함정.md (nest)</span> — «착지 «뒤»에는 main 재작성 없이 못 고친다»</li>
+    <li id="f22"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-log-35-64__ORD-CLS-PR-65.md</span> — «gh 는 트레일러를 붙이지 않으므로(#59/#60 실측 계승) 본문 파일을 직접 준비해 `--body-file` 로 주입했다.»</li>
+    <li id="f23"><span class="path">GUIDES/whole-life/도구_함정.md (nest)</span> — «병합자가 준비한 squash 본문(--body-file)에 들어 있는 것만» · «#59 aeebfeb 0/0»</li>
+    <li id="f24">채널 <span class="path">whole-life</span> · 통치자 지시 event <span class="path">f60d30fb</span> — «+9h 환산 없는 값을 «KST» 로 출력한다» · «처방: 스탬프는 date -u 로 찍고 +9h 환산» · «delete_branch_on_merge=true»</li>
+    <li id="f25"><span class="path">GUIDES/whole-life/도구_함정.md (nest)</span> — «TZ=Asia/Seoul date 는 +9h 환산 없는 값에» (이번 회차에서 추가한 줄)</li>
+    <li id="f26"><span class="path">GUIDES/whole-life/도구_함정.md (nest)</span> — «셸 실행 상한(하네스 기본 5분)이 스위트 전체 재검증» (이번 회차에서 추가한 줄) · 채널 <span class="path">whole-life</span> · 통치자 회신 event <span class="path">ce7317cd</span> — «셸 실행 상한(기본 5분)» · «-v 출력은 파일로 리다이렉트»</li>
+    <li id="f27"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-log-35-64__ORD-CLS-PR-65.md</span> — «다음 EDU ORD 는 새 브랜치에서(원격 브랜치 소멸 확인 완료).»</li>
+    <li id="f28"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «[큐·예약]   #61 → #63 → #62 → #51 → #45 · #48/#49 가시화 유지»</li>
+    <li id="f29"><span class="path">REPOS/whole-life/AGENTS.md</span> — «역사 기록(`docs/history/`)은 **교육자만** 쓴다.»</li>
+    <li id="f30"><span class="path">REPOS/whole-life/docs/history/00_연대기.html</span> — «일지편은 «레그가 통과할 때» 나옵니다»</li>
+    <li id="f31"><span class="path">REPOS/whole-life/README.md</span> — «shared cross-provider collaboration state with consistent replay»</li>
+  </ol>
+
+</div>
+</body>
+</html>
