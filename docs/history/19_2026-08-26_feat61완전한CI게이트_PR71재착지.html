@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>제19편 — 완전한 문, 재고정은 새 지적이 아니다</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:       #282828;
+    --paper-2:     #32302f;
+    --zone:        #302e2c;
+    --ink:         #ebdbb2;
+    --muted:       #a89984;
+    --soft:        #928374;
+    --rule:        rgba(235,219,178,0.12);
+    --rule-solid:  #504945;
+    --accent:      #fe8019;
+    --accent-tint: rgba(254,128,25,0.12);
+    --link:        #83a598;
+    --green:       #b8bb26;
+    --red:         #fb4934;
+    --yellow:      #fabd2f;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--paper); color:var(--ink);
+       font-family:"Geist","Pretendard","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;
+       line-height:1.75; -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:880px; margin:0 auto; padding:64px 28px 120px}
+  .kicker{font-size:13px; letter-spacing:.14em; color:var(--soft); text-transform:uppercase;
+          font-family:"Geist Mono",ui-monospace,"Consolas",monospace}
+  h1{font-family:"Instrument Serif","Malgun Gothic",serif;
+     font-size:52px; line-height:1.15; margin:14px 0 10px; letter-spacing:-.01em; font-weight:400}
+  .sub{font-size:18px; color:var(--muted); margin:0 0 8px}
+  h2{font-family:"Instrument Serif","Malgun Gothic",serif;
+     font-size:32px; line-height:1.3; margin:56px 0 14px; font-weight:400; letter-spacing:-.01em}
+  h3{font-size:16px; letter-spacing:.06em; color:var(--ink); margin:34px 0 12px; font-weight:600}
+  p{font-size:17px; margin:0 0 18px}
+  .note{font-size:15px; color:var(--muted)}
+  hr{border:0; border-top:1px solid var(--rule); margin:44px 0}
+  code{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; font-size:.9em;
+       background:var(--zone); color:var(--ink); padding:1px 6px; border-radius:4px}
+  .card{background:var(--paper-2); border:1px solid var(--rule-solid); border-radius:8px;
+        padding:26px 28px; margin:26px 0}
+  .term{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; font-size:14px; line-height:1.7;
+        background:var(--zone); color:var(--ink); border:1px solid var(--rule-solid);
+        border-radius:8px; padding:20px 22px; margin:0 0 18px; overflow-x:auto; white-space:pre-wrap}
+  .term .d{color:var(--soft)}
+  .term .g{color:var(--green)}
+  .term .y{color:var(--yellow)}
+  .term .r{color:var(--red)}
+  .tbl{width:100%; border-collapse:collapse; font-size:15px}
+  .tbl td{padding:13px 12px 13px 0; border-bottom:1px solid var(--rule); vertical-align:top; line-height:1.6}
+  .tbl tr:last-child td{border-bottom:0}
+  .tbl td:first-child{white-space:nowrap; font-family:"Geist Mono",ui-monospace,"Consolas",monospace;
+       font-size:13px; color:var(--soft); width:120px}
+  figure{margin:34px 0}
+  figcaption{font-size:14px; color:var(--muted); margin-top:12px; text-align:center; line-height:1.6}
+  svg{display:block; width:100%; height:auto}
+  sup a{color:var(--link); text-decoration:none; font-size:12px; font-weight:600; padding:0 1px}
+  .fnotes{margin-top:64px; border-top:1px solid var(--rule-solid); padding-top:26px;
+          list-style:none; padding-left:0}
+  .fnotes li{font-size:14px; color:var(--muted); margin-bottom:11px; line-height:1.65}
+  .fnotes .path{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; color:var(--ink); font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kicker">제 19 편 · 일지편 · 당대에 씀</div>
+  <h1>완전한 문, 재고정은 새 지적이 아니다</h1>
+  <p class="sub">이번 계보의 첫 완전한 CI 게이트 코드 착지(feat/61, PR#73)와,
+    제18편 자신의 수정이 검증받고 착지한 일(PR#71)을 한 편에 묶습니다.</p>
+
+  <div class="card">
+    <p style="margin:0 0 12px"><b>읽기 전에 — 이 편의 대상은 둘, 착지 둘입니다.</b>
+      지시가 명시적으로 묶었습니다 — 「착지 둘이 쌓였다. 두 완결 한 편 묶음은
+      제15·18편 선례」.<sup><a href="#f1">[1]</a></sup> 두 대상 모두 완결(착지)입니다 — 대상 2 는
+      제18편 자신이 받은 세 정정의 착지라는 점에서 <b>이 폴더가 자기 자신을
+      대상으로 다루는</b> 드문 회차입니다.</p>
+    <p style="margin:0 0 12px" class="note">
+      <b>경계 둘.</b> ① CI 발화 지연이 줄어든 것(14분43초→4분30초→2초)은 관찰까지만
+      적습니다 — 원인은 서술하지 않습니다.<sup><a href="#f2">[2]</a></sup>
+      ② 제15·16·17편의 각주 마커 결함(평문 각각 43·65·70건)은 대표 결정이 대기
+      중입니다(BRF <code>532f2ec9</code>) — 이 편은 «결정 대기» 라는 사실까지만
+      적고 방향을 서술하지 않습니다.<sup><a href="#f3">[3]</a></sup></p>
+    <p style="margin:0" class="note">
+      각주 형식 — 제18편이 세운 절차(<code>&lt;sup&gt;&lt;a href="#fN"&gt;</code> 앵커·
+      전수 카운트·<code>href</code> 집합 대조)를 이 편의 <b>첫 커밋부터</b> 그대로
+      씁니다.<sup><a href="#f4">[4]</a></sup> <b>[내가 잰 것]</b> 블록은 이 편을 쓰는
+      교육자가 직접 돌려 출력을 받은 명령입니다. 각주는 문구의 «존재»만 보증합니다.</p>
+  </div>
+
+  <h2>질문 1 · 무슨 일이</h2>
+  <p>
+    feat/61 이 이번 계보에서 처음으로 완전한 CI 게이트 실물(워크플로 런 5 —
+    저장소 워크플로 3 + GitHub 관리형 2, check-runs 7)과 함께 PR#73 으로
+    착지해 이슈 #61 이 닫혔고,<sup><a href="#f5">[5]</a></sup><sup><a href="#f19">[19]</a></sup>
+    같은 창 안에서 제18편 자신이 받았던 Codex 정정 셋이 완결자의 3점 대조
+    (구판·신판·착지본)로 실재를 다시 검증받은 뒤 PR#71 이 재착지했으며,<sup><a href="#f6">[6]</a></sup>
+    그 재착지 과정에서 완결자는 「PR 인라인 코멘트가 push 뒤 새 head 로 재고정되는
+    것」을 <code>original_commit_id</code> 로 갈라 「새 지적 0건」임을 증명했습니다.<sup><a href="#f7">[7]</a></sup>
+  </p>
+  <p class="note">
+    <b>부기(같은 결함 가족, 이 편 자신이 겪음)</b> — 이 문단의 숫자는 원래 「다섯
+    워크플로」였다가 착지 직전 Codex 의 정당한 새 지적으로 고쳐졌습니다. 제18편의
+    결함이 「N건 있다」와 「N건 통과했다」를 섞은 것이었다면,<sup><a href="#f19">[19]</a></sup>
+    이번은 같은 가족의 다른 갈래 — 「무엇을 N건으로 셌는가」입니다. 저장소
+    워크플로(3)·GitHub 관리형(2)·check-runs(7) 가 같은 착지를 놓고 서로 다른
+    「몇 건」을 낳는다는 것을, 이 편 스스로가 겪어 보였습니다.
+  </p>
+
+  <h2>질문 2 · 어떤 흐름으로 진행됐나</h2>
+  <figure>
+    <svg viewBox="0 0 860 480" role="img" aria-labelledby="ch19-timeline-title ch19-timeline-desc">
+      <title id="ch19-timeline-title">feat/61 착지와 PR#71 재착지 타임라인 — 2026-08-26 17:09Z ~ 17:48Z</title>
+      <desc id="ch19-timeline-desc">2026년 8월 26일 UTC 17시 09분부터 17시 48분까지 두 착지가 이어지는 타임라인. 위쪽 가닥은 feat/61이 17시 9분에 PR을 열어 3분 29초 뒤 CI가 발화하고 17시 32분 42초에 착지해 이슈 61이 닫힌다. 아래쪽 가닥은 제18편 수정판이 17시 18분경 새 head로 올라가 4분 30초 뒤 CI가 발화하고 17시 48분 18초에 재착지한다. 두 가닥 모두 착지 직후 push CI가 각각 27초와 2초 만에 발화해 큐 지연이 사실상 사라진 것을 보여준다.</desc>
+      <rect width="100%" height="100%" fill="var(--paper)"/>
+
+      <text x="24" y="36" font-size="12" fill="var(--soft)" letter-spacing="0.08em"
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">2026-08-26 UTC</text>
+
+      <text x="24" y="72" font-size="12" fill="var(--soft)" letter-spacing="0.06em"
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">대상 1 — feat/61 → PR#73</text>
+      <text x="24" y="264" font-size="12" fill="var(--soft)" letter-spacing="0.06em"
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">대상 2 — 제18편 수정판 → PR#71 재착지</text>
+
+      <!-- 대상 1 -->
+      <rect x="24" y="88" width="168" height="56" rx="6" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="108" y="112" font-size="12" fill="var(--ink)" font-weight="600" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">PR#73 오픈</text>
+      <text x="108" y="130" font-size="9" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">17:09:11Z</text>
+
+      <line x1="192" y1="116" x2="292" y2="116" stroke="var(--soft)" stroke-width="1" marker-end="url(#arrow19)"/>
+      <rect x="292" y="88" width="176" height="56" rx="6" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="380" y="112" font-size="12" fill="var(--ink)" font-weight="600" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">CI 실물 발화</text>
+      <text x="380" y="130" font-size="9" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">3분29초 뒤 · check-runs 7 전부 pass</text>
+
+      <line x1="468" y1="116" x2="568" y2="116" stroke="var(--soft)" stroke-width="1" marker-end="url(#arrow19)"/>
+      <rect x="568" y="88" width="200" height="56" rx="6" fill="var(--accent-tint)" stroke="var(--accent)" stroke-width="1"/>
+      <text x="668" y="108" font-size="12" fill="var(--ink)" font-weight="600" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">squash 착지 · #61 CLOSED</text>
+      <text x="668" y="126" font-size="9" fill="var(--accent)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">17:32:42Z · main=0b83f538</text>
+      <text x="668" y="140" font-size="9" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">push CI 27초 뒤 발화</text>
+
+      <!-- 대상 2 -->
+      <rect x="24" y="280" width="168" height="56" rx="6" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="108" y="304" font-size="12" fill="var(--ink)" font-weight="600" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">새 head push</text>
+      <text x="108" y="322" font-size="9" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">~17:18Z · bbfe741a</text>
+
+      <line x1="192" y1="308" x2="292" y2="308" stroke="var(--soft)" stroke-width="1" marker-end="url(#arrow19)"/>
+      <rect x="292" y="280" width="176" height="56" rx="6" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="380" y="304" font-size="12" fill="var(--ink)" font-weight="600" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">CI 실물 발화</text>
+      <text x="380" y="322" font-size="9" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">4분30초 뒤 · 5건 전부 success</text>
+
+      <line x1="468" y1="308" x2="568" y2="308" stroke="var(--soft)" stroke-width="1" marker-end="url(#arrow19)"/>
+      <rect x="568" y="280" width="200" height="56" rx="6" fill="var(--accent-tint)" stroke="var(--accent)" stroke-width="1"/>
+      <text x="668" y="300" font-size="12" fill="var(--ink)" font-weight="600" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">squash 재착지</text>
+      <text x="668" y="318" font-size="9" fill="var(--accent)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">17:48:18Z · main=73e363f8</text>
+      <text x="668" y="332" font-size="9" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">push CI 2초 뒤 발화</text>
+
+      <defs>
+        <marker id="arrow19" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="var(--soft)"/>
+        </marker>
+      </defs>
+
+      <!-- 공용 종점 -->
+      <line x1="668" y1="144" x2="668" y2="280" stroke="var(--rule-solid)" stroke-width="1" stroke-dasharray="4,3"/>
+      <rect x="612" y="392" width="112" height="48" rx="6" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="668" y="412" font-size="11" fill="var(--ink)" font-weight="600" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">ORD-EDU</text>
+      <text x="668" y="428" font-size="9" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">log-73-71 · 02:58 KST</text>
+      <line x1="668" y1="336" x2="668" y2="392" stroke="var(--soft)" stroke-width="1"/>
+
+      <!-- 범례 -->
+      <line x1="24" y1="452" x2="836" y2="452" stroke="var(--rule)" stroke-width="1"/>
+      <rect x="24" y="460" width="14" height="12" rx="3" fill="var(--accent-tint)" stroke="var(--accent)" stroke-width="1"/>
+      <text x="48" y="470" font-size="12" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">되돌릴 수 없는 착지</text>
+    </svg>
+    <figcaption>
+      두 가닥 모두 UTC 실측 시각을 그대로 썼습니다.<sup><a href="#f5">[5]</a></sup><sup><a href="#f6">[6]</a></sup>
+      가로 간격은 대략의 비율이며, 이 편을 부른 지시(02:58 KST)만 KST 로 표기해
+      두 가닥의 공용 종점으로 그렸습니다.
+    </figcaption>
+  </figure>
+
+  <table class="tbl">
+    <tbody>
+      <tr><td>17:09:11Z</td><td><b>PR#73 오픈</b>(feat/61) — base <code>0da79d3e</code>.<sup><a href="#f5">[5]</a></sup></td></tr>
+      <tr><td>17:12:40Z</td><td>워크플로 발화(3분29초 뒤) — 직전 표본(14~23분)에서 크게 줄었습니다.<sup><a href="#f5">[5]</a></sup></td></tr>
+      <tr><td>17:32:21Z</td><td>병합 직전 재측정 — main·head·예측 트리 전부 불변.<sup><a href="#f5">[5]</a></sup></td></tr>
+      <tr><td>17:32:42Z</td><td><b>PR#73 squash 착지</b> — <code>main</code>=<code>0b83f538</code>, tree==예측 <code>68cd1148</code>.<sup><a href="#f5">[5]</a></sup></td></tr>
+      <tr><td>17:32:43Z</td><td>이슈 <b>#61 CLOSED/COMPLETED</b>.<sup><a href="#f5">[5]</a></sup></td></tr>
+      <tr><td>17:33:11Z</td><td>착지 후 push CI 발화(27초 뒤) — 「큐가 다 빠졌다」.<sup><a href="#f5">[5]</a></sup></td></tr>
+      <tr><td>~17:18Z</td><td>제18편 수정판 새 head(<code>bbfe741a</code>) push — 대상 2 시작.<sup><a href="#f6">[6]</a></sup></td></tr>
+      <tr><td>17:23:31Z</td><td>워크플로 발화(4분30초 뒤).<sup><a href="#f6">[6]</a></sup></td></tr>
+      <tr><td>17:48:02Z</td><td>병합 직전 재측정 — main·head·예측 트리 전부 불변(재예측 필요 확인 포함).<sup><a href="#f6">[6]</a></sup></td></tr>
+      <tr><td>17:48:18Z</td><td><b>PR#71 squash 재착지</b> — <code>main</code>=<code>73e363f8</code>, tree==예측 <code>524d03ee</code>.<sup><a href="#f6">[6]</a></sup></td></tr>
+      <tr><td>17:48:20Z</td><td>착지 후 push CI 발화(2초 뒤) — 큐 지연 소멸 관측.<sup><a href="#f6">[6]</a></sup></td></tr>
+      <tr><td>02:58 KST</td><td>두 RPT 처리 뒤 <b>ORD-EDU-log-73-71 발행</b> — 이 편을 부른 지시.<sup><a href="#f1">[1]</a></sup></td></tr>
+    </tbody>
+  </table>
+
+  <h3>[내가 잰 것] — 이 편을 쓰면서 직접 돌린 명령</h3>
+  <div class="term"><span class="d">$ git fetch origin && git rev-parse origin/main</span>
+73e363f8c58b8075577a580a3c039fe760bf2264
+<span class="d">$ gh pr view 73 --json state,mergedAt,mergeCommit -q '{state,mergedAt,mergeCommit:.mergeCommit.oid}'</span>
+{"state":"MERGED","mergedAt":"2026-08-26T17:32:42Z","mergeCommit":"0b83f538da64b5583d48f8baf8b4e856844ef68a"}
+<span class="d">$ gh issue view 61 --json state,stateReason,closedAt</span>
+{"state":"CLOSED","stateReason":"COMPLETED","closedAt":"2026-08-26T17:32:43Z"}
+<span class="d">$ git rev-parse 0b83f538^{tree}; git rev-parse 73e363f8^{tree}</span>
+68cd1148ec2fb38d5ac80ec75160b80b374dadb3   <span class="g">← feat/61 예측과 일치</span>
+524d03ee00613f1a56a90f139b3c99e3832524f5   <span class="g">← PR#71 재예측과 일치</span>
+<span class="d">$ git grep -c "(#61)" 73e363f8 -- CHANGELOG.md</span>
+(exit=1, 0건)   <span class="g">← 완결자 적발과 일치, 아직 안 채워짐(#63 방아쇠 대기)</span>
+<span class="d">$ gh api …/pulls/71/comments --paginate -q '.[]|"\(.user.login) commit=\(.commit_id[0:8]) orig=\(.original_commit_id[0:8])"'</span>
+chatgpt-codex-connector[bot] commit=bbfe741a orig=02f3a514
+chatgpt-codex-connector[bot] commit=bbfe741a orig=02f3a514
+chatgpt-codex-connector[bot] commit=02f3a514 orig=02f3a514
+chatgpt-codex-connector[bot] commit=bbfe741a orig=02f3a514
+chatgpt-codex-connector[bot] commit=02f3a514 orig=02f3a514   <span class="g">← 5건 전부 orig=02f3a514(구 head) — 완결자 판별과 일치</span></div>
+
+  <h2>대상 1 — 처음으로 갖춰진 완전한 문</h2>
+  <p>
+    feat/61 은 이번 계보에서 «CI-B 대체 게이트뿐 아니라 CI 실물까지» 받은 첫
+    코드 착지입니다.<sup><a href="#f8">[8]</a></sup> 그 과정에 남길 만한 것이 셋
+    있습니다.
+  </p>
+  <p><b>변이 증명 1차 시도는 실패했고, 그대로 적혔습니다.</b>
+    앵커 문자열(<code>if not candidate.is_absolute():</code>)이 파일에 두 곳
+    있어 「앵커가 정확히 1회 맞는지」 사전 대조를 건너뛴 1차 시도는 <code>assert
+    n==1</code> 이 막아 아무것도 치환하지 못했습니다 — «뒤이은 <code>Ran 25
+    tests OK</code> 는 원본 결과라 증거가 아니다».<sup><a href="#f9">[9]</a></sup>
+    완결자는 이 실패를 감추지 않고 2차(고유 3줄 앵커)로 다시 물려 성공시켰습니다.<sup><a href="#f9">[9]</a></sup>
+  </p>
+  <p><b>금지 문장 검사도 한 번은 거짓 0을 냈습니다.</b>
+    커밋 본문의 금지 문장을 grep 했을 때 처음엔 0건이 나왔는데, 원문이
+    「접혀」 있었기 때문입니다 — «원인: 본문에서 «with nothing in / the record
+    saying …» 로 접혀 있다». 공백을 접어 다시 재고 양성 통제(자기 본문=1)로
+    매처가 살아있음을 확인한 뒤에야 진짜 0을 확정했습니다.<sup><a href="#f10">[10]</a></sup>
+    이 편의 각주 대조가 제18편에서 CRLF 함정에 걸렸던 것과 같은 축입니다 —
+    «접힌/갈린 텍스트에 대한 단순 grep은 있는 것도 없다고 말한다».
+  </p>
+  <p><b>claude-review 를 다섯 요소로 재측정해 «지적 없음»과 «못 돌았음»을 갈랐습니다.</b>
+    이전 편들의 claude-review 는 대부분 «한도 초과» 고장 서명(<code>is_error
+    true</code> · <code>duration_ms</code> 수백 · <code>cost 0</code> ·
+    <code>modelUsage {}</code>)이었는데, 이번 로그는 정확히 그 반대였습니다 —
+    «is_error: false · duration_ms: 26834 · total_cost_usd: 0.13112525 ·
+    modelUsage {…채워짐} · No buffered inline comments».<sup><a href="#f11">[11]</a></sup>
+    같은 판별축이 대상 2 에서 <code>original_commit_id</code> 판별로 한 번 더
+    쓰입니다.
+  </p>
+  <p><b>CHANGELOG 누락이 발견돼 다음 작업에 실렸습니다.</b>
+    완결자는 «(#61)» 이 CHANGELOG 에 없다는 것을 발견해 보고했고,<sup><a href="#f12">[12]</a></sup>
+    통치자는 이를 방아쇠 관례로 처리해 이미 예정된 다음 작업(#63 구현, CHANGELOG
+    를 여는 작업)에 «#61 항목 추가»를 얹었습니다 — 새 티켓을 내지 않았습니다.<sup><a href="#f13">[13]</a></sup>
+  </p>
+
+  <h2>대상 2 — 재고정은 새 지적이 아니다</h2>
+  <p>
+    제18편의 수정 커밋(<code>bbfe741a</code>)이 실제로 착지에 반영됐는지를,
+    완결자는 <b>구판(<code>02f3a514</code>)·신판(<code>bbfe741a</code>)·착지본
+    (<code>73e363f8</code>) 세 지점</b>을 나란히 재서 증명했습니다 — 같은
+    grep 이 구판만 걸러내므로 「0」이 그냥 0 이 아니라 <b>구판에서는 걸리고
+    신판·착지본에서는 안 걸리는 0</b>이라는 것입니다.<sup><a href="#f6">[6]</a></sup>
+  </p>
+  <p>
+    가장 흥미로운 대목은 <code>original_commit_id</code> 판별입니다. GitHub
+    은 push 로 head 가 바뀌면 기존 인라인 코멘트를 새 head 로 <b>재고정</b>하는데,
+    <code>commit_id</code> 만 보면 다섯 코멘트 중 셋이 새 head(<code>bbfe741a</code>)
+    에 달린 것처럼 보입니다.<sup><a href="#f7">[7]</a></sup> 완결자는
+    <code>original_commit_id</code> 를 함께 조회해 다섯 전부가 구 head
+    (<code>02f3a514</code>)에서 온 것임을 확인했습니다 — «새 head 에 붙은 새
+    지적은 0건. <code>commit_id</code> 만 보면 셋이 새 head 로 보이지만
+    <code>original_commit_id</code> 가 전부 구 head 다 — 재고정이지 새 발견이
+    아니다».<sup><a href="#f7">[7]</a></sup> 위 [내가 잰 것] 블록 마지막 명령이
+    같은 결과를 다시 보여줍니다.
+  </p>
+  <p class="note">
+    내 이해를 덧붙이면 — 이것은 이 폴더가 반복해 온 「존재와 자격은 다르다」는
+    규칙의 새 표본입니다. 각주가 「그 문구가 있다」와 「그 문구가 지금도 산
+    주장이다」를 가르듯, 인라인 코멘트도 「이 head 에 달려 있다」(<code>commit_id</code>)와
+    「이 head 를 겨냥해 새로 달렸다」(<code>original_commit_id</code>)가 다릅니다.
+    같은 API 필드 하나를 더 읽는 것만으로 «검증을 다시 했다»와 «검증이 재활용됐다»가
+    갈립니다.
+  </p>
+  <p>
+    CHANGELOG 판단도 갈렸습니다. feat/61 은 새 거부를 도입하므로 CHANGELOG
+    대상이지만, 완결자는 연대기 편(제18편 자신)은 대상이 아니라고 판정했습니다 —
+    «규칙 문언(시스템이 하거나 거부하는 것을 적는다 — 일지편은 어느 쪽도
+    바꾸지 않는다)과 선례 다섯의 일관성(#47·64·65·68·69 없음, #17 은 있음)».<sup><a href="#f14">[14]</a></sup>
+    같은 착지 창 안에서 «CHANGELOG 가 필요한 착지»와 «필요 없는 착지»가 나란히
+    놓여 그 경계선이 실물로 드러난 셈입니다.
+  </p>
+
+  <h2>경계 — 관찰까지만</h2>
+  <p>
+    <b>CI 큐 지연.</b> 세 번 연속 관측된 발화 간격은 14분43초(PR#69) →
+    4분30초(대상 2, PR#71) → 2초(착지 직후 push)입니다.<sup><a href="#f2">[2]</a></sup>
+    같은 창에서 대상 1(feat/61)도 3분29초·27초로 비슷한 감소를 보였습니다.<sup><a href="#f5">[5]</a></sup>
+    <b>이 편은 숫자와 관측 시점만 옮깁니다 — 무엇이 큐를 줄였는지는 다루지
+    않습니다.</b> 지시가 명시적으로 원인 서술을 금지했습니다.<sup><a href="#f2">[2]</a></sup>
+  </p>
+  <p>
+    <b>제15·16·17편 마커 결함.</b> 세 편 모두 «읽기 전에» 카드가 약속한
+    <code>&lt;sup&gt;&lt;a href="#fN"&gt;</code> 형식이 아니라 평문
+    <code>[N]</code> 이라는 것은 제18편 수정 라운드에서 이미 관찰된
+    사실입니다.<sup><a href="#f15">[15]</a></sup> 통치자는 이를 대표 결정
+    거리로 올렸습니다 — «제15·16·17편 각주 마커 평문(43·65·70건) — A(한 PR
+    일괄 수정·교육자 절차 재사용) / B(기록만 유지)».<sup><a href="#f3">[3]</a></sup>
+    <b>이 편은 「결정 대기 중」이라는 사실까지만 적습니다</b> — A 냐 B 냐에 대한
+    의견은 적지 않습니다.
+  </p>
+
+  <h2>질문 6 · 다음 담당에게 무엇을 위임하나</h2>
+  <p>
+    두 대상 모두 통과·종결로 닫혔습니다.<sup><a href="#f8">[8]</a></sup><sup><a href="#f6">[6]</a></sup>
+    이 편이 새로 만드는 위임은 없습니다. 이미 편성된 것만 옮겨 적습니다 —
+    <b>구현자</b>는 <code>ORD-IMP-63</code>(이슈 #63 구현, CHANGELOG 에 #61·#63
+    항목을 함께 얹는 방아쇠 포함)을 진행 중이고,<sup><a href="#f13">[13]</a></sup>
+    <b>대표</b>는 제15~17편 마커 A/B 결정을 쥐고 있으며,<sup><a href="#f3">[3]</a></sup>
+    <b>실행 큐</b>는 #72 배정 → #62 → #51 → #45 순으로 예약돼 있습니다.<sup><a href="#f16">[16]</a></sup>
+  </p>
+
+  <h2>질문 7 · 왜 그 담당에게 맡기나</h2>
+  <p>
+    두 착지의 RPT 주인은 모두 완결자였습니다 — 병합·독립 조회·CI 실물 확인·
+    original_commit_id 판별까지 전부 착지 역할의 몫입니다.<sup><a href="#f5">[5]</a></sup><sup><a href="#f6">[6]</a></sup>
+    CHANGELOG 방아쇠 배정과 마커 A/B 상신은 편성·정책 판단이라 통치자·대표
+    축입니다.<sup><a href="#f13">[13]</a></sup><sup><a href="#f3">[3]</a></sup>
+    나에게 온 것은 이 둘을 하나의 기록으로 묶는 일이고, 저장소 규약이 «역사
+    기록은 교육자만 쓴다»고 정한 자리입니다.<sup><a href="#f17">[17]</a></sup>
+  </p>
+
+  <h2>질문 8 · 왜 이걸 제안했나</h2>
+  <p>
+    통치자 지시가 명시적으로 묶었습니다 — «착지 둘이 쌓였다. 두 완결 한 편
+    묶음은 제15·18편 선례».<sup><a href="#f1">[1]</a></sup> 각주 형식은 제18편이
+    세운 절차를 이 편의 첫 커밋부터 쓰라는 지시를 따른 것이고,<sup><a href="#f4">[4]</a></sup>
+    그 지시는 오래된 각주 규칙 ④의 「다음 편 첫 커밋」 약속이 제14편에서 이미
+    한 번 지켜졌던 선례를 근거로 듭니다 — «각주 규칙 ④ 방아쇠를 이 편 첫
+    커밋에 얹도록 지시 — 방아쇠 소진» → «각주 규칙 ④ 방아쇠 소진 확정».<sup><a href="#f18">[18]</a></sup>
+    같은 종류의 약속은 다음에도 미루지 않고 지켜진다는 것이 이번에도 반복된
+    셈입니다.
+  </p>
+  <p class="note">
+    <b>선택 사항 처리(내 판단).</b> 지시는 「PR 인라인 코멘트는 push 후 새
+    head 로 재고정된다 — <code>commit_id</code> 아닌 <code>original_commit_id</code>
+    로 갈라라」는 한 줄을 nest 운영 지식에 후보로 얹을 수 있다고 했습니다.<sup><a href="#f1">[1]</a></sup>
+    나는 이 편의 「대상 2」 절에 그 관찰을 온전히 실었지만, <code>GUIDES/whole-life/
+    도구_함정.md</code> 자체를 편집하지는 않았습니다 — 나(교육자)는
+    <code>docs/history/</code> 한 폴더에만 쓰는 것이 저장소 규약이기 때문입니다.
+    실제 등록은 다른 역할의 몫으로 남깁니다.
+  </p>
+
+  <h2>질문 11 · 원점에 비춰, 이번 걸음이 그쪽으로 갔나</h2>
+  <p>
+    <b>대상 1은 그쪽입니다.</b> feat/61 은 spawn 경계에서 상대경로 working
+    directory 를 거부하는 코드 착지이고, 그 착지가 처음으로 완전한 CI 게이트
+    실물과 함께 이뤄졌다는 것은 「위임이 실제로 무엇을 했는지 관측으로 잰다」는
+    원점의 결과 축입니다.
+  </p>
+  <p>
+    <b>대상 2는 방향 걸음이 아니라 잴 자의 유지입니다.</b> 제18편 자신의
+    수정·재착지와 그 절차(3점 대조 → original_commit_id 판별 → 착지)는 제품
+    코드가 아니라 이 프로젝트가 자신을 기록하는 축의 자기 검증입니다. <b>질문
+    11의 답은 «아니오, 어긋난 걸음 없음»</b>입니다.
+  </p>
+  <p class="note">
+    내 이해를 덧붙이면 — 이번 편이 특이한 것은 <b>기록 축이 자기 자신의 오류를
+    검증하고 착지시키는 과정 자체가 소재가 됐다</b>는 점입니다. 원점편이 말한
+    「다시 재생되고 남는」 협업은 제품 코드에서만 일어나는 것이 아니라, 이
+    폴더가 스스로를 감사하는 절차에서도 같은 모양으로 일어난다는 것을 이번
+    회차가 보여 줬습니다.
+  </p>
+
+  <h2>질문 12 · 처음 범위에서 새로 늘어난 것이 있나</h2>
+  <p>
+    <b>없습니다.</b> 저장소 쪽 변경은 <code>docs/history/</code> 아래 둘뿐입니다 —
+    신설 편과 연대기 색인. feat/61 은 이미 열려 있던 이슈(#61)의 마감이고,
+    CHANGELOG 방아쇠는 새 티켓이 아니라 이미 예정된 작업(#63)에 얹혔습니다.<sup><a href="#f13">[13]</a></sup>
+    마커 A/B 결정도 이 편이 만든 것이 아니라 제18편 수정 라운드에서 이미
+    올라간 후보입니다.<sup><a href="#f3">[3]</a></sup> 원점편의 «범위 밖» 목록
+    어느 항목도 건드리지 않았습니다.
+  </p>
+
+  <hr>
+  <p class="note">
+    여기서 멈춘다 — 기록과 PR, 보고까지. 판정하지 않는다. 질문 11·12 모두
+    «아니오·없음»이라 통치자 에스컬레이션 의무는 발생하지 않았다. CI 큐 지연·
+    제15~17편 마커 A/B 두 건은 관찰(또는 «결정 대기» 사실)까지만 적었다.
+  </p>
+
+  <h2>각주</h2>
+  <ol class="fnotes">
+    <li id="f1">채널 <span class="path">whole-life</span> · 통치자 지시 event <span class="path">66d14756</span> — «[ORD-EDU-log-73-71] — 제19편: feat/61 첫 완전 CI 게이트 코드 착지 + 제18편 수정·재착지 묶음 … 착지 둘이 쌓였다. 두 완결 한 편 묶음은 제15·18편 선례.» · «선택(네 판단): GUIDES/whole-life/도구_함정.md 에 한 줄 후보 — «PR 인라인 코멘트는 push 후 새 head 로 재고정된다: commit_id 아닌 original_commit_id 로 갈라라»(출처 a05e0987).»</li>
+    <li id="f2">채널 <span class="path">whole-life</span> · 통치자 지시 event <span class="path">66d14756</span> — «경계 둘: CI 큐 변화는 원인 미규명 — 숫자와 관찰까지만, 원인 서술 금지.» · <span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «CI 새 head 실물 전부 pass(4분30초) · 착지 후 push CI 2초 발화 — **큐 지연 소멸 관측(14분43초→4분30초→2초), 원인 미규명 유지**.»</li>
+    <li id="f3"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «### BRF (532f2ec9) — 결정 하나 요청 **[대기·결정] 제15·16·17편 각주 마커 평문(43·65·70건) — A(한 PR 일괄 수정·교육자 절차 재사용) / B(기록만 유지).** 막는 것: ep15-17 수정 착수. 막지 않는 것: PR#71 착지 · #63 구현 · #72 배정.»</li>
+    <li id="f4">채널 <span class="path">whole-life</span> · 통치자 지시 event <span class="path">66d14756</span> — «각주: 제18편에서 문서화한 마커 절차(&lt;sup&gt;&lt;a href="#fN"&gt;·전수 카운트·href 집합 대조) 그대로.»</li>
+    <li id="f5"><span class="path">WORK_LOGS/whole-life/CLS_feat-61-refuse-relative-working-directory__ORD-CLS-feat-61.md</span> — «PR 생성 17:09:11Z → 저장소 워크플로 17:12:40Z = 3분 29초» · «① git rev-parse origin/main → 0b83f538…» · «② gh pr view 73 → MERGED · mergeCommit 0b83f538… · mergedAt 2026-08-26T17:32:42Z» · «⑤ gh issue view 61 → state CLOSED · stateReason COMPLETED · closedAt 2026-08-26T17:32:43Z» · «(push 17:32:44Z → 워크플로 17:33:11Z = 27초. 큐가 다 빠졌다)»</li>
+    <li id="f6"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-log-71-v2__ORD-CLS-PR-71.md</span> — «같은 grep 이 구판/신판을 갈라내므로 「0」이 맨 0 이 아니다.» · «① git rev-parse origin/main → 73e363f8…» · «gh pr view 71 → MERGED · mergeCommit 73e363f8… · mergedAt 2026-08-26T17:48:18Z» · «(push 17:48:18Z → 워크플로 17:48:20Z = 2초. 큐 지연이 사라졌다)»</li>
+    <li id="f7"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-log-71-v2__ORD-CLS-PR-71.md</span> — «total inline: 5 user=codex commit=bbfe741a orig=02f3a514 count=3 … user=codex commit=02f3a514 orig=02f3a514 count=2» · «**새 head 에 붙은 새 지적은 0건.** `commit_id` 만 보면 셋이 새 head 로 보이지만 `original_commit_id` 가 전부 구 head 다 — 재고정이지 새 발견이 아니다.»</li>
+    <li id="f8"><span class="path">WORK_LOGS/whole-life/CLS_feat-61-refuse-relative-working-directory__ORD-CLS-feat-61.md</span> — «**CI-B 대체 게이트뿐 아니라 CI 실물까지 받았다.**» · <span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «### RPT-ORD-CLS-feat-61 (32ee5205) — **통과** (판정 97cf0c95)»</li>
+    <li id="f9"><span class="path">WORK_LOGS/whole-life/CLS_feat-61-refuse-relative-working-directory__ORD-CLS-feat-61.md</span> — «[변이 B] 1차 시도 실패 — 앵커 `if not candidate.is_absolute():` 가 파일에 2개(49행 executable 검사 · 80행 새 가드) → assert n==1 이 막아 아무것도 치환되지 않았다. 뒤이은 `Ran 25 tests OK` 는 원본 결과라 증거가 아니다.»</li>
+    <li id="f10"><span class="path">WORK_LOGS/whole-life/CLS_feat-61-refuse-relative-working-directory__ORD-CLS-feat-61.md</span> — «### ⚠️ 금지 문장 확인 — 줄바꿈 때문에 첫 grep 이 거짓 0 을 냈다» · «원인: 본문에서 "with nothing in / the record saying …" 로 접혀 있다» · «내가 쓴 PR 본문·병합 본문: 0 / 0 (양성 통제 eca2ac8b=1 로 매처 유효성 확인)»</li>
+    <li id="f11"><span class="path">WORK_LOGS/whole-life/CLS_feat-61-refuse-relative-working-directory__ORD-CLS-feat-61.md</span> — «"is_error": false (한도초과 표본: true) "duration_ms": 26834 (표본: 365) "total_cost_usd": 0.13112525 (표본: 0) "modelUsage": { …채워짐 } (표본: {}) No buffered inline comments ← 실제로 돌았고 지적이 없었다»</li>
+    <li id="f12"><span class="path">WORK_LOGS/whole-life/CLS_feat-61-refuse-relative-working-directory__ORD-CLS-feat-61.md</span> — «## 7) ⚠️ CHANGELOG — 이 착지에 항목이 없다» · «$ git grep -n "(#61)" 0b83f538 -- CHANGELOG.md CHANGELOG.ko.md → 없음(exit=1)»</li>
+    <li id="f13"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «### CHANGELOG #61 누락 → 방아쇠 집행 (티켓 안 냄) CHANGELOG 를 여는 다음 작업 = #63 구현 → ORD-IMP-63 에 «#61 항목 추가(en·ko)» 얹음.»</li>
+    <li id="f14"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-log-71-v2__ORD-CLS-PR-71.md</span> — «Each entry says what the system now does or refuses, not which files moved.» · «(#47) 없음 · (#64) 없음 · (#65) 없음 · (#68) 없음 · (#69) 없음 양성 대조 (#17 기능 착지) → 있음»</li>
+    <li id="f15"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «### 새 후보 — 제15·16·17편 각주 마커 평문 (교육자 계승 관찰) 세 편 모두 `&lt;sup&gt;&lt;a href="#f` 매치 0 · 평문 `[N]` 각각 43·65·70건(교육자 직접 grep).»</li>
+    <li id="f16"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «[큐·예약] #63 리뷰→착지 → #72 배정(항목 3 대표 결정 필요) · #62 → #51 → #45»</li>
+    <li id="f17"><span class="path">REPOS/whole-life/AGENTS.md</span> 59행 — «역사 기록(`docs/history/`)은 **교육자만** 쓴다.»</li>
+    <li id="f18"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «| `ORD-EDU-pr33-gate` | claude-review 고장→A 결정→착지 구간 기편 | 교육자 Educator | 09:10 KST | **발행** | event `3c87be99`. 각주 규칙 ④ 방아쇠를 이 편 첫 커밋에 얹도록 지시 — 방아쇠 소진 |» · «| `ORD-EDU-pr33-gate` | claude-review 고장→A 결정→착지 구간 기편 | 교육자 Educator | 09:10 KST | **통과** | 위 표 여섯 항목 충족. 각주 규칙 ④ 방아쇠 소진 확정 — «방아쇠로 둔 것» 목록에서 소멸 |»</li>
+    <li id="f19"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-log-74__ORD-CLS-PR-74.md</span> — «$ gh api "…/actions/runs?head_sha=d44067cf…" → workflow runs: 5 저장소 워크플로(.github/workflows/): 3 — docs-ci · python-ci · Claude Code Review GitHub 관리형(dynamic): 2 — github-advanced-security · github-code-scanning/codeql $ gh api …/commits/d44067cf…/check-runs → total 7 (전부 success)» · «앞으로 내 보고에서 이 수를 쓸 때는 「워크플로 런 5(저장소 3 + GitHub 관리형 2) · check-runs 7」로 적는다.»</li>
+  </ol>
+
+</div>
+</body>
+</html>
