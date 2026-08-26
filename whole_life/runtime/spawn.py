@@ -53,18 +53,31 @@ def assert_directly_executable(candidate: Path) -> None:
 
 
 def assert_working_directory(candidate: Path | None) -> None:
-    """Refuse a plan whose working directory was never decided, or is not there.
+    """Refuse a working directory that is undecided, not absolute, or missing.
 
     `None` is the case this exists for. Passing it through would mean the child
     inherits the Broker's own directory, which is wherever an operator happened
     to start it — and the pinned Codex CLI refuses to run outside a trusted
     directory, so that inheritance turns into a provider that looks down.
 
+    A path that is not absolute is refused for the same reason even though it
+    may name a directory that exists today: the operating system resolves it
+    against the Broker's own current directory at spawn time, so the plan is
+    not what decides where the child runs — the Broker's location does.
+    Accepting one would hand the launch-directory inheritance above a way back
+    in, and the plan — the one place that names where the child runs — would
+    no longer pin down where it landed. On Windows this covers more than the
+    plain "relative" reading: `pathlib` counts drive-less rooted paths like
+    `/Windows` and drive-relative paths like `C:foo` as not absolute, and both
+    still resolve against the current drive or directory.
+
     A directory that does not exist is refused here too, so it arrives as a
     pre-start refusal like every other decision checked on this boundary rather
     than as an operating-system error from the spawn itself.
     """
     if candidate is None:
+        raise PreStartRefusal(RefusalCode.WORKING_DIRECTORY_UNDECIDED)
+    if not candidate.is_absolute():
         raise PreStartRefusal(RefusalCode.WORKING_DIRECTORY_UNDECIDED)
     if not candidate.is_dir():
         raise PreStartRefusal(RefusalCode.WORKING_DIRECTORY_UNDECIDED)
