@@ -93,12 +93,21 @@
 
   <h2>질문 1 · 무슨 일이</h2>
   <p>
-    feat/61 이 이번 계보에서 처음으로 완전한 CI 게이트 실물(다섯 워크플로 전부
-    통과)과 함께 PR#73 으로 착지해 이슈 #61 이 닫혔고,<sup><a href="#f5">[5]</a></sup>
+    feat/61 이 이번 계보에서 처음으로 완전한 CI 게이트 실물(워크플로 런 5 —
+    저장소 워크플로 3 + GitHub 관리형 2, check-runs 7)과 함께 PR#73 으로
+    착지해 이슈 #61 이 닫혔고,<sup><a href="#f5">[5]</a></sup><sup><a href="#f19">[19]</a></sup>
     같은 창 안에서 제18편 자신이 받았던 Codex 정정 셋이 완결자의 3점 대조
     (구판·신판·착지본)로 실재를 다시 검증받은 뒤 PR#71 이 재착지했으며,<sup><a href="#f6">[6]</a></sup>
     그 재착지 과정에서 완결자는 「PR 인라인 코멘트가 push 뒤 새 head 로 재고정되는
     것」을 <code>original_commit_id</code> 로 갈라 「새 지적 0건」임을 증명했습니다.<sup><a href="#f7">[7]</a></sup>
+  </p>
+  <p class="note">
+    <b>부기(같은 결함 가족, 이 편 자신이 겪음)</b> — 이 문단의 숫자는 원래 「다섯
+    워크플로」였다가 착지 직전 Codex 의 정당한 새 지적으로 고쳐졌습니다. 제18편의
+    결함이 「N건 있다」와 「N건 통과했다」를 섞은 것이었다면,<sup><a href="#f19">[19]</a></sup>
+    이번은 같은 가족의 다른 갈래 — 「무엇을 N건으로 셌는가」입니다. 저장소
+    워크플로(3)·GitHub 관리형(2)·check-runs(7) 가 같은 착지를 놓고 서로 다른
+    「몇 건」을 낳는다는 것을, 이 편 스스로가 겪어 보였습니다.
   </p>
 
   <h2>질문 2 · 어떤 흐름으로 진행됐나</h2>
@@ -128,7 +137,7 @@
       <text x="380" y="112" font-size="12" fill="var(--ink)" font-weight="600" text-anchor="middle"
             font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">CI 실물 발화</text>
       <text x="380" y="130" font-size="9" fill="var(--soft)" text-anchor="middle"
-            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">3분29초 뒤 · 5워크플로 전부 pass</text>
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">3분29초 뒤 · check-runs 7 전부 pass</text>
 
       <line x1="468" y1="116" x2="568" y2="116" stroke="var(--soft)" stroke-width="1" marker-end="url(#arrow19)"/>
       <rect x="568" y="88" width="200" height="56" rx="6" fill="var(--accent-tint)" stroke="var(--accent)" stroke-width="1"/>
@@ -417,6 +426,7 @@ chatgpt-codex-connector[bot] commit=02f3a514 orig=02f3a514   <span class="g">←
     <li id="f16"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «[큐·예약] #63 리뷰→착지 → #72 배정(항목 3 대표 결정 필요) · #62 → #51 → #45»</li>
     <li id="f17"><span class="path">REPOS/whole-life/AGENTS.md</span> 59행 — «역사 기록(`docs/history/`)은 **교육자만** 쓴다.»</li>
     <li id="f18"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «| `ORD-EDU-pr33-gate` | claude-review 고장→A 결정→착지 구간 기편 | 교육자 Educator | 09:10 KST | **발행** | event `3c87be99`. 각주 규칙 ④ 방아쇠를 이 편 첫 커밋에 얹도록 지시 — 방아쇠 소진 |» · «| `ORD-EDU-pr33-gate` | claude-review 고장→A 결정→착지 구간 기편 | 교육자 Educator | 09:10 KST | **통과** | 위 표 여섯 항목 충족. 각주 규칙 ④ 방아쇠 소진 확정 — «방아쇠로 둔 것» 목록에서 소멸 |»</li>
+    <li id="f19"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-log-74__ORD-CLS-PR-74.md</span> — «$ gh api "…/actions/runs?head_sha=d44067cf…" → workflow runs: 5 저장소 워크플로(.github/workflows/): 3 — docs-ci · python-ci · Claude Code Review GitHub 관리형(dynamic): 2 — github-advanced-security · github-code-scanning/codeql $ gh api …/commits/d44067cf…/check-runs → total 7 (전부 success)» · «앞으로 내 보고에서 이 수를 쓸 때는 「워크플로 런 5(저장소 3 + GitHub 관리형 2) · check-runs 7」로 적는다.»</li>
   </ol>
 
 </div>
