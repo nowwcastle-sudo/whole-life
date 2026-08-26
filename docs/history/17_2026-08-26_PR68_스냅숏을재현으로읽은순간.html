@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>제17편 — 스냅숏을 재현으로 읽은 순간</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:       #282828;
+    --paper-2:     #32302f;
+    --zone:        #302e2c;
+    --ink:         #ebdbb2;
+    --muted:       #a89984;
+    --soft:        #928374;
+    --rule:        rgba(235,219,178,0.12);
+    --rule-solid:  #504945;
+    --accent:      #fe8019;
+    --accent-tint: rgba(254,128,25,0.12);
+    --link:        #83a598;
+    --green:       #b8bb26;
+    --red:         #fb4934;
+    --yellow:      #fabd2f;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--paper); color:var(--ink);
+       font-family:"Geist","Pretendard","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;
+       line-height:1.75; -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:880px; margin:0 auto; padding:64px 28px 120px}
+  .kicker{font-size:13px; letter-spacing:.14em; color:var(--soft); text-transform:uppercase;
+          font-family:"Geist Mono",ui-monospace,"Consolas",monospace}
+  h1{font-family:"Instrument Serif","Malgun Gothic",serif;
+     font-size:52px; line-height:1.15; margin:14px 0 10px; letter-spacing:-.01em; font-weight:400}
+  .sub{font-size:18px; color:var(--muted); margin:0 0 8px}
+  h2{font-family:"Instrument Serif","Malgun Gothic",serif;
+     font-size:32px; line-height:1.3; margin:56px 0 14px; font-weight:400; letter-spacing:-.01em}
+  h3{font-size:16px; letter-spacing:.06em; color:var(--ink); margin:34px 0 12px; font-weight:600}
+  p{font-size:17px; margin:0 0 18px}
+  .note{font-size:15px; color:var(--muted)}
+  hr{border:0; border-top:1px solid var(--rule); margin:44px 0}
+  code{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; font-size:.9em;
+       background:var(--zone); color:var(--ink); padding:1px 6px; border-radius:4px}
+  .card{background:var(--paper-2); border:1px solid var(--rule-solid); border-radius:8px;
+        padding:26px 28px; margin:26px 0}
+  .term{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; font-size:14px; line-height:1.7;
+        background:var(--zone); color:var(--ink); border:1px solid var(--rule-solid);
+        border-radius:8px; padding:20px 22px; margin:0 0 18px; overflow-x:auto; white-space:pre-wrap}
+  .term .d{color:var(--soft)}
+  .term .g{color:var(--green)}
+  .tbl{width:100%; border-collapse:collapse; font-size:15px}
+  .tbl td{padding:13px 12px 13px 0; border-bottom:1px solid var(--rule); vertical-align:top; line-height:1.6}
+  .tbl tr:last-child td{border-bottom:0}
+  .tbl td:first-child{white-space:nowrap; font-family:"Geist Mono",ui-monospace,"Consolas",monospace;
+       font-size:13px; color:var(--soft); width:120px}
+  figure{margin:34px 0}
+  figcaption{font-size:14px; color:var(--muted); margin-top:12px; text-align:center; line-height:1.6}
+  svg{display:block; width:100%; height:auto}
+  sup a{color:var(--link); text-decoration:none; font-size:12px; font-weight:600; padding:0 1px}
+  .fnotes{margin-top:64px; border-top:1px solid var(--rule-solid); padding-top:26px;
+          list-style:none; padding-left:0}
+  .fnotes li{font-size:14px; color:var(--muted); margin-bottom:11px; line-height:1.65}
+  .fnotes .path{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; color:var(--ink); font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kicker">제 17 편 · 일지편 · 당대에 씀</div>
+  <h1>스냅숏을 재현으로 읽은 순간</h1>
+  <p class="sub">제16편이 <code>main</code> 에 들어간 그 일 — PR#68 의 착지를 기록하고,
+    같은 회차 안에서 함께 온 관찰 셋을 담습니다.</p>
+
+  <div class="card">
+    <p style="margin:0 0 12px"><b>읽기 전에 — 이 편의 대상은 «편 하나의 착지 + 그 회차의 관찰 셋»입니다.</b>
+      일지편의 단위는 「대상 하나」이고, 이번 대상은 제16편이라는 산출물의 완결, 곧 PR#68 의
+      squash 착지입니다.[1] 통치자 지시는 여기에 후보 교훈 셋을 함께 실으라고 정했고,[2]
+      그중 둘은 발행 이후 두 차례 정정을 거쳐 지금 형태가 됐습니다.[3][4]</p>
+    <p style="margin:0" class="note">
+      <b>범위 밖 — 다음 편으로 넘긴 것.</b> 이 회차 안에는 PR#66 의 대표 직접 병합과
+      전원 rate-limit 정지가 함께 있었지만, 통치자 지시가 이 둘을 «다음 편 재료»로
+      명시적으로 미뤘습니다.[5] 이 편은 <b>내 지시 자체가 그 정지로 재발행된 사실</b>만
+      절차로 다루고, 정지의 원인과 PR#66 의 내용은 다루지 않습니다.</p>
+    <p style="margin:12px 0 0" class="note">
+      문장 옆의 <sup><a href="#f1">[n]</a></sup>은 「경로 + 인용문」 각주입니다.
+      <b>[내가 잰 것]</b> 블록은 이 편을 쓰는 교육자가 직접 돌려 출력을 받은 명령입니다.
+      각주는 문구의 «존재»만 보증합니다 — 자격은 따로 물어야 합니다.</p>
+  </div>
+
+  <h2>질문 1 · 무슨 일이</h2>
+  <p>
+    제16편을 싣던 PR#68 은 병합 직전 재측정한 merge-tree 예측(<code>76e8dd50</code>)과 같은 채
+    squash 로 내려와 <code>main</code>=<code>44e0251b</code> 가 됐고 claude-review 의
+    «한도 초과» 서명은 일곱째 표본(365ms)을 쌓았으며,[6][7] 같은 처리 창 안에서 별개 작업(#61)의
+    구현자가 «재측정했더니 앞서 잰 값과 똑같았다»고 적었던 base 좌표가 실은 착지 몇 초 전의
+    fetch 스냅숏이었음이 드러나 «동일함이 재현이 아니라 스냅숏일 수 있다»는 함정으로 정리됐고,[8][9]
+    통치자의 최초 후보 문구도 한 차례 더 좁게 정정됐습니다.[3]
+    이와 별개로 buzz 읽기 경로의 일시적 이상 관찰 하나와,[10] «정확히 1회» 규칙의 검색 가시성에
+    대한 관찰 하나가 처음엔 «찾지 못했다»는 거짓 음성으로 왔다가 양성 통제로 정정됐습니다.[11][12]
+  </p>
+
+  <h2>질문 2 · 어떤 흐름으로 진행됐나</h2>
+  <figure>
+    <svg viewBox="0 0 860 460" role="img" aria-labelledby="ch17-timeline-title ch17-timeline-desc">
+      <title id="ch17-timeline-title">PR#68 착지와 관찰 셋의 타임라인 — 2026-08-26 13:40 ~ 2026-08-27 00:32 KST</title>
+      <desc id="ch17-timeline-desc">2026년 8월 26일 13시 40분부터 다음날 8월 27일 0시 32분까지의 타임라인. 완결자에게 착지 지시가 발행된 뒤 시각이 특정되지 않은 준비 구간(병합 직전 재측정과 CI 판정)을 거쳐 13시 38분 11초에 착지가 확정된다. 뒤이어 14시대에 통치자가 착지 통과와 스냅숏 함정을 함께 처리하며 이 편의 지시를 발행하고, 곧이어 정정 하나가 붙는다. 그 뒤 전원이 rate limit로 정지되는 구간이 있으나 이 편의 범위 밖으로 표시되고, 다음날 0시 23분에 지시가 재발행되며 0시 32분에 정확히 1회 관찰의 정정이 도착한다.</desc>
+      <rect width="100%" height="100%" fill="var(--paper)"/>
+
+      <text x="24" y="36" font-size="12" fill="var(--soft)" letter-spacing="0.08em"
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">2026-08-26 → 2026-08-27 · KST (UTC 사료값에 +9h)</text>
+
+      <!-- 연결선 -->
+      <line x1="96" y1="164" x2="96" y2="196" stroke="var(--soft)" stroke-width="1" stroke-dasharray="4,3"/>
+      <line x1="260" y1="164" x2="260" y2="196" stroke="var(--soft)" stroke-width="1" stroke-dasharray="4,3"/>
+      <line x1="330" y1="208" x2="330" y2="264" stroke="var(--soft)" stroke-width="1"/>
+
+      <!-- 준비 구간(시각 미특정) 띠 -->
+      <rect x="96" y="112" width="164" height="48" rx="6" fill="var(--paper-2)"
+            stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="178" y="132" font-size="12" fill="var(--ink)" font-weight="600" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">병합 직전 재측정</text>
+      <text x="178" y="150" font-size="12" fill="var(--ink)" font-weight="600" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">CI 판정 → squash 준비</text>
+
+      <!-- 시간축 -->
+      <line x1="72" y1="200" x2="800" y2="200" stroke="var(--rule-solid)" stroke-width="1"/>
+      <line x1="88" y1="196" x2="88" y2="204" stroke="var(--soft)" stroke-width="1"/>
+      <line x1="330" y1="196" x2="330" y2="204" stroke="var(--soft)" stroke-width="1"/>
+      <line x1="470" y1="196" x2="470" y2="204" stroke="var(--soft)" stroke-width="1"/>
+      <line x1="620" y1="196" x2="620" y2="204" stroke="var(--soft)" stroke-width="1"/>
+      <line x1="760" y1="196" x2="760" y2="204" stroke="var(--soft)" stroke-width="1"/>
+
+      <circle cx="88" cy="200" r="4" fill="var(--ink)"/>
+      <circle cx="330" cy="200" r="6" fill="var(--accent)"/>
+      <circle cx="470" cy="200" r="4" fill="var(--ink)"/>
+      <circle cx="620" cy="200" r="4" fill="var(--soft)"/>
+      <circle cx="760" cy="200" r="4" fill="var(--ink)"/>
+
+      <text x="88" y="228" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">13:40</text>
+      <text x="330" y="228" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">13:38:11</text>
+      <text x="470" y="228" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">14:05~14:15</text>
+      <text x="620" y="228" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">~14:35~</text>
+      <text x="760" y="228" font-size="12" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">08-27 00:23~00:32</text>
+
+      <text x="88" y="252" font-size="12" fill="var(--ink)" font-weight="600" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">ORD-CLS-PR-68 발행</text>
+
+      <!-- 착지 상자 -->
+      <rect x="226" y="268" width="208" height="68" rx="6" fill="var(--paper-2)"
+            stroke="var(--green)" stroke-width="1"/>
+      <text x="330" y="288" font-size="12" fill="var(--ink)" font-weight="600" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">PR#68 squash 착지</text>
+      <text x="330" y="308" font-size="9" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">tree == 예측 76e8dd50 · main=44e0251b</text>
+      <text x="330" y="324" font-size="9" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">mergedAt 04:38:11Z = 13:38:11 KST</text>
+
+      <!-- 14:05~14:15 위쪽 -->
+      <text x="470" y="120" font-size="9" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">스냅숏 함정 발견 · ORD-EDU-log-68</text>
+      <text x="470" y="140" font-size="12" fill="var(--ink)" font-weight="600" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">통치자 처리 + 발행 + 추기①③</text>
+
+      <!-- 정지 구간(범위 밖) -->
+      <rect x="562" y="180" width="116" height="40" rx="6" fill="var(--zone)"
+            stroke="var(--rule-solid)" stroke-width="1" stroke-dasharray="3,3"/>
+      <text x="620" y="203" font-size="11" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">전원 정지(범위 밖)</text>
+
+      <!-- 08-27 아래쪽 -->
+      <text x="760" y="252" font-size="12" fill="var(--ink)" font-weight="600" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">재발행 → 추기 둘째</text>
+      <text x="760" y="270" font-size="9" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">③ 정본 갱신(구현자 정정)</text>
+
+      <!-- 범례 -->
+      <line x1="24" y1="372" x2="836" y2="372" stroke="var(--rule)" stroke-width="1"/>
+      <text x="24" y="396" font-size="12" fill="var(--soft)" letter-spacing="0.14em"
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">범례</text>
+      <circle cx="116" cy="392" r="6" fill="var(--accent)"/>
+      <text x="132" y="396" font-size="12" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">되돌릴 수 없는 착지</text>
+      <rect x="304" y="384" width="32" height="16" rx="4" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="348" y="396" font-size="12" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">시각 미특정 구간</text>
+      <rect x="516" y="384" width="32" height="16" rx="4" fill="var(--zone)" stroke="var(--rule-solid)" stroke-width="1" stroke-dasharray="3,3"/>
+      <text x="560" y="396" font-size="12" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">이 편 범위 밖(다음 편 재료)</text>
+      <circle cx="680" cy="392" r="4" fill="var(--soft)"/>
+      <text x="696" y="396" font-size="12" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">범위 밖 사건의 경계만 표시</text>
+    </svg>
+    <figcaption>
+      가로축은 실제 간격이 아니라 <b>사건 순서</b>입니다(구간 폭이 40분과 10시간을 같은 칸으로 묶습니다) —
+      정지 구간의 실제 길이가 이 편의 소재가 아니기 때문입니다.[5]
+      착지 앞뒤 시각은 사료의 UTC 값에 +9h 를 더한 것입니다.[6][2]
+    </figcaption>
+  </figure>
+
+  <table class="tbl">
+    <tbody>
+      <tr><td>13:40</td><td><b>ORD-CLS-PR-68 발행</b> — 담당 완결자, PR#64·65 절차 준용.[13]</td></tr>
+      <tr><td>~13:38 직전</td><td><b>병합 직전 재측정</b> — merge-tree 예측 <code>76e8dd50</code>, exit=0.[6]
+        CI «한도 초과» 서명 판정 — job 98058442698, duration_ms=365, 표본 계보 664→391→52→525/392/365.[7][6]</td></tr>
+      <tr><td>13:38:11</td><td><b>squash 착지</b> — <code>--match-head-commit bc0a2b7…</code>, <code>main</code>=<code>44e0251b</code>.[6][6]</td></tr>
+      <tr><td>~14:05</td><td><b>통치자 RPT-ORD-CLS-PR-68 처리</b> — 독립 재측정(fetch 뒤): tree 일치·브랜치 소멸 재확인.
+        같은 처리 창에서 <b>RPT-ORD-IMP-61</b> 검토 중 base 좌표 왕복(스냅숏 함정)이 드러남.[14][8]
+        <b>ORD-EDU-log-68 발행</b>(event <code>a5179bb1</code>) — 이 편을 부른 지시.[2][15]</td></tr>
+      <tr><td>~14:07</td><td><b>추기</b>(event <code>e62d1b58</code>) — ① 스냅숏 문구 정정,
+        ③ «정확히 1회» 가시성 후보 추가.[3][10]</td></tr>
+      <tr><td>~14:35~</td><td>(범위 밖) <b>전원 rate-limit 정지 시작</b> — 이 지시의 RPT 없이 정지.
+        원인·PR#66 내용은 다음 편 재료.[5][16]</td></tr>
+      <tr><td>08-27 00:23</td><td><b>정지 복구, 지시 재발행</b>(event <code>14798ae9</code>) — 원 조건·범위 불변,
+        base 만 <code>fe1e950</code> 로 갱신.[5]</td></tr>
+      <tr><td>08-27 00:32</td><td><b>추기 둘째</b>(event <code>0a27fc89</code>) — ③ 정본 갱신,
+        구현자의 재검증 결과를 정본으로 지정.[4][12]</td></tr>
+    </tbody>
+  </table>
+
+  <h3>[내가 잰 것] — 이 편을 쓰면서 직접 돌린 명령</h3>
+  <div class="term"><span class="d">$ git fetch origin && git rev-parse origin/main</span>
+fe1e95040b6a52a1e9a91f76cc60c52940e3defe
+<span class="d">$ git rev-parse 44e0251b^{tree}</span>
+76e8dd50cb7e370f0a4e7730626df03c2e72f529      <span class="g">← CLS·통치자 재측정과 다시 한 번 일치</span>
+<span class="d">$ wc -c GOV_LEDGER.md; wc -l GOV_LEDGER.md</span>
+9508607 GOV_LEDGER.md
+153025 GOV_LEDGER.md   <span class="d">← 구현자 정정 추기 실측(9,501,996바이트·152,978행)보다 늘어 있음 — 정정 이후에도 계속 자란 파일이라 자연스럽다</span>
+<span class="d">$ grep -c "정확히 1회" GOV_LEDGER.md</span>
+35   <span class="d">← 구현자 정정 추기의 34건보다 1건 많다(파일이 그 사이도 자랐다)</span>
+<span class="d">$ grep -c "ORD-IMP-61" GOV_LEDGER.md</span>
+7    <span class="g">← 양성 통제, exit=0 — 구현자 재검증(6건)과 같은 방향</span></div>
+
+  <h2>되돌릴 수 없는 문 앞에서</h2>
+  <p>
+    이번 착지도 같은 문 앞을 지났습니다 — 병합 직전 merge-tree 로 다시 예측하고,[6]
+    「한도 초과」 CI 서명은 이미 여섯 번 쌓인 표본에 맞춰 판정하고,[7] 착지 뒤 tree·MERGED·
+    브랜치 소멸·push CI 네 갈래로 독립 조회했습니다.[13][6] 이 절차 자체는 제14~16편과
+    다르지 않습니다. 이번 편이 다른 것은 <b>그 문 옆에서, 다른 작업(#61)의 «되돌릴 수 없는
+    문 앞» 확인 하나가 스스로 무너졌다가 다시 서는 과정을 보여줬다는 점</b>입니다.
+  </p>
+  <p>
+    #61 구현자는 작업 시작 시점에 base 를 <code>82493e83</code> 로 적었습니다 — 그 시점엔
+    맞는 값이었습니다.[9] RPT 를 쓴 뒤 통치자가 PR#68 착지(04:38:11Z)를 알려 왔고,
+    구현자가 다시 fetch 해 재측정하니 <code>origin/main</code> 은 이미 <code>44e0251b</code>
+    였습니다.[9] 왕복의 핵심은 「값이 틀렸다」가 아니라 <b>「같은 절차(재측정)를 두 번 밟았는데
+    두 번째가 스냅숏이었는지 재현이었는지를 절차 자체가 말해주지 않는다」</b>는 것입니다 —
+    통치자 원장이 정리한 문장 그대로입니다: «최초 base 표기 82493e83 은 착지 직전 fetch
+    스냅숏이었다(구현자 aa143c48 정리 — «동일함은 재현이 아니라 스냅숏»)».[8]
+  </p>
+  <p>
+    이 함정은 이미 저장소 밖 운영 지식(<code>GUIDES/whole-life/도구_함정.md</code>)에
+    등록돼 있고, 통치자는 그 등록분을 이 편의 정본으로 지정했습니다 — 등록된 문장을
+    그대로 옮기면 이렇습니다: <b>«재측정했는데 앞 실측과 정확히 같다»면 의심 신호다.
+    remote-tracking ref(origin/main 등)는 마지막 fetch 시점의 스냅숏일 뿐이다. …
+    base 를 기록하는 RPT 를 쓰기 직전에 <code>git fetch origin</code> 하고 그 시점 값을
+    적는다 — «받는 순간 다시 재라»의 전제는 fetch 다.»[17]
+  </p>
+  <p class="note">
+    내 이해를 덧붙이면 — 통치자의 최초 발행문 자체도 한 번 더 좁게 정정됐다는 점이
+    이 소재의 값어치를 한 겹 더합니다. 최초 문구는 「fetch 없이 로컬 ref 를 읽으면」이었지만,
+    정정본은 「fetch 는 했지만 그 fetch 가 착지 몇 초 전이었다」로 좁혀졌습니다.[3]
+    함정의 이름을 붙이는 사람도 첫 문장에서 원인을 넓게 짚었다가 실측으로 좁히는 과정을
+    거쳤다는 것 자체가, 이 폴더가 반복해서 적어 온 「그때는 맞았던 줄」 규칙이 왜 있는지를
+    보여 주는 작은 사례입니다.
+  </p>
+
+  <h2>같은 지시의 추기 — 후보 셋</h2>
+  <p><b>① 스냅숏 함정 — 위 절에서 이미 기록.</b>
+    바로 위 절이 이 후보의 전체 서술입니다. 정본은 <code>GUIDES/whole-life/도구_함정.md</code>
+    60행이고,[17] 이 편은 그 문장을 그대로 인용해 실었습니다.[2]</p>
+
+  <p><b>② buzz 읽기 경로 관찰 — 원인 미특정, 관찰까지만.</b>
+    통치자 지시 원문 그대로 옮깁니다 — «buzz messages get 이 --limit 만 주면 존재가 보장된
+    채널에서 빈 배열을 돌려왔고 --since 0 으로는 정상. thread 조회는 스레드 뿌리 이벤트
+    (<code>d50ddfa0</code>)에 «does not belong to channel» 을 돌려왔다. 이벤트 존재는
+    하니스 주입분으로 확인됐고 그 사이 WORK_LOGS 파일 안전망이 값을 했다.»[10]
+    지시는 «일시 장애 가능성이 있어 관찰까지만 적어라»고 명시했고,[10] 이 편도 원인을
+    추정하지 않습니다 — 겪은 증상과, 그 사이 파일 기반 안전망이 대신 값을 보전했다는
+    사실만 남깁니다.</p>
+
+  <p><b>③ «정확히 1회» 공용 가시성 — 거짓 음성으로 시작해 양성 통제로 닫힘.</b>
+    최초 관찰은 «규칙 문언은 GOV_LEDGER.md 에 수십 곳 있음에도 구현자 검색은 «문언 없음»
+    이었다»는 것이었습니다.[11] 이 편을 쓰는 동안 통치자가 정본을 갱신했고,[4] 정정본은
+    구현자 작업로그의 추기가 정본입니다 — «39-40행의 «원장 파일 자체는 찾지 못해»는
+    거짓 음성이었다. 원장은 WORK_LOGS/whole-life/GOV_LEDGER.md 에 실재한다(9,501,996바이트 ·
+    152,978행 · «정확히 1회» 34곳 — rg -c 실측).»[18] 이어 재현 시도도 실었습니다 —
+    «통치자 추정(rg 래퍼가 /c/… 절대경로에서 에러 없이 빈 출력)은 현재 환경에서
+    재현되지 않는다 — 상대경로 · /c/… · C:\… 세 형태 모두 34건 · exit=0, ASCII 양성 통제
+    (ORD-IMP-61) 6건 · exit=0. 당시 빈손의 실제 원인은 이 로그에 정확한 명령이 없어
+    복원 불가.»[19] 구현자 스스로 남긴 교훈은 이렇습니다 — «빈 결과 뒤에는 존재가 확실한
+    문자열로 양성 통제를 먼저 돌린다. 그것도 0건이면 도구·범위 탓이다. 그리고 «없다»
+    주장에는 실행한 명령 원문을 로그에 남긴다 — 이번처럼 원인 복원이 막히지 않게.»[20]
+    위 [내가 잰 것] 블록의 마지막 두 명령은 이 정본을 내 손으로 다시 재본 것입니다 —
+    같은 방향(0건이 아니라 각각 35건·7건)으로 나왔습니다.</p>
+  <p class="note">
+    내 이해를 덧붙이면 — ③은 이 편 전체에서 유일하게 <b>「함정처럼 보였다가 함정이 아니었던」</b>
+    사례입니다. 처음 보고는 «검색이 안 됐다»는 도구 함정 모양이었지만, 재검증은 «파일을
+    찾지 못했다»는 그 자체가 개별 세션의 실수였고 도구는 정상이었다는 쪽으로 닫혔습니다.
+    「함정 후보」로 들어온 것이 전부 함정으로 확정되지는 않는다는 것도, 이 절차가
+    스스로 걸러낸다는 증거로 남습니다.
+  </p>
+
+  <h2>질문 6 · 다음 담당에게 무엇을 위임하나</h2>
+  <p>
+    PR#68 착지 자체는 이미 통과 판정으로 닫혔습니다.[13] 다만 착지 뒤의 별첨(최신 main
+    전체 스위트) 의무는 이 편의 범위 밖에서 main 좌표가 다시 이동하면서
+    <code>ORD-CLS-main-fe1e950</code> 로 승계됐습니다 — «착지 통과 기왕 판정 유지 ·
+    별첨 의무는 ORD-CLS-main-fe1e950로 승계(main 이동)».[16] 그 이동의 사유(PR#66 대표
+    직접 병합)는 다음 편이 다룹니다.[5] 실행 큐(#63 → #62 → #51 → #45)와 <code>ORD-REV-feat-61</code>
+    은 통치자가 이미 재발행해 진행 중입니다.[16] 「다음 EDU ORD 는 새 브랜치에서」 규칙은
+    이번에도 계승됐습니다 — 이 편은 새 브랜치 <code>docs/history-log-70</code>(base
+    <code>fe1e950</code>) 위에서 쓰였습니다.[5]
+  </p>
+
+  <h2>질문 7 · 왜 그 담당에게 맡기나</h2>
+  <p>
+    착지와 독립 조회의 RPT 주인은 완결자였고,[13] 병합 직후 재실측과 스냅숏 함정을
+    발견해 정리한 것은 통치자입니다.[14][8] 관찰 ②·③의 원자료를 직접 겪고 기록한
+    것도 각각 통치자와 구현자입니다.[10][9] 나에게 온 것은 그 기록을 하나의 편으로
+    묶는 일입니다 — 저장소 규약이 «역사 기록(<code>docs/history/</code>)은 교육자만
+    쓴다»고 정하고 있기 때문입니다.[21]
+  </p>
+
+  <h2>질문 8 · 왜 이걸 제안했나</h2>
+  <p>
+    일지편은 «레그가 통과할 때» 나옵니다.[22] 이번 레그는 제16편이라는 산출물의 착지이므로
+    같은 규칙이 걸립니다. 후보 셋을 같은 편에 싣는 것은 통치자의 명시적 지시입니다 —
+    «채택 판단은 네 몫」이라는 전제 아래, 이 편은 셋을 모두 사실로 채택해 실었습니다.
+    셋 다 같은 회차, 같은 두 지시(<code>a5179bb1</code>·<code>e62d1b58</code>) 안에서
+    함께 왔고, 그중 둘(①·③)은 이 편이 쓰이는 동안 정정을 거쳐 정본이 갱신됐습니다.[3][4]
+  </p>
+
+  <h2>질문 11 · 원점에 비춰, 이번 걸음이 그쪽으로 갔나</h2>
+  <p>
+    <b>아니오 — 어긋난 걸음 없음.</b> 이번 걸음도 제품 코드가 아니라 «이 프로젝트가
+    자신을 기록하는 축»의 유지입니다.[23]
+  </p>
+  <p class="note">
+    내 이해를 덧붙이면 — 이번 편의 소재 자체가 그 축의 다른 결을 보여 줍니다. 통치자가
+    자신의 최초 후보 문구를 스스로 좁혀 정정하고,[3] 구현자가 자신의 «찾지 못했다»는
+    보고를 스스로 거짓 음성으로 정정한[18] 두 사례가 같은 회차 안에 나란히 있었습니다.
+    「다시 재생되고 남는」 협업이란 결과가 한 번에 맞는 것이 아니라, <b>틀렸던 자리를
+    스스로 다시 잴 수 있다는 것</b>까지를 포함한다는 뜻으로 읽었습니다 — 이 폴더가
+    「그때도 틀렸던 줄은 고치고, 무엇이 어떻게 틀렸는지를 각주에 남긴다」는 규칙을
+    스스로 쓰는 지금 이 편에서도, 같은 습관이 편 밖(작업로그·지시문)에서 먼저
+    작동하고 있었다는 것을 확인한 셈입니다.
+  </p>
+
+  <h2>질문 12 · 처음 범위에서 새로 늘어난 것이 있나</h2>
+  <p>
+    <b>없습니다.</b> 저장소 쪽 변경은 <code>docs/history/</code> 아래 둘뿐입니다 — 신설
+    편과 연대기 색인. 스냅숏 함정 문장은 이미 저장소 밖 nest 문서에 다른 작업자가
+    등록해 둔 것을 인용했을 뿐이고,[17] 이 편이 새로 등록한 운영 지식은 없습니다.
+    원점편의 «범위 밖» 목록 어느 항목도 건드리지 않았습니다. «새 브랜치» 요건은
+    새 구조가 아니라 delete_branch_on_merge 설정의 필연적 결과이며, 다음 ORD 도
+    같은 방식으로 시작하라는 기존 규칙의 계승입니다.[24]
+  </p>
+
+  <hr>
+  <p class="note">
+    여기서 멈춘다 — 기록과 PR, 보고까지. 판정하지 않는다. 질문 11·12 모두 «아니오·없음»이라
+    통치자 에스컬레이션 의무는 발생하지 않았다. PR#66 과 전원 정지의 내용은 다음 편으로 넘긴다.
+  </p>
+
+  <h2>각주</h2>
+  <ol class="fnotes">
+    <li id="f1"><span class="path">docs/history/16_2026-08-26_PR65_병합전에잡은오타와네번째서명.html</span> — 제16편(제15편의 착지 기록) 본문. 이 편이 기록하는 것은 그 제16편을 실은 PR#68 자체의 착지다.</li>
+    <li id="f2">채널 <span class="path">whole-life</span> · 통치자 지시 event <span class="path">a5179bb1</span> — «제17편 일지편(PR#68 착지) + 후보 교훈: ① 스냅숏 함정 … ② buzz 읽기 경로 관찰 … ③ «정확히 1회» 공용 가시성»</li>
+    <li id="f3">채널 <span class="path">whole-life</span> · 통치자 추기 event <span class="path">e62d1b58</span> — «내 발행문은 «fetch 없이 로컬 ref 를 읽으면» 이었지만 실제는 더 좁게 확인됐다: 구현자는 fetch 를 했고 그 fetch 가 착지 몇 초 전이었다(aa143c48 실측 보고).»</li>
+    <li id="f4">채널 <span class="path">whole-life</span> · 통치자 추기 event <span class="path">0a27fc89</span> — «구현자가 정지 복구 통지 회신(event d6999189)에서 후보 ③의 사실 기반 둘을 실측 정정했다. … ③을 쓸 때 rg 래퍼 침묵을 «원인»으로 단정하지 말고 위 정정본을 정본으로 삼아라.»</li>
+    <li id="f5">채널 <span class="path">whole-life</span> · 통치자 재발행 event <span class="path">14798ae9</span> — «05:35Z경 전원이 rate limit로 얼었고 이 지시의 RPT는 없다» · «base 갱신 [통치자 실측 00:23 KST]: main = fe1e950(대표가 PR#66 직접 병합 + PR#68 착지 반영). 새 브랜치는 fe1e950 기점으로 파라» · «예고(이번 편 범위 아님): PR#66 대표 직접 병합과 전원 rate limit 정지는 다음 편 재료로 온다.»</li>
+    <li id="f6"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-log-65__ORD-CLS-PR-68.md</span> — «`git merge-tree --write-tree origin/main origin/docs/history-log-65` → `76e8dd50cb7e370f0a4e7730626df03c2e72f529`, exit=0» · «`git rev-parse origin/main` = `44e0251ba9695452efc3b5ae00fb4447f3f5d292` · `^{tree}` = `76e8dd50…` == merge-tree 예측 MATCH» · «`gh pr view 68` → state MERGED · mergeCommit `44e0251b…` · mergedAt 2026-08-26T04:38:11Z» · «`gh pr merge 68 --squash --match-head-commit bc0a2b7…`»</li>
+    <li id="f7"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-log-65__ORD-CLS-PR-68.md</span> — «잡 로그(job 98058442698): `"is_error": true` · `"duration_ms": 365` · `"total_cost_usd": 0` · `"modelUsage": {}` · `No buffered inline comments`» · «판정문 스캔 0건. 표본 계보: 664(#60)→391(#64)→52(#65)→525(#66)/392(#67)/365(#68)»</li>
+    <li id="f8"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «좌표 왕복: 최초 base 표기 82493e83 은 착지 직전 fetch 스냅숏이었다(구현자 aa143c48 정리 — «동일함은 재현이 아니라 스냅숏»). merge-base 불변·docs-only 비겹침 파일 목록 실증으로 리베이스 불요 확정»</li>
+    <li id="f9"><span class="path">WORK_LOGS/whole-life/IMP_feat-61-refuse-relative-working-directory__ORD-IMP-61.md</span> — «RPT 직후 통치자가 정정: PR#68(docs 전용)이 04:38:11Z 에 착지해 있었다. fetch 뒤 내 재측정 — origin/main=44e0251ba9695452efc3b5ae00fb4447f3f5d292 · tree=76e8dd50cb7e370f0a4e7730626df03c2e72f529(통치자 실측과 일치). 내 최초 «재측정»은 fetch 시점이 착지 직전이라 그 값(82493e83)이 맞았지만, 착지를 몰라 낡은 값을 base 로 적었다.»</li>
+    <li id="f10">채널 <span class="path">whole-life</span> · 통치자 지시 event <span class="path">a5179bb1</span> — «buzz messages get 이 --limit 만 주면 존재가 보장된 채널에서 빈 배열을 돌려왔고 --since 0 으로는 정상. thread 조회는 스레드 뿌리 이벤트(d50ddfa0)에 «does not belong to channel» 을 돌려왔다. 이벤트 존재는 하니스 주입분으로 확인됐고 그 사이 WORK_LOGS 파일 안전망이 값을 했다. 일시 장애 가능성이 있어 관찰까지만 적어라.»</li>
+    <li id="f11">채널 <span class="path">whole-life</span> · 통치자 추기 event <span class="path">e62d1b58</span> — «규칙 문언은 GOV_LEDGER.md 에 수십 곳 있음에도(내 grep 3618행 등, 2026-08-26) 구현자 검색은 «문언 없음» 이었다(ef1b3061 보고).»</li>
+    <li id="f12">채널 <span class="path">whole-life</span> · 통치자 추기 event <span class="path">0a27fc89</span> — «2. rg 함정은 현재 환경에서 재현 안 됨 — 상대경로·/c/…·C:… 세 경로 형태 모두 34건·exit=0, ASCII 양성 통제(ORD-IMP-61 → 6건) 정상. 당시 빈손의 실제 원인은 복원 불가»</li>
+    <li id="f13"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «| `ORD-CLS-PR-68` | PR#68 제16편 squash 착지 | 완결자 | 13:40 KST | **통과**(별첨 대기) | 내 재측정 tree 일치·MERGED·소멸·push CI green |»</li>
+    <li id="f14"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «**RPT-ORD-CLS-PR-68 착지 통과(별첨 대기)** — RPT 메시지 `1589fced`(완결자, ORD 스레드 회신)» · «게이트: … / 독립 조회 넷(rev-parse·MERGED·브랜치 소멸·push CI docs-ci/python-ci/CodeQL success)»</li>
+    <li id="f15"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «| `ORD-EDU-log-68` | 제17편 일지편+후보 셋 | 교육자 | 14:05 KST | 발행(+추기) | 착지 직후 관례 |»</li>
+    <li id="f16"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «| `ORD-CLS-PR-68` | PR#68 착지+별첨 | 완결자 | 08-26 13:40 | **종결(승계)** | 착지 통과 기왕 판정 유지 · 별첨 의무는 ORD-CLS-main-fe1e950로 승계(main 이동) |» · «[큐·예약] #63(feat/61 착지 후) → #62 → #51 → #45»</li>
+    <li id="f17"><span class="path">GUIDES/whole-life/도구_함정.md (nest)</span> 60행 — «⚠️ **«재측정했는데 앞 실측과 정확히 같다»면 의심 신호다** — remote-tracking ref(origin/main 등)는 마지막 fetch 시점의 스냅숏일 뿐이다. 구현자 2026-08-26 실측: fetch 를 했지만 그 fetch 가 착지 몇 초 전이라 82493e83 을 «최신»으로 보고했고, 그 사이 PR#68 squash 착지로 main 은 44e0251b 로 움직여 있었다. **base 를 기록하는 RPT 를 쓰기 직전에 `git fetch origin` 하고 그 시점 값을 적는다** — «받는 순간 다시 재라»의 전제는 fetch 다»</li>
+    <li id="f18"><span class="path">WORK_LOGS/whole-life/IMP_feat-61-refuse-relative-working-directory__ORD-IMP-61.md</span> — «39-40행의 «원장 파일 자체는 찾지 못해»는 거짓 음성이었다. 원장은 WORK_LOGS/whole-life/GOV_LEDGER.md 에 실재한다(9,501,996바이트 · 152,978행 · «정확히 1회» 34곳 — 2026-08-26 15:2xZ rg -c 실측).»</li>
+    <li id="f19"><span class="path">WORK_LOGS/whole-life/IMP_feat-61-refuse-relative-working-directory__ORD-IMP-61.md</span> — «통치자 추정(rg 래퍼가 /c/… 절대경로에서 에러 없이 빈 출력)은 현재 환경에서 재현되지 않는다 — 상대경로 · /c/… · C:\… 세 형태 모두 34건 · exit=0, ASCII 양성 통제(ORD-IMP-61) 6건 · exit=0. 당시 빈손의 실제 원인은 이 로그에 정확한 명령이 없어 복원 불가(후보: worktree cwd 에서 nest 상대경로 검색, 또는 검색 범위 누락 — 이름표: 추측).»</li>
+    <li id="f20"><span class="path">WORK_LOGS/whole-life/IMP_feat-61-refuse-relative-working-directory__ORD-IMP-61.md</span> — «교훈(원인 무관하게 성립): **빈 결과 뒤에는 존재가 확실한 문자열로 양성 통제를 먼저 돌린다.** 그것도 0건이면 도구·범위 탓이다. 그리고 «없다» 주장에는 실행한 명령 원문을 로그에 남긴다 — 이번처럼 원인 복원이 막히지 않게.»</li>
+    <li id="f21"><span class="path">REPOS/whole-life/AGENTS.md</span> 59행 — «역사 기록(`docs/history/`)은 **교육자만** 쓴다.»</li>
+    <li id="f22"><span class="path">REPOS/whole-life/docs/history/00_연대기.html</span> — «일지편은 «레그가 통과할 때» 나옵니다»</li>
+    <li id="f23"><span class="path">REPOS/whole-life/README.md</span> — «We are not aware of one that also provides a shared cross-provider collaboration state with consistent replay, process cleanup, context boundaries, and deterministic output.»</li>
+    <li id="f24"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-log-35-64__ORD-CLS-PR-65.md</span> — «다음 EDU ORD 는 새 브랜치에서(원격 브랜치 소멸 확인 완료).»</li>
+  </ol>
+
+</div>
+</body>
+</html>
