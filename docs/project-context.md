@@ -20,6 +20,7 @@ The architecture is approved for a private, documentation-only repository. No im
 | `docs/spec/whole-life-v0.md` | `C119A4EF3DE437E9FBF98C72F68E342FF6FCD560CCE1CC0A370F00B004B9C1F0` | 607 | 2026-08-23 정정 3 — §4 Codex 행은 문서 기대치이며 측정 전까지 `unsupported` 보고 |
 | `docs/adr/0001-local-subscription-v0.md` | `ECA77E08C626F6D33454B9BF3CE40CBFA4170DCF86B9AA7D3D81B6F5790BB6EE` | 92 | 2026-08-23 정정 3 — 같은 Codex 정리를 ADR에도 |
 | `docs/spec/whole-life-v0.md` | `0DA48966DD973DBF0559DB96EC932133D6F56AF810C3E657EC6B0234770041C5` | 610 | 2026-08-26 개정 — §4 close 계약을 CloseReport 값 보고로 (ADR 0002) |
+| `docs/spec/whole-life-v0.md` | `2831DF7CC3C09FD8268F2473B97EE63896AA85FD52712F26965F6DBA2DBF37BC` | 610 | 2026-08-27 정정 — §4 불변식 3 셋째 잔여 경로(트리 킬 예외 없는 미확인) 명시, `reasons` 보장을 두 사유로 범위화 (ADR 0002 문언 동반 범위화) |
 
 The audited baseline row is kept so the 2026-08-20 audit provenance stays verifiable. The last row for each artifact is the current file. Rows are appended, never replaced: a hash that was once approved stays listed so the history of what was approved when remains readable.
 

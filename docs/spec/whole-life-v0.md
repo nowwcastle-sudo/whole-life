@@ -108,7 +108,7 @@ class AgentRuntime(Protocol):
 - optional 동작을 `None`이나 모의 구현으로 처리하지 않는다. preflight capability가 없으면 `Unsupported`로 거부한다.
 - `close()`는 `CloseReport`를 반환한다. 보고에는 남은 child process 수(`child_processes`)와 남은 stdout/stderr drain task 수(`drain_tasks`), 그 이유 목록(`reasons`)이 들어간다.
 - 정상 경로에서 `close()`가 반환할 때 이 runtime이 만든 child process와 stdout/stderr drain task는 0개다.
-- 잔여가 남는 실패 경로(killer 부재, 직접 킬 후 자식을 끝까지 거두지 못함)에서 `close()`는 성공과 같은 모양을 내지 않는다. 보고된 개수는 실제 잔여를 말하고, 0 보고는 실제 잔여 0일 때만 유효하다. killer 부재와 직접 킬 미거둠은 `reasons`에서 별개 항목이다 — 하나의 사유가 다른 사유를 덮지 않는다.
+- 잔여가 남는 실패 경로(killer 부재, 직접 킬 후 자식을 끝까지 거두지 못함, 트리 킬이 예외 없이 돌았으나 forced wait 안에 트리 사망을 확인하지 못함)에서 `close()`는 성공과 같은 모양을 내지 않는다. 보고된 개수는 실제 잔여를 말하고, 0 보고는 실제 잔여 0일 때만 유효하다. `reasons`가 항목을 보장하는 사유는 앞의 둘이다: killer 부재와 직접 킬 미거둠은 별개 항목이다 — 하나의 사유가 다른 사유를 덮지 않는다. 셋째 경로는 `reasons`에 항목을 만들지 않는다 — 그 잔여는 개수로 드러난다.
 - 잔여·사유의 모호성은 예외가 아니라 값이다. `close()`의 보고는 `RuntimeStatus`, `CancelOutcome`, `RunOutcome`과 같은 경계 값 계약이다.
 
 ### native delegation 계약
