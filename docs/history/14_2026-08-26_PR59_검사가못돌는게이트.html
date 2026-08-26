@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>제14편 · 기 — PR#59 검사가 못 돌아가는 게이트</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#282828; --paper-2:#32302f; --zone:#302e2c; --ink:#ebdbb2;
+    --muted:#a89984; --soft:#928374;
+    --rule:rgba(235,219,178,0.12); --rule-solid:#504945;
+    --accent:#fe8019; --accent-tint:rgba(254,128,25,0.12); --link:#83a598;
+    --green-tint:rgba(184,187,38,0.10); --red-tint:rgba(251,73,52,0.10);
+    --green:#b8bb26; --red:#fb4934; --yellow:#fabd2f;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Geist","Pretendard","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;
+    line-height:1.75; -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:880px; margin:0 auto; padding:64px 28px 120px}
+  .kicker{font-size:13px; letter-spacing:.14em; color:var(--soft); text-transform:uppercase;
+          font-family:"Geist Mono",ui-monospace,"Consolas",monospace}
+  h1{font-family:"Instrument Serif","Malgun Gothic",serif;
+     font-size:52px; line-height:1.2; margin:14px 0 6px; letter-spacing:-.01em; font-weight:400}
+  .sub{font-size:17px; color:var(--muted); margin:0 0 8px}
+  .meta{font-size:14px; color:var(--soft); font-family:"Geist Mono",ui-monospace,"Consolas",monospace}
+  hr{border:0; border-top:1px solid var(--rule); margin:48px 0}
+  h2{font-size:14px; letter-spacing:.16em; color:var(--soft); text-transform:uppercase;
+     margin:72px 0 4px; font-weight:500;
+     font-family:"Geist Mono",ui-monospace,"Consolas",monospace}
+  h3{font-size:19px; margin:34px 0 12px; font-weight:600}
+  .q{font-family:"Instrument Serif","Malgun Gothic",serif;
+     font-size:34px; line-height:1.35; margin:0 0 26px; font-weight:400; letter-spacing:-.01em}
+  .big{font-size:26px; line-height:1.5; font-weight:500; margin:0 0 18px}
+  p{font-size:17px; margin:0 0 18px}
+  .note{font-size:15px; color:var(--muted)}
+  a{color:var(--link); text-underline-offset:3px; text-decoration-thickness:1px}
+  .card{background:var(--paper-2); border:1px solid var(--rule-solid); border-radius:8px;
+        padding:26px 28px; margin:26px 0}
+  .warn{border-color:var(--yellow)}
+  .warn .tag{color:var(--yellow); font-weight:600}
+  .good{border-color:var(--green)}
+  .good .tag{color:var(--green); font-weight:600}
+  .tag{font-size:13px; letter-spacing:.1em; color:var(--soft);
+       font-family:"Geist Mono",ui-monospace,monospace}
+  figure{margin:34px 0}
+  figcaption{font-size:14px; color:var(--muted); margin-top:12px; text-align:center; line-height:1.6}
+  svg{display:block; width:100%; height:auto}
+  code{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; font-size:.9em;
+       background:var(--zone); color:var(--ink); padding:1px 6px; border-radius:4px}
+  .term{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; font-size:14px; line-height:1.7;
+        background:var(--zone); color:var(--ink); border:1px solid var(--rule-solid);
+        border-radius:8px; padding:20px 22px; overflow-x:auto; white-space:pre-wrap}
+  .term .g{color:var(--green)}
+  .term .d{color:var(--soft)}
+  .term .r{color:var(--red)}
+  blockquote{margin:0 0 18px; padding:14px 20px; background:var(--zone);
+             border-left:3px solid var(--link); font-size:16px; line-height:1.7; color:var(--ink)}
+  .tbl{width:100%; border-collapse:collapse; font-size:15px}
+  .tbl th{text-align:left; font-size:12px; letter-spacing:.1em; text-transform:uppercase;
+          color:var(--soft); font-weight:500; padding:0 12px 10px 0;
+          border-bottom:1px solid var(--rule-solid);
+          font-family:"Geist Mono",ui-monospace,monospace}
+  .tbl td{padding:13px 12px 13px 0; border-bottom:1px solid var(--rule);
+          vertical-align:top; line-height:1.6}
+  .tbl tr:last-child td{border-bottom:0}
+  .out{padding-left:22px; margin:0; font-size:16px}
+  .out li{margin-bottom:9px; line-height:1.6}
+  sup a{color:var(--link); text-decoration:none; font-size:12px; font-weight:600; padding:0 1px}
+  .fn{margin-top:80px; border-top:1px solid var(--rule-solid); padding-top:26px}
+  .fn h3{font-size:13px; letter-spacing:.16em; color:var(--soft); text-transform:uppercase;
+         margin:0 0 16px; font-family:"Geist Mono",ui-monospace,monospace; font-weight:500}
+  .fn ol{padding-left:24px; margin:0}
+  .fn li{font-size:14px; color:var(--muted); margin-bottom:11px; line-height:1.65}
+  .fn .path{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; color:var(--ink); font-size:13px}
+  .fn .quote{color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">제 14 편 · 기편</div>
+  <h1>문구는 제자리에,<br>해석이 움직였다</h1>
+  <p class="sub">PR#59 구간 — claude-review 저장소 전역 고장 · 2단계 게이트 상신 · 대표 A 결정 ·
+    squash 착지 · 트레일러 편차 자진 보고 · 메커니즘 정밀화</p>
+  <p class="meta">
+    구간 2026-08-25T23:16Z → 2026-08-26T00:03Z (KST 08:16 → 09:03)<br>
+    2026-08-26 에 씀 · <code>ORD-EDU-pr33-gate</code>
+  </p>
+
+  <div class="card warn">
+    <div class="tag">읽기 전에 — 두 가지</div>
+    <p style="margin:8px 0 12px">
+      <b>첫째, 각주 규칙 ④가 이 편의 첫 커밋에 얹힙니다.</b>
+      「인용문 없이 다른 문서의 «내용»을 말하는 문장은, 그 문서를 열기 전까지
+      각주가 아니라 «주장»이다」 — 대표 승인 방아쇠의 «다음 편»이 이 편이고,
+      커밋 본문과 이 카드에 같은 문구가 실립니다.<sup><a href="#w6">[6]</a></sup>
+    </p>
+    <p style="margin:0" class="note">
+      <b>둘째, S-1(+2/-2) 소재는 이 편에 없습니다.</b>
+      #35 착지 게이트의 기편에 묶이기로 된 것이 계속됩니다 —
+      <b>빠뜨린 것이 아니라 묶은 것</b>이라고 원장이 명기해 둔 그대로입니다.<sup><a href="#w6">[6]</a></sup>
+    </p>
+  </div>
+
+  <hr>
+
+  <h2>질문 1 · 무슨 일이</h2>
+  <div class="q">한 문장으로</div>
+
+  <p class="big">
+    리뷰 검사 하나가 <b>판정조차 내지 못하는 고장</b>으로 죽어 있었고,
+    초록을 요구하던 게이트 문구는 그대로 서 있었으며,
+    <b>통과의 해석 변경만 결정권자에게 올라갔습니다.</b>
+    착지는 이뤄졌고, 착지의 그림자를 담당이 제 손으로 보고했으며 —
+    <b>그 보고가 트레일러에 대한 옛 규칙 요약을 여섯 표본으로 바로잡았습니다.</b>
+  </p>
+
+  <p class="note">
+    <b>먼저 용어 셋.</b>
+    <b>「CI 초록」</b>은 병합 전에 돌아가는 자동 검사들이 다 통과한 상태입니다.
+    <b>「startup_failure」</b>는 검사가 실패한 것이 아니라 <b>검사를 싣고 달라는 기계 자체가 출발을 실패한</b> 상태입니다.
+    <b>「squash 트레일러」</b>는 여러 커밋을 한 덩이로 눌러 붙여 착지시킬 때, 그 착지 커밋
+    끝에 붙는 <code>Co-authored-by</code>·<code>Signed-off-by</code> 같은 한 줄짜리 서명입니다.
+  </p>
+
+  <hr>
+  <h2>질문 2 · 어떤 흐름으로 진행됐나</h2>
+  <div class="q">아홉 자리, 여덟 화살표</div>
+
+  <figure>
+  <svg viewBox="0 0 860 968" role="img" aria-labelledby="p59-gate-title p59-gate-desc">
+    <title id="p59-gate-title">PR#59 구간 — 게이트 상신에서 메커니즘 정밀화까지</title>
+    <desc id="p59-gate-desc">PR 개설 뒤 CI 초록을 요구하던 게이트가 실행 불가 고장을 만나 상신으로 갈라섰고, 대표의 A 선택으로 착지된 뒤 트레일러 누락이 자진 보고되고 메커니즘 정밀화에 이르기까지의 일곱 단계와 선택되지 않은 B 갈래를 나타낸 흐름도.</desc>
+    <rect width="100%" height="100%" fill="var(--paper)"/>
+    <defs>
+      <marker id="arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="var(--muted)"/>
+      </marker>
+      <marker id="arr-a" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="var(--accent)"/>
+      </marker>
+      <marker id="arr-s" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="var(--soft)"/>
+      </marker>
+    </defs>
+
+    <line x1="340" y1="80" x2="340" y2="116" stroke="var(--muted)" stroke-width="1" marker-end="url(#arr)"/>
+    <line x1="340" y1="176" x2="340" y2="212" stroke="var(--muted)" stroke-width="1" marker-end="url(#arr)"/>
+    <line x1="340" y1="280" x2="340" y2="324" stroke="var(--muted)" stroke-width="1" marker-end="url(#arr)"/>
+    <line x1="340" y1="392" x2="340" y2="428" stroke="var(--muted)" stroke-width="1" marker-end="url(#arr)"/>
+    <line x1="340" y1="544" x2="340" y2="580" stroke="var(--accent)" stroke-width="1" marker-end="url(#arr-a)"/>
+    <line x1="452" y1="488" x2="596" y2="488" stroke="var(--soft)" stroke-width="1"
+          stroke-dasharray="4,3" marker-end="url(#arr-s)"/>
+    <line x1="340" y1="656" x2="340" y2="700" stroke="var(--muted)" stroke-width="1" marker-end="url(#arr)"/>
+    <line x1="340" y1="768" x2="340" y2="804" stroke="var(--muted)" stroke-width="1" marker-end="url(#arr)"/>
+
+    <rect x="348" y="288" width="176" height="18" rx="2" fill="var(--paper)"/>
+    <text x="436" y="301" font-size="10" fill="var(--muted)" text-anchor="middle"
+          font-family="'Geist Mono',ui-monospace,'Consolas',monospace">고칠 수 없는 저장소 전역 고장</text>
+    <rect x="350" y="552" width="20" height="16" rx="2" fill="var(--paper)"/>
+    <text x="360" y="565" font-size="12" font-weight="600" fill="var(--accent)" text-anchor="middle"
+          font-family="'Geist Mono',ui-monospace,'Consolas',monospace">A</text>
+    <rect x="512" y="462" width="24" height="16" rx="2" fill="var(--paper)"/>
+    <text x="524" y="475" font-size="12" font-weight="600" fill="var(--soft)" text-anchor="middle"
+          font-family="'Geist Mono',ui-monospace,'Consolas',monospace">B</text>
+
+    <rect x="244" y="32" width="192" height="48" rx="24" fill="var(--zone)" stroke="var(--muted)" stroke-width="1"/>
+    <text x="340" y="52" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle"
+          font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">PR #59 개설</text>
+    <text x="340" y="69" font-size="10" fill="var(--soft)" text-anchor="middle"
+          font-family="'Geist Mono',ui-monospace,'Consolas',monospace">e0d5cae</text>
+
+    <rect x="196" y="120" width="288" height="56" rx="6" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+    <text x="340" y="144" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle"
+          font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">게이트 2 · PR CI 확인(초록)</text>
+    <text x="340" y="163" font-size="10" fill="var(--soft)" text-anchor="middle"
+          font-family="'Geist Mono',ui-monospace,'Consolas',monospace">ORD 절차 문구 그대로</text>
+
+    <rect x="188" y="216" width="304" height="64" rx="6" fill="var(--paper-2)" stroke="var(--red)" stroke-width="1"/>
+    <text x="340" y="244" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle"
+          font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">claude-review FAIL</text>
+    <text x="340" y="264" font-size="10" fill="var(--soft)" text-anchor="middle"
+          font-family="'Geist Mono',ui-monospace,'Consolas',monospace">리뷰 판정 아님 · 실행 자체 불가 · 재현됨</text>
+
+    <rect x="204" y="328" width="272" height="64" rx="6" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+    <text x="340" y="356" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle"
+          font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">병합 보류 · 판단 상신</text>
+    <text x="340" y="376" font-size="10" fill="var(--soft)" text-anchor="middle"
+          font-family="'Geist Mono',ui-monospace,'Consolas',monospace">BRF 698f35d3 — 해석 변경도 대표 몫</text>
+
+    <polygon points="340,432 452,488 340,544 228,488" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+    <text x="340" y="493" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle"
+          font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">A 인가 B</text>
+
+    <rect x="600" y="456" width="216" height="64" rx="6" fill="var(--paper)" stroke="var(--soft)"
+          stroke-width="1" stroke-dasharray="4,3"/>
+    <text x="708" y="484" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle"
+          font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">B — 토큰부터 고친다</text>
+    <text x="708" y="503" font-size="10" fill="var(--soft)" text-anchor="middle"
+          font-family="'Geist Mono',ui-monospace,'Consolas',monospace">선택되지 않은 갈래</text>
+
+    <rect x="192" y="584" width="296" height="72" rx="6" fill="var(--accent-tint)" stroke="var(--accent)" stroke-width="1"/>
+    <text x="340" y="614" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle"
+          font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">A 확정 — 한도 초과</text>
+    <text x="340" y="637" font-size="10" fill="var(--soft)" text-anchor="middle"
+          font-family="'Geist Mono',ui-monospace,'Consolas',monospace">6694fd6d · squash 착지 aeebfeb</text>
+
+    <rect x="192" y="704" width="296" height="64" rx="6" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+    <text x="340" y="732" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle"
+          font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">착지 뒤 자진 보고</text>
+    <text x="340" y="751" font-size="10" fill="var(--soft)" text-anchor="middle"
+          font-family="'Geist Mono',ui-monospace,'Consolas',monospace">트레일러 co=0 sob=0 — 숨기지 않음</text>
+
+    <rect x="180" y="808" width="320" height="64" rx="32" fill="var(--zone)" stroke="var(--muted)" stroke-width="1"/>
+    <text x="340" y="836" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle"
+          font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">메커니즘 정밀화</text>
+    <text x="340" y="856" font-size="10" fill="var(--soft)" text-anchor="middle"
+          font-family="'Geist Mono',ui-monospace,'Consolas',monospace">트레일러는 병합 본문에서 온다</text>
+
+    <line x1="40" y1="908" x2="820" y2="908" stroke="var(--rule)" stroke-width="0.8"/>
+    <text x="40" y="932" font-size="8" fill="var(--soft)" letter-spacing="0.14em"
+          font-family="'Geist Mono',ui-monospace,'Consolas',monospace">범례</text>
+    <rect x="112" y="946" width="14" height="12" rx="3" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="0.8"/>
+    <text x="136" y="956" font-size="10" fill="var(--muted)"
+          font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">절차</text>
+    <rect x="212" y="946" width="14" height="12" rx="3" fill="var(--paper-2)" stroke="var(--red)" stroke-width="0.8"/>
+    <text x="236" y="956" font-size="10" fill="var(--muted)"
+          font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">기계 고장</text>
+    <rect x="344" y="946" width="14" height="12" rx="3" fill="var(--accent-tint)" stroke="var(--accent)" stroke-width="0.8"/>
+    <text x="368" y="956" font-size="10" fill="var(--muted)"
+          font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">선택된 길</text>
+    <rect x="480" y="946" width="14" height="12" rx="3" fill="var(--paper)" stroke="var(--soft)"
+          stroke-width="0.8" stroke-dasharray="3,2"/>
+    <text x="504" y="956" font-size="10" fill="var(--muted)"
+          font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">안 간 갈래</text>
+    <rect x="620" y="946" width="20" height="12" rx="6" fill="var(--zone)" stroke="var(--muted)" stroke-width="0.8"/>
+    <text x="650" y="956" font-size="10" fill="var(--muted)"
+          font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">시작 · 끝</text>
+  </svg>
+  <figcaption>그림 1 — PR#59 구간의 흐름. 게이트 문구는 그대로 서 있고, 적색의 성격 규정과 선택은 위로 올라갔습니다.
+    점선은 선택되지 않은 갈래입니다.<sup><a href="#w1">[1]</a></sup><sup><a href="#w2">[2]</a></sup></figcaption>
+  </figure>
+
+  <div class="term"><span class="d">KST</span>   08:16  완결자 부분 RPT — 게이트 2 에서 멈춰 상신            <span class="g">f294cb4e</span>
+        08:28  통치자 접수 — BRF 로 대표에 올림                    <span class="g">698f35d3</span>
+        08:29  완결자 보강 — startup_failure 3건                   <span class="g">ce867dc0</span>
+        08:32  대표 A 확정 — «한도 초과»                           <span class="g">6694fd6d</span>
+        08:44  squash 착지 aeebfeb · 이슈 #33 자동 종료
+        09:03  완결 RPT — 트레일러 0/0 자진 보고 포함              <span class="g">b811215d</span>
+        09:16  통치자 판정 — 통과 · 편차는 기록 처리</div>
+
+  <hr>
+
+  <h2>이 편의 머리기사</h2>
+  <div class="q">«초록»이라는 말이 무엇을 걸러냈나</div>
+
+  <p>
+    완결자의 ORD 게이트 2번 문구는 <code>PR CI 확인(초록)</code> 이었습니다.
+    그런데 실제로 도달한 적색은 «리뷰가 실패»의 모양이 아니었습니다 —
+    로그는 시작 직후 오류 한 비트와 함께 끝나고, 비용은 0, 모델 사용량은 빈 괄호.
+    <b>claude 가 리뷰를 «부정적으로» 냈다는 흔적 자체가 없었습니다.</b><sup><a href="#w1">[1]</a></sup>
+    다시 돌리면 같은 서명 — 결정론적 고장이었고, 워크플로 최근 칠 회가 전부 같은 자리에서 죽어 있었습니다.<sup><a href="#w1">[1]</a></sup>
+  </p>
+
+  <p>
+    여기서 문구와 현실이 어긋난 자리가 생깁니다. 문구는 «초록»을 요구하는데,
+    채울 수 있는 손이 어디에도 없습니다. 분기 보호가 꺼져 있어
+    <b>기계는 애초에 아무것도 막지 않았습니다</b> — 완결자 스스로 그 사실을 밝히며
+    «그래서 더 조심해 ORD 게이트 그대로 해석했다»고 적었습니다.<sup><a href="#w1">[1]</a></sup>
+    해석을 바꾸는 손은 두 군데 가능했습니다 — <b>담당이 조용히 바꾸거나, 결정권자에게 보이게 바꾸거나.</b>
+    이 구간은 후자였습니다. 통치자는 색인을 올리면서 그것을 숨기지 않았습니다 —<sup><a href="#w2">[2]</a></sup>
+  </p>
+
+  <blockquote>
+    «참고: 제 ORD 게이트 2번 문구는 «PR CI 확인(초록)» 이었습니다.
+    A 는 이 항목 해석 변경이고 B 는 착지만 늦춥니다.»<sup><a href="#w2">[2]</a></sup>
+  </blockquote>
+
+  <p>
+    대표의 A 선택에는 근거가 붙었습니다 — «한도 초과».<sup><a href="#w4">[4]</a></sup>
+    그리고 그 판단은 하루 전 대표 본인의 기록 위에 섰습니다 —
+    원장에는 이미 «claude-review 만 사용량 한도 오류 FAIL — 코드 결함 아님»이라는
+    성격 규정이 있었고, 통치자는 그 절을 열어 색인에 운반했습니다.<sup><a href="#w6">[6]</a></sup>
+    <b>문구는 고쳐지지 않았고, 고쳐야 했던 것은 «초록»의 의미에 대한 동의였으며,
+    그 동의는 결정으로 남았습니다.</b>
+  </p>
+
+  <hr>
+  <h2>질문 3 · 왜 이 흐름으로 갔나</h2>
+  <div class="q">제약 — 고칠 손이 담당에게 없었다</div>
+
+  <p>
+    첫째 제약은 <b>고장의 소재</b>입니다. 적색의 원인은 브랜치에 있지 않았습니다 —
+    oauth 토큰·한도 같은 저장소 전역 인프라 쪽이었고, 완결자의 ORD 절차 안에
+    그것을 고칠 단계는 없었습니다.<sup><a href="#w1">[1]</a></sup>
+    채울 수 없는 칸 앞에서 선택할 수 있는 것은 «채운 척»과 «멈춤»뿐이었고,
+    흐름은 멈춤 쪽으로 갔습니다.
+  </p>
+
+  <p>
+    둘째 제약은 <b>기계가 막아 주지 않는다는 것</b>입니다.
+    required status checks 가 비어 있어 적색 PR 도 병합 버튼은 눌립니다.<sup><a href="#w7">[7]</a></sup>
+    이 구간에서 유일하게 작동한 브레이크는 사람의 절차 — 게이트 문구와 상신 — 였습니다.
+  </p>
+
+  <h3>startup_failure — claude 의 결과조차 아닌 세 건</h3>
+  <p>
+    보강 보고가 그림을 한 겹 더 복잡하게 만들었습니다. 최근 마흔 회의 분포는
+    success 0 · failure 9 · <b>startup_failure 3</b>, 마지막 success 는 이틀 전이었습니다.<sup><a href="#w3">[3]</a></sup>
+    failure 가 «claude 가 리뷰를 들고 실패했다»의 자리라면,
+    startup_failure 는 <b>claude 가 출발하기 전에 기계가 넘어진</b> 자리입니다.<sup><a href="#w3">[3]</a></sup>
+    B 로 갈 경우 고쳐야 할 것은 토큰 하나로 끝나지 않는다는 계산이 여기서 나왔습니다.<sup><a href="#w3">[3]</a></sup>
+  </p>
+
+  <p class="note">
+    이것은 팀 점검표 3h 의 실물이기도 합니다 — 판정문이 한 비트짜리 종료 코드뿐이라면,
+    «무엇이 어떻게 실패했나»는 그 비트에서 나오지 않습니다.
+    코덱스 측정 코드에서 결론이 exit 코드 하나에서 나오고 첫 stderr 줄은 문서로 흘러버리는 자리가
+    이미 실물로 적혀 있습니다.<sup><a href="#w10">[10]</a></sup>
+    startup_failure 는 같은 모양의 워크플로 판이다 — <b>값이 내려오는 통로와
+    우리가 물으려던 질문이 다르면, 초록·적색만으로는 답이 안 됩니다.</b>
+  </p>
+
+  <hr>
+
+  <h2>질문 4 · 무엇을 위해서 이렇게 갔나</h2>
+  <div class="q">목적 — «초록»이라는 말을 지키기 위해</div>
+
+  <ul class="out">
+    <li><b>게이트 문구를 지키기 위해</b> — «초록» 요구를 없던 하지 않고, 못 채우는 상태 그대로 올렸습니다<sup><a href="#w2">[2]</a></sup></li>
+    <li><b>해석 변경을 결정으로 남기기 위해</b> — A·B 두 선택지만 세워 권한 있는 손에 넘겼습니다<sup><a href="#w2">[2]</a></sup></li>
+    <li><b>나중에 열어 읽을 사람을 위해</b> — 근거·서명·재현 출력이 색인에 함께 실렸습니다<sup><a href="#w2">[2]</a></sup></li>
+  </ul>
+
+  <hr>
+
+  <h2>질문 5 · 대신 무엇을 하지 않기로 했나</h2>
+  <div class="q">하지 않기로 한 것 넷</div>
+
+  <ul class="out">
+    <li><b>담당이 조용히 재해석하고 밀어붙이는 것</b> — 상신으로 바꿨습니다<sup><a href="#w1">[1]</a></sup></li>
+    <li><b>B 를 골라 토큰 고치기를 시작하는 것</b> — 대표 결정까지 대기했습니다<sup><a href="#w2">[2]</a></sup></li>
+    <li><b>착지 커밋을 고치기 위해 main 을 재작성하는 것</b> — 편차는 기록으로 남기고 착지는 그대로 뒀습니다<sup><a href="#w9">[9]</a></sup></li>
+    <li><b>코덱스 리뷰 네 건을 이 착지에 섞는 것</b> — P2 후속 티켓으로 갔습니다<sup><a href="#w6">[6]</a></sup></li>
+  </ul>
+
+  <hr>
+  <h2>«경로가 트레일러를 가른다»가 뒤집힌 자리</h2>
+  <div class="q">세 표본의 규칙이 여섯 표본을 만났다</div>
+
+  <p>
+    이틀 전의 결론은 이랬습니다. 병합 «경로»에 따라 트레일러가 갈린다는 실측 —
+    CLI squash 는 둘 다 남기고 웹 UI squash 는 <code>Co-authored-by</code> 를 뗀다,
+    그래서 «규약 §6 을 기계로 검사하면 웹 UI 로 누른 커밋만 걸린다. 고칠 것은 없다.»<sup><a href="#w7">[7]</a></sup><sup><a href="#w8">[8]</a></sup>
+    세 표본으로 잰 것이었고, 그 세 개 안에서는 참이었습니다.
+  </p>
+
+  <p>
+    이번 구간이 변수를 가랐습니다. 완결자는 <b>CLI 로</b> 눌렀는데도
+    착지 커밋 aeebfeb 의 본문에서 두 트레일러가 모두 사라져 있었습니다.<sup><a href="#w5">[5]</a></sup>
+    원인은 경로가 아니라 <b>본문</b>이었습니다 — 트레일러는 gh 가 채워주는 것이 아니라
+    <b>병합자가 준비한 squash 본문에 이미 들어 있던 것</b>이고, 옛 세 표본의 «CLI 보존»은
+    그 본문에 트레일러를 넣어 둔 사람이 있었기 때문이었습니다.<sup><a href="#w9">[9]</a></sup><sup><a href="#w5">[5]</a></sup>
+  </p>
+
+  <table class="tbl">
+    <thead>
+      <tr><th>착지 (PR)</th><th>커밋</th><th>co / sob</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>#60 — 병합 본문에 두 트레일러를 넣은 첫 착지</td><td><code>7bf31d8</code></td><td>1 / 1</td></tr>
+      <tr><td>#59 — 이 구간의 착지</td><td><code>aeebfeb</code></td><td>0 / 0</td></tr>
+      <tr><td>#58</td><td><code>f6991d5</code></td><td>0 / 0</td></tr>
+      <tr><td>#57</td><td><code>3af295a</code></td><td>0 / 1</td></tr>
+      <tr><td>#56</td><td><code>17bf985</code></td><td>0 / 1</td></tr>
+      <tr><td>#55</td><td><code>6270607</code></td><td>0 / 1</td></tr>
+    </tbody>
+  </table>
+  <p class="note">
+    여섯 착지의 제 독립 재측입니다(2026-08-26) — 통치자 값과 정확히 일치합니다.<sup><a href="#w11">[11]</a></sup>
+    #57·#56·#55 의 sob=1 은 그 본문들에 서명 줄이 들어 있었다는 뜻이고,
+    co=0 인 것은 본문에 없었기 때문입니다.
+  </p>
+
+  <div class="card good">
+    <span class="tag">정밀화된 처방</span>
+    <p style="margin:12px 0 12px">
+      트레일러는 <b>착지 «앞» 본문</b>에서만 확보할 수 있습니다 — 착지 뒤에는 재작성 없이 못 고칩니다.<sup><a href="#w6">[6]</a></sup>
+      그래서 처방은 «CLI 를 쓴다»가 아니라 <b>«병합 본문에 두 트레일러를 직접 넣는다»</b>가 됐고,<sup><a href="#w5">[5]</a></sup>
+      #60 이 그 첫 이행입니다.<sup><a href="#w11">[11]</a></sup>
+    </p>
+    <p style="margin:0" class="note">
+      옛 결론이 «틀렸다»가 아니라 <b>규칙의 요약이 낡은 자리</b>입니다 —
+      «무엇으로 누르나(CLI vs 웹 UI)»를 물었는데, 실제 변수는 «누가 무엇을 본문에 넣었나»였습니다.
+      요약이 가리키던 질문이 바뀐 것입니다.<sup><a href="#w7">[7]</a></sup>
+    </p>
+  </div>
+
+  <hr>
+  <h2>질문 6 · 7 · 다음은</h2>
+  <div class="q">위임 — 누가, 무엇을, 왜</div>
+
+  <table class="tbl">
+    <thead>
+      <tr><th>위임물</th><th>담당 · 근거</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><b>병합 본문에 두 트레일러 넣기</b> — #35 착지부터</td>
+        <td><b>완결자 Closer.</b> 병합 본문을 준비하는 손이 메커니즘상 채우는 자리라 그 손에게 못박았고<sup><a href="#w9">[9]</a></sup>,
+          이미 조건으로 기록됐으며<sup><a href="#w6">[6]</a></sup> #60 에서 이행이 확인됐습니다<sup><a href="#w11">[11]</a></sup></td>
+      </tr>
+      <tr>
+        <td><b>코덱스 리뷰 네 건의 후속 티켓</b> — 이슈 #61·#62·#63</td>
+        <td><b>분해자 Ticketer.</b> 초안 승인과 발행 허가를 이미 받은 몫이며,<sup><a href="#w6">[6]</a></sup>
+          발행과 배정이 갈라져 있습니다<sup><a href="#w6">[6]</a></sup></td>
+      </tr>
+      <tr>
+        <td><b>S-1(+2/-2) 소재의 기편 수납</b></td>
+        <td><b>교육자(사관).</b> #35 착지 게이트 기편에 묶는 결정이 유지되고 있고,<sup><a href="#w6">[6]</a></sup>
+          묶음은 빠뜨림이 아니라 수납입니다</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <hr>
+
+  <h2>질문 8 · 다음은</h2>
+  <div class="q">왜 이걸 제안했나</div>
+
+  <p>
+    A/B 상신 자체가 완결자의 제안이었습니다 — 채울 수 없는 항목을 숨기지 않고
+    «진행»과 «정지» 두 갈래로 세워 올린 것.<sup><a href="#w1">[1]</a></sup>
+    통치자는 제안 두 개의 번호를 거두고 글자로 다시 세워 A·B 로 올렸습니다 —
+    <b>선택지의 내용은 담당 것, 틀은 중계자 것</b>으로 남기기 위해서였습니다.<sup><a href="#w2">[2]</a></sup>
+    이 기편은 통치자가 발행했습니다. 소재 선정은 사관 재량이었습니다.<sup><a href="#w6">[6]</a></sup>
+  </p>
+
+  <hr>
+
+  <h2>질문 9 · 무엇이 어긋</h2>
+  <div class="q">왜 트레일러가 비었나</div>
+
+  <p>
+    완결자는 착지 직후 RPT 안에서 편차를 스스로 보고했고,
+    원인을 한 줄로 적어 뒀습니다 — «트레일러는 gh 가 붙이는 게 아니라
+    <b>병합자가 준비한 본문에서 왔다»</b>.<sup><a href="#w5">[5]</a></sup>
+    준비 본문에 두 서명을 넣지 않은 것이 담당의 편차였고, 그렇게 적혔습니다.<sup><a href="#w9">[9]</a></sup>
+  </p>
+
+  <p>
+    왜 미리 걸리지 않았나 — 옛 요약이 «CLI 면 보존된다»고 안심시켰기 때문입니다.
+    그 요약은 이틀 전 세 표본에서 잰 대로였지만, 표본들이 변수 하나만 다른 게 아니었습니다.
+    <b>누르는 경로와 본문 준비가 함께 움직인 표본</b>이었으므로, 경로가 원인 «처럼» 보였습니다.
+    이번 두 표본(#59·#60)이 경로를 고정하고 본문만 움직여 갈랐습니다.<sup><a href="#w7">[7]</a></sup>
+    통치자 처분도 그 방향이었습니다 — main 재작성 없이 기록으로 남기고,
+    정합은 착지 «앞» 본문에서 확보하는 절차 조건으로 갔습니다.<sup><a href="#w6">[6]</a></sup>
+  </p>
+
+  <hr>
+
+  <h2>질문 10 · 무엇이 어긋</h2>
+  <div class="q">무엇이 있었으면 막았을까</div>
+
+  <p>
+    <b>병합 직전의 «준비 본문»에 대한 규약 §6 검사</b>였을 것입니다 —
+    두 트레일러 줄이 들어 있는지를 착지 «전» 본문에서 세는 것.
+    착지 뒤에는 재작성 없이 못 고치므로 검사의 위치가 «앞»이어야 하는데,
+    지금까지 검사기는 착지 «뒤» 커밋들을 훑었습니다.
+    이 위치 조건은 이제 ORD-CLS-PR-35 의 조건으로 붙었고 #60 이 첫 실증입니다.<sup><a href="#w6">[6]</a></sup><sup><a href="#w11">[11]</a></sup>
+  </p>
+
+  <p class="note">
+    덧붙여 — 이 구간에서 «초록» 칸을 기계가 강제하지 않는다는 사실(required checks 공백)도
+    그대로 남아 있습니다. 이 구간을 지킨 것은 전부 사람 절차였습니다.<sup><a href="#w7">[7]</a></sup>
+  </p>
+
+  <hr>
+  <h2>질문 11 · 방향 점검</h2>
+  <div class="q">원점에 비춰, 이번 걸음이 그쪽으로 갔나</div>
+
+  <p>
+    <a href="00_%EC%99%9C_%EC%8B%9C%EC%9E%91%ED%96%88%EB%82%98.html">원점편</a>이 재는 자리는
+    <b>「사람이 자리를 비운 사이에 자동 에이전트가 무엇을 할 수 있느냐」</b>입니다.
+    이 구간은 그 질문의 한쪽 끝 — <b>자동 에이전트가 «못 하는» 것을 만났을 때</b> — 입니다.
+  </p>
+
+  <div class="card good">
+    <span class="tag">갔습니다</span>
+    <ul class="out" style="margin-top:12px">
+      <li><b>기계가 못 채우는 칸을 기계처럼 채우지 않았습니다</b> — 상신으로 바꿨고, 해석 변경임을 함께 적었습니다<sup><a href="#w1">[1]</a></sup><sup><a href="#w2">[2]</a></sup></li>
+      <li><b>결정과 근거가 기록으로 남았습니다</b> — 색인 · 대표 결정 원문 · 원장 절<sup><a href="#w2">[2]</a></sup><sup><a href="#w4">[4]</a></sup><sup><a href="#w6">[6]</a></sup></li>
+      <li><b>어긋남이 숨겨지지 않았습니다</b> — 편차는 담당이 먼저 올렸고, 그 보고가 메커니즘 정밀화로 이어졌습니다<sup><a href="#w5">[5]</a></sup></li>
+    </ul>
+  </div>
+
+  <p class="note">
+    <b>다만 이 구간이 새로 만든 안전장치는 하나도 없습니다.</b>
+    초록을 강제하는 기계 장치는 여전히 없고, 이번에 작동한 것은 전부
+    «사람 앞의 문» — 문구·상신·결정·보고 — 이었습니다.
+    원점편의 잴 자에 비추면 어긋난 걸음은 보이지 않지만,
+    <b>막아 주던 것이 무엇이었나는 이 기록이 계속 말해 둘 일입니다.</b><sup><a href="#w7">[7]</a></sup>
+  </p>
+
+  <hr>
+
+  <h2>질문 12 · 방향 점검</h2>
+  <div class="q">처음 범위에서 새로 늘어난 것이 있나</div>
+
+  <p>
+    <b>제품 범위 축에서는 늘어난 것이 없습니다.</b>
+    원점편의 범위 밖 열넷 항목 중 걸리는 것도 없습니다.
+    새로 생긴 것은 둘 다 제품이 아니라 절차 쪽입니다 —
+    ① 병합 본문 트레일러 조건(프로세스 규칙 요약의 갱신),
+    ② 코덱스 P2 후속 티켓 셋(대표 위임으로 이미 처분된 것의 수납).<sup><a href="#w6">[6]</a></sup>
+  </p>
+
+  <p class="note">
+    «해당 없음»에 이유를 — 질문 12의 잴 자는 원점편의 «문제·범위 밖», 즉
+    <b>무엇을 만드나의 범위</b>입니다. 이 구간의 변화는 «무엇을 어떻게 처리하나»의 범위라
+    같은 눈금 위에 서지 않고, 따라서 통치자에게 올릴 «늘었다» 신호도 아닙니다.<sup><a href="#w6">[6]</a></sup>
+  </p>
+
+  <hr>
+  <div class="fn">
+    <h3>각주 — 사료 출처</h3>
+    <ol>
+      <li id="w1"><span class="path">릴레이 event f294cb4e…d5c1aa</span>(완결자 부분 RPT · 2026-08-25T23:16Z · 2026-08-26 조회) —
+        <span class="quote">「CI — 5초록 1적색. 적색 claude-review는 «리뷰 실패»가 아니라 «실행 자체 불가»입니다」</span> ·
+        <span class="quote">「로그: init 직후 result — "is_error": true · duration_ms 365 · total_cost_usd 0 · "modelUsage": {}」</span> ·
+        <span class="quote">「재실행 → 동일 서명 재현(duration_ms 505, 나머지 동일). 결정론적 고장.」</span> ·
+        <span class="quote">「어제 main에 착지한 #54~#58 전부 이 검사가 빨간 채 병합됨.」</span> ·
+        <span class="quote">「브랜치 보호 off(required_status_checks 비어 있음)라 기술적으로는 병합이 막히지 않습니다 — 그래서 더 조심해 ORD 게이트 그대로 해석했습니다.」</span></li>
+      <li id="w2"><span class="path">릴레이 event 698f35d3…4025f</span>(BRF 색인 · 23:28Z) —
+        <span class="quote">「적색 검사가 담당이 고칠 수 있는 것이 아니라 저장소 전역 인프라 고장이라, 게이트 항목의 해석 변경을 포함해 이 결정은 대표 몫이라 그대로 올립니다.」</span> ·
+        <span class="quote">「A 는 이 항목 해석 변경이고 B 는 착지만 늦춥니다.」</span> ·
+        <span class="quote">«claude-review 만 사용량 한도 오류 FAIL — 코드 결함 아님» (원장 인용 운반부)</span></li>
+      <li id="w3"><span class="path">릴레이 event ce867dc0…4126</span>(완결자 보강 RPT · 23:29Z) —
+        <span class="quote">「최근 40회 분포 = success 0 · failure 9 ·」</span><span class="quote">「startup_failure 3」</span> ·
+        <span class="quote">「이것들은 claude 실행 결과조차 아닌 워크플로 기동 자체의 실패입니다」</span> ·
+        <span class="quote">「B로 갈 경우 고칠 사람이 oauth token만 볼 게 아니라 workflow 기동 실패 로그 3건도 같이 봐야 한다」</span></li>
+      <li id="w4"><span class="path">릴레이 event 6694fd6d…1512</span>(대표 결정 · 23:32Z) —
+        <span class="quote">「클로드 리뷰 ci 실패는 한도 초과로 인한거니 A로 판단하고 진행 부탁」</span></li>
+      <li id="w5"><span class="path">릴레이 event b811215d…cb20</span>(완결자 완결 RPT · 00:03Z) —
+        <span class="quote">「편차 하나를 숨기지 않고 올린다」</span> ·
+        <span class="quote">「aeebfeb 본문에 `Co-authored-by`·`Signed-off-by`가」</span><span class="quote">「(grep exit 1)」</span> ·
+        <span class="quote">「병합자가 준비한 squash 본문에서 온다」</span><span class="quote">「(#56·57은 본문에 Signed-off-by 1줄, #58·내 것은 0줄 — #44의 «CLI 보존»은 그 본문에 직접 넣었기 때문이었다)」</span> ·
+        <span class="quote">「#35 착지부터는 병합 본문에 두 트레일러를 넣는다.」</span></li>
+      <li id="w6"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — <b>살아 있는 장부라 해시를 쓰지 않고 «절 제목 줄 전문»으로 가리킵니다.</b>
+        <span class="quote">「## 2026-08-26 08:28 KST — RPT-ORD-CLS-PR-33 부분 회신 접수 · 2단계 게이트에서 상신 → BRF 로 대표에 올림」</span> ·
+        <span class="quote">「## 2026-08-26 09:16 KST — RPT-ORD-CLS-PR-33 판정: 통과 · 트레일러 편차 기록·메커니즘 정밀화 · 분해자 초안 승인(G2)」</span><br>
+        <span class="quote">「메커니즘 [완결자 실측 + 내 재측 일치]: 트레일러는 gh 가 아니라 **병합자가 준비한 squash 본문**에서 온다」</span> ·
+        <span class="quote">「처분: main 재작성 금지 유지 — 기록으로 남기고 되돌리지 않는다.」</span> ·
+        <span class="quote">「교육자 일지편: S-1(+2/-2)에 별도 일지편을 내지 않고 #35 착지 게이트의 기편에 포함시키기로 결정했다(기편이 일지편을 포함). 빠뜨린 것이 아니라 묶은 것이다 — 명기.」</span> ·
+        <span class="quote">「각주 규칙 ④ 방아쇠를 이 편 첫 커밋에 얹도록 지시 — 방아쇠 소진」</span></li>
+      <li id="w7"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — 같은 장부 앞부분의 «저장소 설정» 노트(절 제목으로 가리킴) —
+        <span class="quote">「병합 «경로»가 트레일러를 가른다 (2026-08-24 실측, 변수 하나만 다른 세 표본):」</span> ·
+        <span class="quote">「-> 규약 §6 을 기계로 검사하면 «웹 UI 로 누른 커밋만» 걸린다. 고칠 것은 없다」</span> ·
+        <span class="quote">「⚠️ 2026-08-26 정밀화(#59/#60 새 표본): 경로가 아니라 «병합자가 준비한 본문»이 트레일러를 가른다.」</span> ·
+        <span class="quote">「기계는 아무것도 안 막는다.」</span><span class="quote">「빨간 PR 도 병합 버튼이 눌린다. 지금까지 막은 것은 언제나 사람이었다」</span></li>
+      <li id="w8"><span class="path">WORK_LOGS/whole-life/CLS_fix-tree-kill-masks-cancellation__ORD-CLS-34-pr.md</span>(당대 출처) —
+        <span class="quote">「웹 UI squash 는 `Co-authored-by` 를 뗀다. 규약 §6 을 지키려면 CLI 다.」</span>
+        · 같은 구간 <span class="path">…ORD-CLS-34-merge.md</span> —
+        <span class="quote">「CLI squash 는 트레일러 둘을 남기고 웹 UI squash 는」</span></li>
+      <li id="w9"><span class="path">WORK_LOGS/whole-life/CLS_fix-codex-working-directory__ORD-CLS-PR-33.md</span> —
+        <span class="quote">「원인: 트레일러는 gh가 붙이는 게 아니라 **병합자가 준비한 본문에서 왔다** — 실측으로 확인:」</span> ·
+        <span class="quote">「그 본문에 트레일러를 넣었기 때문이었다. 제 준비 본문에 두 트레일러를 넣지 않은 것이 내 편차.」</span> ·
+        <span class="quote">「수정은 main 재작성(amend+force)을 수반 → 금지 목록이라 착지는 그대로 두고 여기에 공개.」</span> ·
+        <span class="quote">「**후속 착지(#35)부터 병합 본문에 두 트레일러를 넣는다.**」</span></li>
+      <li id="w10"><span class="path">PLANS/whole-life/TKT_CODEX59_P2__ORD-TKT-codex59-p2.md</span> —
+        <span class="quote">「exit 코드 하나(:377)에서 나온다. 종료코드 한 비트」</span> ·
+        <span class="quote">「팀 점검표 3h 의 실물 사례.」</span></li>
+      <li id="w11">독립 재측 (2026-08-26, 저장소 조회 — 커밋은 SHA 로 얼려 있음 · 상태는 조회 시점으로) —
+        <span class="path">git show -s --format=%B &lt;sha&gt; × 여섯 + 줄 셈</span><br>
+        <span class="quote">「7bf31d8 co=1 sob=1 · aeebfeb co=0 sob=0 · f6991d5 co=0 sob=0 · 3af295a co=0 sob=1 · 17bf985 co=0 sob=1 · 6270607 co=0 sob=1」</span><br>
+        <span class="note">셈 명령의 종료 코드는 «못 찾음»과 «안 돔»을 같은 0 으로 만들 수 있어,
+        건수(<code>grep -c</code>)를 값으로 받았습니다 — 0 도 답입니다.</span></li>
+    </ol>
+
+    <p class="note" style="margin-top:20px">
+      각주에 줄 번호를 쓰지 않습니다. 인용문은 <code>grep</code> 으로 찾히고 사라졌으면
+      <b>사라졌다는 사실 자체가 신호</b>가 됩니다.
+      <b>각주는 문구의 «존재»를 보증하지 그 문구의 «자격»을 보증하지 않습니다.</b>
+      릴레이 이벤트는 파일이 아니므로 이벤트 ID와 조회 시점으로 가리킵니다.
+    </p>
+
+    <div class="term">Nest 사료 — <span class="g">동결.</span> <span class="d">sha256(앞 16자)</span>
+<span class="d">  533fe869808ec981   CLS_fix-codex-working-directory__ORD-CLS-PR-33.md      w9
+  9b20135b79c9e8c5   CLS_fix-tree-kill-masks-cancellation__ORD-CLS-34-pr.md w8
+  dd1b4a4b8878ba04   CLS_fix-tree-kill-masks-cancellation__ORD-CLS-34-merge.md w8
+  3a0619282fcb9ada   PLANS/whole-life/TKT_CODEX59_P2__ORD-TKT-codex59-p2.md w10</span>
+
+살아 있는 장부 — <span class="d">해시를 쓰지 않는다. 절 제목 줄 전문으로 가리킨다 (w6·w7)</span>
+
+릴레이 이벤트 — <span class="d">ID + 조회 시각으로 (w1–w5 · 2026-08-26T00:48Z 조회)</span></div>
+  </div>
+
+</div>
+</body>
+</html>
