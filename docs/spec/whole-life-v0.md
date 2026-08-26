@@ -95,7 +95,7 @@ class AgentRuntime(Protocol):
     def events(self, run: RunHandle) -> AsyncIterator[RuntimeEvent]: ...
     async def cancel(self, run: RunHandle) -> CancelOutcome: ...
     async def wait(self, run: RunHandle) -> RunOutcome: ...
-    async def close(self) -> None: ...
+    async def close(self) -> CloseReport: ...
 ```
 
 ### 불변식
@@ -106,7 +106,10 @@ class AgentRuntime(Protocol):
 - 새 session에 이전 snapshot을 넣는 동작은 `new`이지 `resume`이 아니다.
 - 같은 `(provider, native_session_id)`에는 active run 하나만 허용한다. 두 번째 start는 실행 전에 `ConcurrentResumeRejected`로 끝낸다.
 - optional 동작을 `None`이나 모의 구현으로 처리하지 않는다. preflight capability가 없으면 `Unsupported`로 거부한다.
-- `close()`가 반환될 때 이 runtime이 만든 child process와 stdout/stderr drain task는 0개여야 한다.
+- `close()`는 `CloseReport`를 반환한다. 보고에는 남은 child process 수(`child_processes`)와 남은 stdout/stderr drain task 수(`drain_tasks`), 그 이유 목록(`reasons`)이 들어간다.
+- 정상 경로에서 `close()`가 반환할 때 이 runtime이 만든 child process와 stdout/stderr drain task는 0개다.
+- 잔여가 남는 실패 경로(killer 부재, 직접 킬 후 자식을 끝까지 거두지 못함)에서 `close()`는 성공과 같은 모양을 내지 않는다. 보고된 개수는 실제 잔여를 말하고, 0 보고는 실제 잔여 0일 때만 유효하다. killer 부재와 직접 킬 미거둠은 `reasons`에서 별개 항목이다 — 하나의 사유가 다른 사유를 덮지 않는다.
+- 잔여·사유의 모호성은 예외가 아니라 값이다. `close()`의 보고는 `RuntimeStatus`, `CancelOutcome`, `RunOutcome`과 같은 경계 값 계약이다.
 
 ### native delegation 계약
 
