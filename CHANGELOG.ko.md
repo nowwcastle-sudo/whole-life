@@ -16,6 +16,20 @@
 
 ### 추가
 
+- **launch decision이 child가 실제로 돈 디렉터리를 기록한다** (#63).
+  working directory가 실제 spawn의 일부가 된 뒤로(#61), provider·실행 파일·인자가 같고 입력
+  스냅숏 루트만 다른 두 run이 **똑같은 journal 기록**을 남겼다 — 감사자가 child가 어떤 데이터를
+  읽을 수 있었는지 가릴 수 없었다. 이제 기록되는 decision은 spawn이 실제로 쓴 디렉터리를 다른
+  모든 필드와 같은 방식으로 spawn된 plan에서 파생해 담으므로, 「시작된 것을 정확히 기록한다」는
+  decision 객체의 약속이 지켜진다. plan의 미정 상태는 기록되지 않는다 — 미정 디렉터리는 spawn
+  전에 거부되고, journal은 시작만 담는다.
+- **절대 경로가 아닌 working directory는 child가 생기기 전에 거부한다** (#61).
+  상대 경로는 운영체제가 spawn 시점의 **Broker 자신의 현재 디렉터리**에 대고 해석하므로, 받아들이면
+  child가 어디서 도는지를 plan이 아니라 Broker의 실행 위치가 정하게 된다. Windows에서는 평범한
+  「상대」보다 넓게 거부한다 — `/Windows` 같은 드라이브 없는 루트 경로와 `C:foo` 같은
+  드라이브-상대 경로도 현재 드라이브·디렉터리에 대고 해석되므로 둘 다 거부된다. 존재하지 않는
+  디렉터리도 같은 경계에서 거부돼, spawn 자체의 운영체제 오류가 아니라 그 경계의 다른 결정들과
+  같은 pre-start 거부로 도착한다.
 - **정직하게 보고되고 broker가 지키는 native worker 상한** (#17).
   이제 각 provider가 동시 실행·총 start·위임 depth를 각각 `hard`·`cooperative`·`unsupported`로
   나눠 보고하고, **측정된 대로** 보고한다. Claude Code 2.1.240은 worker의 시작과 끝을 provider가

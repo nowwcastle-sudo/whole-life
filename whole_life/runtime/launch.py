@@ -254,6 +254,13 @@ class LaunchDecision:
     provider: Provider
     executable: Path
     args: tuple[str, ...]
+    #: The directory the child ran in — the plan's resolved value, not its
+    #: maybe-unset intent. Typed without `None` on purpose: a plan whose
+    #: directory is undecided is refused before spawn, and the journal holds
+    #: starts, so no recorded decision can carry one. Without this field two
+    #: runs differing only in their input snapshot root journal identically,
+    #: even though the child could read different data.
+    working_directory: Path
     mode: TurnMode
     native_session_id: str | None
     cli_version: str
@@ -273,6 +280,7 @@ def decide_launch(plan: LaunchPlan) -> LaunchDecision:
         provider=plan.provider,
         executable=plan.executable,
         args=plan.args,
+        working_directory=plan.working_directory,
         mode=request.mode,
         native_session_id=request.native_session_id,
         cli_version=plan.version_conformance.cli_version,
