@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>제20편 — 막는다고 main 이 안전해지지 않는다</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:       #282828;
+    --paper-2:     #32302f;
+    --zone:        #302e2c;
+    --ink:         #ebdbb2;
+    --muted:       #a89984;
+    --soft:        #928374;
+    --rule:        rgba(235,219,178,0.12);
+    --rule-solid:  #504945;
+    --accent:      #fe8019;
+    --accent-tint: rgba(254,128,25,0.12);
+    --link:        #83a598;
+    --green:       #b8bb26;
+    --red:         #fb4934;
+    --yellow:      #fabd2f;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--paper); color:var(--ink);
+       font-family:"Geist","Pretendard","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;
+       line-height:1.75; -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:880px; margin:0 auto; padding:64px 28px 120px}
+  .kicker{font-size:13px; letter-spacing:.14em; color:var(--soft); text-transform:uppercase;
+          font-family:"Geist Mono",ui-monospace,"Consolas",monospace}
+  h1{font-family:"Instrument Serif","Malgun Gothic",serif;
+     font-size:50px; line-height:1.18; margin:14px 0 10px; letter-spacing:-.01em; font-weight:400}
+  .sub{font-size:18px; color:var(--muted); margin:0 0 8px}
+  h2{font-family:"Instrument Serif","Malgun Gothic",serif;
+     font-size:32px; line-height:1.3; margin:56px 0 14px; font-weight:400; letter-spacing:-.01em}
+  h3{font-size:16px; letter-spacing:.06em; color:var(--ink); margin:34px 0 12px; font-weight:600}
+  p{font-size:17px; margin:0 0 18px}
+  .note{font-size:15px; color:var(--muted)}
+  hr{border:0; border-top:1px solid var(--rule); margin:44px 0}
+  code{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; font-size:.9em;
+       background:var(--zone); color:var(--ink); padding:1px 6px; border-radius:4px}
+  .card{background:var(--paper-2); border:1px solid var(--rule-solid); border-radius:8px;
+        padding:26px 28px; margin:26px 0}
+  .term{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; font-size:14px; line-height:1.7;
+        background:var(--zone); color:var(--ink); border:1px solid var(--rule-solid);
+        border-radius:8px; padding:20px 22px; margin:0 0 18px; overflow-x:auto; white-space:pre-wrap}
+  .term .d{color:var(--soft)}
+  .term .g{color:var(--green)}
+  .term .y{color:var(--yellow)}
+  .term .r{color:var(--red)}
+  .tbl{width:100%; border-collapse:collapse; font-size:15px}
+  .tbl td{padding:13px 12px 13px 0; border-bottom:1px solid var(--rule); vertical-align:top; line-height:1.6}
+  .tbl tr:last-child td{border-bottom:0}
+  .tbl td:first-child{white-space:nowrap; font-family:"Geist Mono",ui-monospace,"Consolas",monospace;
+       font-size:13px; color:var(--soft); width:120px}
+  figure{margin:34px 0}
+  figcaption{font-size:14px; color:var(--muted); margin-top:12px; text-align:center; line-height:1.6}
+  svg{display:block; width:100%; height:auto}
+  sup a{color:var(--link); text-decoration:none; font-size:12px; font-weight:600; padding:0 1px}
+  .fnotes{margin-top:64px; border-top:1px solid var(--rule-solid); padding-top:26px;
+          list-style:none; padding-left:0}
+  .fnotes li{font-size:14px; color:var(--muted); margin-bottom:11px; line-height:1.65}
+  .fnotes .path{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; color:var(--ink); font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kicker">제 20 편 · 기편 · 당대에 씀</div>
+  <h1>막는다고 main 이 안전해지지 않는다</h1>
+  <p class="sub">#63 종료 게이트. feat/63 착지는 같은 날 두 번 멈췄다 — 한 번은 봇이 낸
+    진짜 지적이었고, 한 번은 원인을 끝내 알 수 없는 오류였다. 같은 창에서 feat/62 는
+    리뷰까지만 마치고 착지는 다음 편에 남긴다.</p>
+
+  <div class="card">
+    <p style="margin:0 0 12px"><b>읽기 전에 — 이 게이트가 묶는 소재 넷.</b>
+      통치자 지시가 명시로 나열했다 — 「소재 4건(PR#75 완착·feat/63 사슬·feat/62
+      리뷰까지·관행 명명 정정) + 새 관측 셋(Codex 대조군·GHAS 미실행≠초록·
+      「막아도 main 이 안전해지지 않는다」)」.<sup><a href="#f1">[1]</a></sup>
+      기편이 이 구간의 일지편들을 종합하므로, 이 하나로 넷을 다룬다.</p>
+    <p style="margin:0 0 12px" class="note">
+      <b>경계 하나 — feat/62 는 착지가 이 편에 없다.</b> 통치자 지시가 명시로
+      그었다 — 「착지는 지금 진행 중 — 이번 편에는 리뷰 완주까지만, 착지는 다음
+      소재로 남겨라」.<sup><a href="#f1">[1]</a></sup> 이 편을 쓰는 동안 실제로
+      feat/62 착지가 CHANGELOG 실충돌로 다시 정지했지만, 그 정지·해소는 이 편의
+      대상이 아니다 — 다음 편이 다룬다.</p>
+    <p style="margin:0" class="note">
+      각주 형식은 제18·19편이 세운 절차(<code>&lt;sup&gt;&lt;a href="#fN"&gt;</code>
+      앵커) 그대로 쓴다. <b>[내가 잰 것]</b> 은 이 편을 쓰는 교육자가 직접 돌린
+      명령이다. 각주는 문구의 «존재»만 보증한다.</p>
+  </div>
+
+  <h2>질문 1 · 무슨 일이</h2>
+  <p>
+    PR#75(ep15·16·17 각주 마커 형식 전환)가 착지한 뒤,<sup><a href="#f2">[2]</a></sup>
+    feat/63 착지 시도가 봇의 실제 지적 둘(Codex — 게이트가 상대경로를 통과시킴 ·
+    claude-review — 커밋 트레일러 위반)로 병합 직전 멈췄고,<sup><a href="#f3">[3]</a></sup>
+    대표가 「63=A(브랜치에서 고치고 착지)·62=D(D1 봉합 뒤 착지)」로 결정한 뒤<sup><a href="#f4">[4]</a></sup>
+    구현·델타 리뷰를 거쳐 재착지에 들어갔지만, 그 직후 원인을 끝내 알 수 없는
+    오류로 다섯 시간 가까이 전원이 다시 멈췄다가<sup><a href="#f5">[5]</a></sup>
+    복구돼 마침내 착지해 이슈 #63 이 닫혔다.<sup><a href="#f6">[6]</a></sup>
+    같은 시간대에 feat/62 는 리뷰어가 지목한 D1 을 봉합해 「병합 가능 — AC4
+    한정 유지」로 델타 리뷰를 통과했지만, 착지는 CHANGELOG 같은 자리 삽입
+    충돌을 피해 feat/63 착지 뒤로 예약된 채 다음 편 소재로 남는다.<sup><a href="#f7">[7]</a></sup>
+  </p>
+
+  <h2>질문 2 · 어떤 흐름으로 진행됐나</h2>
+  <figure>
+    <svg viewBox="0 0 860 480" role="img" aria-labelledby="ep20-timeline-title ep20-timeline-desc">
+      <title id="ep20-timeline-title">2026-08-27 feat/63·feat/62 착지 사슬과 그 사이의 두 정지</title>
+      <desc id="ep20-timeline-desc">feat/63 가지는 12시 6분에 봇의 실제 지적으로 정지했다가 대표 결정으로 봉합·재리뷰를 거쳐 13시 41분에 재착지에 들어갔고, 13시 50분부터 18시 32분까지는 원인이 밝혀지지 않은 오류로 전원이 정지했다가 복구돼 18시 52분에 착지해 이슈 63이 닫혔다. 같은 시간대에 feat/62 가지는 D1 결함을 봉합해 13시 47분에 리뷰를 통과했지만 착지는 feat/63 착지 뒤로 예약된 채 다음 편 소재로 남는다.</desc>
+      <defs>
+        <marker id="ep20-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="var(--muted)"/>
+        </marker>
+        <marker id="ep20-arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="var(--accent)"/>
+        </marker>
+      </defs>
+
+      <rect width="100%" height="100%" fill="var(--paper)"/>
+
+      <text x="24" y="32" font-size="12" fill="var(--soft)" letter-spacing="0.08em"
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">2026-08-27 KST</text>
+
+      <text x="24" y="64" font-size="12" fill="var(--soft)" letter-spacing="0.06em"
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">feat/63 — 착지 사슬 → #63 CLOSED</text>
+      <text x="24" y="256" font-size="12" fill="var(--soft)" letter-spacing="0.06em"
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">feat/62 — 리뷰까지(착지는 다음 편)</text>
+
+      <line x1="510" y1="140" x2="510" y2="256" stroke="var(--rule)" stroke-width="1" stroke-dasharray="2,4"/>
+      <line x1="734" y1="140" x2="734" y2="256" stroke="var(--rule)" stroke-width="1" stroke-dasharray="2,4"/>
+
+      <line x1="180" y1="108" x2="228" y2="108" stroke="var(--muted)" stroke-width="1" marker-end="url(#ep20-arrow)"/>
+      <line x1="384" y1="108" x2="432" y2="108" stroke="var(--muted)" stroke-width="1" marker-end="url(#ep20-arrow)"/>
+      <line x1="588" y1="108" x2="604" y2="108" stroke="var(--yellow)" stroke-width="1" stroke-dasharray="4,3"/>
+      <line x1="628" y1="108" x2="644" y2="108" stroke="var(--yellow)" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#ep20-arrow-accent)"/>
+
+      <path d="M604 92 L616 108 L604 124" fill="none" stroke="var(--yellow)" stroke-width="1.4"/>
+      <path d="M616 92 L628 108 L616 124" fill="none" stroke="var(--yellow)" stroke-width="1.4"/>
+
+      <line x1="588" y1="288" x2="644" y2="288" stroke="var(--muted)" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#ep20-arrow)"/>
+
+      <rect x="24" y="76" width="156" height="64" rx="6" fill="var(--red)" fill-opacity="0.10" stroke="var(--red)" stroke-width="1"/>
+      <text x="102" y="100" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">병합 정지</text>
+      <text x="102" y="116" font-size="9" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">12:06 · 봇 지적 2건</text>
+      <text x="102" y="128" font-size="9" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">(Codex P2 + 트레일러)</text>
+
+      <rect x="228" y="76" width="156" height="64" rx="6" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="306" y="100" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">대표 결정 63=A</text>
+      <text x="306" y="116" font-size="9" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">12:57 · 브랜치에서</text>
+      <text x="306" y="128" font-size="9" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">고치고 착지</text>
+
+      <rect x="432" y="76" width="156" height="64" rx="6" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="510" y="100" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">델타 리뷰 통과</text>
+      <text x="510" y="116" font-size="9" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">13:38 · 병합 가능</text>
+      <text x="510" y="128" font-size="9" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">무조건</text>
+
+      <rect x="644" y="76" width="180" height="64" rx="6" fill="var(--accent)" fill-opacity="0.12" stroke="var(--accent)" stroke-width="1"/>
+      <text x="734" y="100" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">재개 → 착지</text>
+      <text x="734" y="116" font-size="9" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">18:35 재개 → 18:52</text>
+      <text x="734" y="128" font-size="9" fill="var(--accent)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">main 6e8a18d4 · #63 CLOSED</text>
+
+      <rect x="536" y="150" width="156" height="30" fill="var(--paper)"/>
+      <text x="616" y="160" font-size="9" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">13:50 → 18:32</text>
+      <text x="616" y="174" font-size="9" fill="var(--yellow)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">원인불명 오류 · 전원 정지</text>
+
+      <rect x="432" y="256" width="156" height="64" rx="6" fill="var(--paper-2)" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="510" y="280" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">D1 봉합 → 통과</text>
+      <text x="510" y="296" font-size="9" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">13:04→13:47</text>
+      <text x="510" y="308" font-size="9" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">AC4 한정 유지</text>
+
+      <rect x="644" y="256" width="180" height="64" rx="6" fill="var(--ink)" fill-opacity="0.03" stroke="var(--muted)" stroke-width="1" stroke-dasharray="4,3"/>
+      <text x="734" y="280" font-size="12" font-weight="600" fill="var(--muted)" text-anchor="middle"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">착지 대기</text>
+      <text x="734" y="296" font-size="9" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">CHANGELOG 자리 충돌</text>
+      <text x="734" y="308" font-size="9" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">예상 · 다음 편 소재</text>
+
+      <line x1="24" y1="428" x2="836" y2="428" stroke="var(--rule)" stroke-width="1"/>
+
+      <rect x="24" y="440" width="14" height="12" rx="3" fill="var(--red)" fill-opacity="0.10" stroke="var(--red)" stroke-width="1"/>
+      <text x="48" y="450" font-size="11" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">정지 — 봇의 실제 지적</text>
+
+      <path d="M232 442 L240 450 L232 458" fill="none" stroke="var(--yellow)" stroke-width="1.4"/>
+      <text x="252" y="450" font-size="11" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">정지 — 원인불명 오류</text>
+
+      <rect x="432" y="440" width="14" height="12" rx="3" fill="var(--accent)" fill-opacity="0.12" stroke="var(--accent)" stroke-width="1"/>
+      <text x="456" y="450" font-size="11" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">되돌릴 수 없는 착지</text>
+
+      <rect x="616" y="440" width="14" height="12" rx="3" fill="var(--ink)" fill-opacity="0.03" stroke="var(--muted)" stroke-width="1" stroke-dasharray="4,3"/>
+      <text x="640" y="450" font-size="11" fill="var(--muted)"
+            font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">대기 — 다음 편 소재</text>
+    </svg>
+    <figcaption>
+      두 정지는 같은 모양이 아니다. 12시 6분의 정지는 재현 스크립트로 원인을
+      끝까지 좁힐 수 있었고,<sup><a href="#f3">[3]</a></sup> 13시 50분의 정지는
+      증상(전 에이전트 무응답)만 남고 원인은 통치자 자신도 보지 못했다.<sup><a href="#f5">[5]</a></sup>
+      두 가지는 x축 위치로 같은 시간대를 지났음을 표시했을 뿐 실제 연결선은 긋지
+      않았다 — feat/62 는 그 시간대에 이미 착지 문턱 앞에서 대기로 들어갔기 때문이다.
+    </figcaption>
+  </figure>
+
+  <h2>대상 1 — PR#75, 형식만 바뀌었다는 것을 판정이 아니라 측정으로</h2>
+  <p>
+    ep15·16·17 편의 각주 마커를 평문 <code>[N]</code> 에서 <code>&lt;sup&gt;&lt;a href="#fN"&gt;</code>
+    형식으로 바꾸는 PR#75 가 착지했다 — main <code>0197d11d</code> → <code>b08193c1</code>,
+    트리는 병합 전 예측과 동일 객체였다.<sup><a href="#f2">[2]</a></sup> 완결자는
+    「내용·판정 문장은 손대지 않음」을 판정문이 아니라 측정으로 재확인했다 — 세
+    편 모두 각주 마커 마크업만 <code>[N]</code> 으로 정규화한 뒤 비교하면 바이트
+    수까지 완전히 같았다.<sup><a href="#f8">[8]</a></sup>
+  </p>
+  <p>
+    이 착지가 이번 창에서 값진 것은 하나 더 있다 — <b>Codex 판별 규칙이 이번에
+    대조군으로 확정됐다.</b> Codex 자신의 안내문 「지적이 있으면 코멘트를 달고,
+    없으면 👍 로 반응한다」를 실측으로 검증했다: PR#75 는 리뷰 코멘트 0건·👍
+    리액션 있음(돌았고 지적 없음), PR#74 는 코멘트 있음·👍 없음(돌았고 지적
+    있음) — 두 채널이 서로 배타적으로 갈렸다.<sup><a href="#f9">[9]</a></sup>
+    이 판별이 대상 2 의 정지 해제 국면에서 다시 쓰인다.
+  </p>
+
+  <h2>대상 2 — feat/63, 한 번은 진짜였고 한 번은 알 수 없었다</h2>
+  <p>
+    첫 착지 시도(PR#76, push <code>ada500d3</code>)는 봇의 실제 지적 둘로
+    병합 직전 멈췄다. <b>Codex P2</b> — 게이트가 주입된 스포너를 쓰면 상대경로
+    (<code>Path('.')</code>)를 그대로 통과시킨다는 지적이었고, 완결자는 예측
+    병합 트리에서 직접 재현해 참임을 확인했다: 통과됨·spawner 호출 1회 vs
+    통제군(<code>None</code>)은 거부됨.<sup><a href="#f3">[3]</a></sup>
+    <b>claude-review</b> 는 그 커밋의 트레일러가 규약(둘)을 어기고 셋임을
+    지적했고, 완결자는 원시 커밋 객체에서 그대로 확인했다.<sup><a href="#f3">[3]</a></sup>
+  </p>
+  <p>
+    완결자는 P2 가 이번 커밋이 만든 퇴행이 아니라는 것도 함께 쟀다 — 직전
+    커밋에도, 현재 main 에도 그 검사 자체가 아예 없었다. 여기서 이 편의 핵심
+    관찰이 나온다: <b>「즉 착지를 막는다고 main 이 더 안전해지지 않는다 —
+    선택지는 통치자·대표의 축이다.」</b><sup><a href="#f3">[3]</a></sup>
+    막을지 열지를 가르는 기준점이 「이 브랜치가 완벽한가」가 아니라 「비교
+    대상(main)이 지금 무엇을 갖고 있는가」라는 것이다 — main 이 이미 그 검사를
+    갖고 있었다면 이 브랜치를 막는 것은 방어선을 지키는 일이지만, main 에
+    애초에 아무 검사가 없었다면 막는 것은 그 갈래를 «좁히는» 개선을 늦출
+    뿐이다.
+  </p>
+  <p>
+    대표는 「63=A(이 브랜치에서 P2 를 닫고 착지)·62=D(D1 을 봉합한 뒤 착지)」로
+    결정했다.<sup><a href="#f4">[4]</a></sup> 구현자가 게이트에 비절대 경로
+    거부 갈래를 추가하고,<sup><a href="#f10">[10]</a></sup> 리뷰어가 진짜
+    어댑터·게이트·저널로 전후 두 트리를 대조해 드라이브-상대(<code>C:foo</code>)·
+    루트-상대(<code>/Windows</code>) 변형까지 실측으로 닫힌 것을 확인한 뒤,<sup><a href="#f11">[11]</a></sup>
+    「병합 가능」을 무조건으로 회신했다.<sup><a href="#f11">[11]</a></sup>
+    완결자는 새 head(<code>c40925b7</code>)로 재착지에 들어갔다.
+  </p>
+  <p>
+    재착지 착수 직후, <b>13시 50분부터 다섯 시간 가까이 전 에이전트가
+    무응답</b>이 됐다. 통치자 자신도 14시 33분 대표 질문에 답하지 못했고,
+    18시 32분 대표의 재개 지시로 깨어났다.<sup><a href="#f5">[5]</a></sup>
+    원인은 끝내 밝혀지지 않았다 — 「원인은 내 기록으로 관측 불가 — 증상만:
+    13:50 이후 전 에이전트 무응답」<sup><a href="#f5">[5]</a></sup> 이라는
+    문장이 그대로 이 편의 기록이다. 정지 지점을 다시 잰 것이 이 사슬을
+    지켰다: 원격 브랜치는 이미 <code>c40925b7</code> 로 push 돼 있었고 main 은
+    무변동이었다 — 정지 지점은 「push 직후·병합 직전」이었지 어중간하게 깨진
+    상태가 아니었다.<sup><a href="#f5">[5]</a></sup> 재개 지시는 재push 를
+    명시로 금지하고 병합부터 잇게 했다.<sup><a href="#f12">[12]</a></sup>
+  </p>
+  <p>
+    완결자는 정지 전 결과를 하나도 증거로 쓰지 않고 전부 다시 쟀다.<sup><a href="#f6">[6]</a></sup>
+    새 head 에서 claude-review 는 완주해 「지적 없음」을 냈고, Codex 는
+    대상 1 에서 확정된 대조군(PR#74 의 수정 push 뒤에도 재리뷰·리액션이 모두
+    없었던 전례)에 비춰 무반응이 정상값임을 확인한 뒤 <b>「새 지적 0건」까지만
+    주장하고 👍(적극 통과 신호)는 주장하지 않았다.</b><sup><a href="#f6">[6]</a></sup>
+    GitHub Advanced Security 의 「Code scanning AI findings」 워크플로는
+    양쪽 head 에서 모두 실패했는데, 완결자는 그 실패의 성격을 정확히
+    갈랐다 — GitHub 쪽 세션 모델 오류였고, code scanning alert 는 0건, PR
+    상태 롤업 밖이었다. <b>「초록이 아니라 미실행」</b>이라 조용히 빼지 않고
+    그대로 올렸다.<sup><a href="#f6">[6]</a></sup>
+  </p>
+  <p>
+    18시 52분(UTC 09:52:09), squash 착지 — main 은 <code>6e8a18d4</code>,
+    트리는 예측과 동일 객체였고, 트레일러는 원시 커밋에서 정확히 둘로
+    확인됐다.<sup><a href="#f6">[6]</a></sup> 이슈 #63 이 닫혔다.<sup><a href="#f6">[6]</a></sup>
+  </p>
+
+  <h2>대상 3 — feat/62, 결론은 그대로였지만 근거는 정정됐다</h2>
+  <p>
+    리뷰어가 원 리뷰에서 이름 댄 변이 F·G(봉쇄 플래그 제거·측정 전제
+    <code>cwd</code> 제거)는 39/39 녹색으로 생존해 있었다. 대표 결정 D 에
+    따라 구현자가 그 둘을 겨냥한 새 테스트 하나를 추가했고,<sup><a href="#f13">[13]</a></sup>
+    리뷰어가 재실측해 F·G 모두 정확히 1개 적색(FAIL·ERROR)으로 뒤집힌 것을
+    확인했다.<sup><a href="#f14">[14]</a></sup>
+  </p>
+  <p>
+    <b>구현자의 이탈 판정에서 결론은 살아남았지만 근거는 정정됐다.</b>
+    구현자는 리뷰어의 제안(「기존 테스트에 단언 두어 줄」) 대신 전용 테스트를
+    만들며 그 이유로 「형제들의 '행동 하나당 테스트 하나' 관행」을
+    들었다.<sup><a href="#f13">[13]</a></sup> 리뷰어는 취지 자체는
+    「내 제안보다 낫다」고 인정하면서도, 그 근거가 형제들과 맞지 않는다는
+    것을 형제 테스트들의 실제 단언 수(4·3·2개)로 반증했다 — 「실제로 작동하는
+    관행은 관심사 하나당 테스트 하나, 두 사실이 한 관심사를 이루면 이름에
+    <code>and</code> 를 붙인다」이고, 신규 테스트는 그 관행에 정확히
+    맞는다.<sup><a href="#f14">[14]</a></sup> 결론(전용 테스트로 분리한 것)은
+    바뀌지 않았지만, 다음에 이 저장소를 「단언 하나짜리 테스트만 쓴다」로
+    읽으면 형제 넷과 어긋난다는 것이 정정으로 남았다.
+  </p>
+  <p>
+    잔여 지적(P1 — 다른 봉쇄 플래그 둘이 아직 무관측, P2 — ERROR 가 FAIL 보다
+    읽기 어려움, P3·P4 — 관찰)은 모두 이 발주 범위 밖의 후속으로
+    분류됐다.<sup><a href="#f14">[14]</a></sup> AC4 조건(180초 경계가
+    「요청 진행 전 차단」 문언 전체는 못 채우고, 이슈 본문이 좁힌 범위로만
+    충족된다는 한정)은 프로덕션 무변경이라 그대로 유지됐고, 「병합 가능 —
+    AC4 한정 유지」로 통과했다.<sup><a href="#f14">[14]</a></sup> 그러나
+    feat/62 는 feat/63 과 CHANGELOG en·ko 의 같은 자리(<code>### Added</code>
+    바로 아래)에 항목을 삽입하므로, 착지는 feat/63 착지 뒤로 예약됐다 —
+    이 편에는 리뷰 통과까지만 싣고 착지는 다음 편 소재로 남긴다.<sup><a href="#f7">[7]</a></sup>
+  </p>
+
+  <h2>경계 — 관찰까지만</h2>
+  <p>
+    <b>전원 정지의 원인.</b> 위에서 이미 적었듯 이 편은 원인을 서술하지
+    않는다 — 통치자 자신의 기록에도 원인이 없고, 있는 것은 시각과 증상뿐이다.<sup><a href="#f5">[5]</a></sup>
+  </p>
+  <p>
+    <b>feat/62 의 후속 사각지대 넷(P1~P4).</b> 전부 이 발주 범위 밖으로
+    분류됐고 착지를 막지 않는다.<sup><a href="#f14">[14]</a></sup> 이 편은
+    분류 사실까지만 옮긴다 — 어느 것을 언제 닫을지는 이 편의 몫이 아니다.
+  </p>
+
+  <h2>질문 6 · 다음 담당에게 무엇을 위임하나</h2>
+  <p>
+    완결자에게 feat/62 착지(방아쇠 셋 — CHANGELOG 충돌 재실측·AC4 한정 문구
+    squash 본문·P1·P2 후속 명기 동봉),<sup><a href="#f15">[15]</a></sup>
+    구현자에게 이슈 #72 항목 일부(항목 3 제외, 항목 4·6),<sup><a href="#f15">[15]</a></sup>
+    대표에게 #72 항목 3(ADR 0002 baseline 등재) A/B 결정을 위임한다.<sup><a href="#f15">[15]</a></sup>
+  </p>
+
+  <h2>질문 7 · 왜 그 담당에게 맡기나</h2>
+  <p>
+    착지(병합 실행·양 봇 확인·트리 대조)는 이 저장소에서 늘 완결자
+    축이다.<sup><a href="#f6">[6]</a></sup> #72 는 이미 발행된 이슈라 구현자
+    축이고, ADR baseline 등재처럼 동결 규칙을 건드리는 결정은 대표 축이다.<sup><a href="#f15">[15]</a></sup>
+    나에게 온 것은 이 구간(#63 종료 게이트)을 하나의 기록으로 묶는 일이고,
+    저장소 규약이 역사 기록은 교육자만 쓴다고 정한 자리다.<sup><a href="#f16">[16]</a></sup>
+  </p>
+
+  <h2>질문 8 · 왜 이걸 제안했나</h2>
+  <p>
+    통치자 지시가 이 편을 「기편 하나만」으로 명시했다 — #63 종료가 게이트이고
+    기편이 그 구간의 일지편들을 종합하기 때문이다.<sup><a href="#f1">[1]</a></sup>
+    소재 넷과 새 관측 셋을 원문 경로와 함께 동봉했고,<sup><a href="#f1">[1]</a></sup>
+    각주 형식은 제18·19편이 세운 절차를 그대로 이었다.
+  </p>
+
+  <h2>질문 9 · 왜 이런 오류가 나왔나</h2>
+  <p>
+    이 편에는 성격이 다른 「오류」가 둘 있고, 둘의 답은 다르다.
+  </p>
+  <p>
+    <b>봇 지적 둘(12:06 정지)은 원인이 있다.</b> Codex P2 는 S1 사슬이
+    「미정」 갈래만 닫고 「비절대」 갈래는 남긴 채로 새 커밋을 얹었기 때문에
+    난 것이고,<sup><a href="#f3">[3]</a></sup> claude-review 의 트레일러
+    지적은 그 커밋에 트레일러가 저장소 규약(둘)을 넘어 셋 실렸기 때문에
+    났다 — 셋째 줄이 왜 실렸는지 자체는 이 편의 사료에 없다.<sup><a href="#f3">[3]</a></sup>
+  </p>
+  <p>
+    <b>13:50~18:32 의 전원 정지는 원인이 없다 — 없다는 사실 자체가 답이다.</b>
+    통치자는 「원인은 내 기록으로 관측 불가」라고 그대로 적었다.<sup><a href="#f5">[5]</a></sup>
+    이 편은 그 답을 대신 채우지 않는다 — 모르는 것을 아는 것처럼 적는 순간
+    이 폴더가 매 편 지켜 온 「각주는 문구의 존재만 보증한다」는 원칙이 깨진다.
+  </p>
+
+  <h2>질문 10 · 무엇이 있었으면 이걸 막았을까</h2>
+  <p>
+    <b>P2 쪽.</b> 게이트가 스포너의 검사(<code>assert_working_directory</code>)와
+    처음부터 대칭이었다면 — 스포너가 막는 세 갈래(미정·비절대·부재)를 게이트도
+    같이 복제했다면 — S1 사슬 단계에서부터 새지 않았을 것이다. 리뷰어의 D2
+    인계가 정확히 이 비대칭을 짚었다.<sup><a href="#f11">[11]</a></sup>
+  </p>
+  <p>
+    <b>트레일러 쪽.</b> 커밋 생성 시점에 트레일러 형식을 강제하는 훅이
+    있었다면 셋째 줄이 애초에 실리지 않았을 것이다 — 다만 이 편의 사료는
+    「왜 실렸나」를 답하지 않으므로, 이 문장은 추정이지 실측이 아니다.
+  </p>
+  <p>
+    <b>전원 정지 쪽.</b> 이 질문에 답할 수 없다. 원인을 모르는 채로 「무엇이
+    있었으면 막았을까」를 쓰면 원인을 지어내는 것과 같다. <b>답하지 못한다는
+    것 자체가 이 편이 남기는 답</b>이다.
+  </p>
+
+  <h2>질문 11 · 원점에 비춰, 이번 걸음이 그쪽으로 갔나</h2>
+  <p>
+    <b>그쪽으로 갔다.</b> 두 정지 모두에서 반복된 것은 「정지 사유가 진짜인지를
+    스스로 믿지 않고 재현으로 확인한다」는 절차였다 — Codex P2 는 재현
+    스크립트로,<sup><a href="#f3">[3]</a></sup> 재개 지점은 <code>git
+    ls-remote</code>·<code>git log</code> 실측으로,<sup><a href="#f5">[5]</a></sup>
+    착지는 SHA 가 아니라 트리 동일성으로 확인됐다.<sup><a href="#f6">[6]</a></sup>
+    사람(대표) 판단이 필요한 지점(63=A/B, 62=C/D)에서는 세 번째 AI가 답을
+    합성하지 않고 선택지 그대로 옮겼다.<sup><a href="#f4">[4]</a></sup>
+    이것은 원점편이 말한 「반대 의견과 근거를 조용히 없애지 않는다」의 같은
+    축이다.
+  </p>
+  <p class="note">
+    내 이해를 덧붙이면 — 이번 편이 값진 것은 「막는다고 main 이 더 안전해지지
+    않는다」는 관찰이 원점편의 정신과 정확히 만난다는 점이다. 원점편은 완벽한
+    해법을 합성하지 않고 원문·합의·충돌을 나란히 보존하는 것을 목표로
+    삼았는데,<sup><a href="#f17">[17]</a></sup> 이번 관찰도 같은 모양이다 —
+    「이 브랜치가 완벽한가」를 묻는 대신 「비교 대상이 지금 무엇을 갖고
+    있는가」를 물어, 판단을 감추지 않고 선택지로 그대로 남겼다.
+  </p>
+
+  <h2>질문 12 · 처음 범위에서 새로 늘어난 것이 있나</h2>
+  <p>
+    <b>없습니다.</b> 이 편이 다루는 셋(PR#75·feat/63·feat/62) 모두 이미 열려
+    있던 이슈·PR 의 마감이거나 그 마감을 위한 봉합이다. GHAS 실패는 새로
+    관찰된 사실이지만 저장소 코드의 변경이 아니라 GitHub 플랫폼 쪽 오류이고,
+    <b>이 편이 판정하지 않는다</b> — 재발 시 같은 판정(미실행≠초록)으로
+    다루라는 항목만 후보·보류 목록에 남아 있다.<sup><a href="#f15">[15]</a></sup>
+    원점편의 「범위 밖」 목록 어느 항목도 건드리지 않았다.
+  </p>
+
+  <hr>
+  <p class="note">
+    여기서 멈춘다 — 기록과 PR, 보고까지. 판정하지 않는다. 질문 11·12 모두
+    「그쪽으로 갔다·없음」이라 통치자 에스컬레이션 의무는 발생하지 않았다.
+    전원 정지의 원인과 feat/62 의 P1~P4 는 관찰·후속 사실까지만 적었다.
+  </p>
+
+  <h2>각주</h2>
+  <ol class="fnotes">
+    <li id="f1">채널 <span class="path">whole-life</span> · 통치자 지시 event <span class="path">6fe74049</span> — «[ORD-EDU-log-75-76 — 제20편 «기편» 하나만: 게이트(#63 종료) 통과. 기편이 일지편을 포함한다] … 소재 4건: ① PR#75 완착 … ② feat/63 사슬 완주 … ③ feat/62 — D1 봉합·델타 리뷰까지 … 착지는 지금 진행 중 — 이번 편에는 리뷰 완주까지만, 착지는 다음 소재로 남겨라. ④ 관행 명명 정정 … 이번 착지의 새 관측(②에 엮을 것): Codex 대조군 … GHAS 미실행≠초록 … 「착지를 막는다고 main 이 더 안전해지지 않는다」»</li>
+    <li id="f2"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-ep15-17-markers__ORD-CLS-PR-75.md</span> — «PR#75 는 squash 로 착지했다. `main` = **`b08193c13900ec6a05f08509717e331ed3495395`**, 트리 = **`6f982715447d44138fc00a4ddc4a3f007055cbf8`** — 병합 **전에** 예측하고 그 트리에서 스위트를 돌린 것과 **같은 객체**다.»</li>
+    <li id="f3"><span class="path">WORK_LOGS/whole-life/CLS_feat-63-record-working-directory__ORD-CLS-feat-63.md</span> — «**병합하지 않았다.** ORD 의 정지 조건(「P1/P2 가 있으면 병합하지 말고 내게 회신」)에 걸렸다.» · «When a caller injects a `ProcessSpawner` that does not repeat `SubprocessSpawner.assert_working_directory`, this guard accepts values such as `Path(".")`. … the gate should reject non-absolute (and invalid) directories as well as `None`.» · «→ **P2 는 참이다.**» · «Co-Authored-By: Claude Fable 5 &lt;noreply@anthropic.com&gt;     ← 셋째» · «→ **지적은 참이다.**» · «즉 착지를 막는다고 main 이 더 안전해지지 않는다 — **선택지는 통치자·대표의 축이다.**»</li>
+    <li id="f4"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «### 대표 결정 (6690bcb0, 12:57) — 「63-A, 62-D」» · «**63=A**: 이번 브랜치(feat/63)에서 Codex P2 를 닫고 착지 — 수정 → 델타 리뷰 → 착지 재개(S1 사슬과 같은 모양).» · «**62=D**: 착지 전 리뷰어 D1[중] 봉합(단언 추가) → 델타 리뷰 → 착지(순서 제약: feat/63 착지 뒤 — CHANGELOG 충돌 구조).»</li>
+    <li id="f5"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «13:41 ORD-CLS-feat-63 재발행(b039fcb0) 직후 오류로 전원 정지. 14:33 대표 질문(df2c06f3)에 나도 무응답. 18:32 대표 재개 지시(ef12668b).» · «원인은 내 기록으로 관측 불가 — 증상만: 13:50 이후 전 에이전트 무응답.» · «원격 feat/63-record-working-directory = c40925b7 (13:38 리뷰어 실측 시 원격 ada500d3 → **완결자 push 완료**)» · «origin/main = b08193c1 무변동 · 브랜치 생존(delete_branch_on_merge 저장소) → **병합 미실행**» · «새 CLS 보고 없음(정본 12:05 가 마지막) → 정지 지점 = push 직후·병합 직전. 유실 없음.»</li>
+    <li id="f6"><span class="path">WORK_LOGS/whole-life/CLS_feat-63-record-working-directory__ORD-CLS-feat-63.md</span> — «오류 정지 뒤 재개. 정지 지점은 「push 직후·병합 직전」이었다. 아래는 **이번 턴에 새로 돌린 것만** 적는다 — 정지 전 결과는 증거로 쓰지 않았다.» · «**claude-review**: `c40925b7` 에서 완주(run 33040275523, 58s, conclusion success). 작업 로그의 게시 단계가 **`No buffered inline comments`** 를 찍었다 → 인라인 지적 0건.» · «**대조군을 세웠다** … 즉 **「수정 push 에는 Codex 가 다시 붙지 않는다」가 이 저장소의 관측된 정상값**이고, c40925b7 의 무반응은 이상 신호가 아니다. 동시에 **Codex 의 적극적 통과 신호(👍)도 아니다** — 「새 지적 0건」까지만 주장한다.» · «**GitHub Advanced Security 「Code scanning AI findings」 는 실패했다 — 코드 지적이 아니라 미실행이다.**» · «$ git rev-parse origin/main^{tree} 2845c0596bc24ace0423f95a0a87da210c34e90a      ← 예측과 동일 객체. TREE MATCH» · «$ git log -1 --format=%B 6e8a18d | grep -c -i "^co-authored-by:\|^signed-off-by:" 2» · «$ gh pr view 76 --json state,mergedAt   → MERGED 2026-08-27T09:52:09Z» · «$ gh issue view 63 --json state         → CLOSED 2026-08-27T09:52:10Z»</li>
+    <li id="f7"><span class="path">WORK_LOGS/whole-life/REV_feat-62-untrusted-probe-verdict__ORD-REV-feat-62-d1.md</span> — «**조건은 하나 그대로**: AC4 는 「이슈 본문이 오늘 닫을 것으로 지목한 범위에 한하여」라는 한정과 함께 착지 커밋 본문에 남아야 한다.» · <span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «구조: feat/62 는 feat/63 과 CHANGELOG en·ko 같은 자리 삽입 — feat/63 착지 뒤에만 충돌 없이 착지 가능.»</li>
+    <li id="f8"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-ep15-17-markers__ORD-CLS-PR-75.md</span> — «정규화하면 **바이트 수까지 같다** → 마커 마크업 외에는 한 글자도 다르지 않다. 통제군(원본끼리 diff=1)이 붙어 있어 「검사가 죽어서 0」인 경우와 구별된다.»</li>
+    <li id="f9"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-ep15-17-markers__ORD-CLS-PR-75.md</span> — «If Codex has suggestions, it will comment; **otherwise it will react with 👍**.» · 대조표 「#75 | 없음 | **있음** 02:25:43Z | 돌았고 **지적 없음**」·「#74 | 있음 18:13:48Z | 없음 | 돌았고 **지적 있음**」</li>
+    <li id="f10"><span class="path">WORK_LOGS/whole-life/IMP_feat-63-record-working-directory__ORD-IMP-63-p2.md</span> — «`whole_life/runtime/launch.py` | `enforce_launch_safety` 에 `not plan.working_directory.is_absolute()` 갈래 추가(코드 = 스포너와 동일한 `WORKING_DIRECTORY_UNDECIDED`).»</li>
+    <li id="f11"><span class="path">WORK_LOGS/whole-life/REV_feat-63-record-working-directory__ORD-REV-feat-63-p2.md</span> — «**head 에서 닫혔다.** `spawner_calls=0` 이 거부의 출처를 게이트로 특정한다» · «드라이브-상대 `C:foo`·루트-상대 `/Windows` 두 변형이 base 에서 똑같이 새고 head 에서 똑같이 거부된다.» · «## 내 판단상 병합 가능 … Standards 4건은 판단 둘·관찰 둘이고, 제일 심한 E1(거부 순서 미고정)조차 안전 성질을 바꾸지 않으므로 착지를 막을 수준이 아니다.»</li>
+    <li id="f12">채널 <span class="path">whole-life</span> · 통치자 지시 event <span class="path">4eab3941</span> — «[ORD-CLS-feat-63 속행 — 오류 정지 복구. 네 진행분 확인했다: push 완료, 병합 직전] … push 는 이미 끝났다. 다시 push 하지 마라 … 이어서 할 것 — b039fcb0 의 ORD 내용 그대로, 남은 단계만.»</li>
+    <li id="f13"><span class="path">WORK_LOGS/whole-life/IMP_feat-62-untrusted-probe-verdict__ORD-IMP-62-d1.md</span> — «리뷰어 제안(「popen.call_args 를 이미 들고 있는 기존 테스트에 두어 줄」)에서의 이탈: … 형제들의 「행동 하나당 테스트 하나」 관행대로 같은 헬퍼를 쓰는 전용 테스트로 분리했다.» · «F. argv 에서 `--sandbox read-only` 제거 → … 40개 중 **정확히 1개 FAIL** = 신규 테스트.» · «G. `cwd=str(outside)` 제거 → … 40개 중 **정확히 1개 ERROR**(KeyError 'cwd' …) = 신규 테스트.»</li>
+    <li id="f14"><span class="path">WORK_LOGS/whole-life/REV_feat-62-untrusted-probe-verdict__ORD-REV-feat-62-d1.md</span> — «**됐다.** 원 리뷰에서 F·G 는 39/39 **녹색 생존**이었다.» · «**다만 구현자가 댄 근거는 형제들과 맞지 않는다.**」 … 실제로 작동하는 관행은 「**관심사 하나당 테스트 하나, 두 사실이 한 관심사를 이루면 이름에 `and` 를 붙인다**」이고, … **결론은 바뀌지 않지만 근거 문언은 정정해 둔다**」 · 「### P1 [판단·약함] 봉쇄 플래그 **둘**이 아직 무관측 — D1 과 같은 계보, 이 발주 범위 밖」 · 「## 내 판단상 병합 가능 — 원 리뷰의 AC4 한정 조건은 그대로 유지」</li>
+    <li id="f15"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «ORD-CLS-feat-62 (ed985196): 방아쇠 셋 명기 — ① CHANGELOG 충돌 재실측(충돌 시 정지·회신, 리베이스는 착지 밖) ② AC4 한정 문구 squash 본문 … ③ P1·P2 는 후속 명기.» · «ORD-IMP-72 (928bfa5c): 항목 3 제외(대표 결정 대기) · 항목 4 확대분 … · 항목 6 project-context 정정 …» · «BRF (282337a3): #63 종료 색인 + GHAS 결함 + 발행 셋 알림 + **[결정 요청] #72 항목 3 = A(등재)/B(일부러 미등재 기록)**» · «[후보·보류] … GHAS AI findings 모델 오류(GitHub 측 — 재발 시 미실행 판정)»</li>
+    <li id="f16"><span class="path">REPOS/whole-life/AGENTS.md</span> — «역사 기록(`docs/history/`)은 **교육자만** 쓴다.»</li>
+    <li id="f17"><span class="path">docs/adr/0001-local-subscription-v0.md</span> — «합성은 반대 의견과 근거를 조용히 없앨 수 있다.»</li>
+  </ol>
+
+</div>
+</body>
+</html>
