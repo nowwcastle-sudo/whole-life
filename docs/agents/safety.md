@@ -37,3 +37,40 @@ Reading the result:
 
 Verified in this repository on 2026-08-22 with all bootstrap files staged: the
 command printed nothing and exited 1.
+
+## Dependency audit — reviewer (REV) gate
+
+This repository has no dependency manifest today (no `requirements.txt`, no
+`pyproject.toml`) and the code is standard-library only, so there is nothing to
+audit yet. The gate fires the moment the first manifest lands: the commit that
+adds it — and every commit that changes it afterwards — must be audited before
+it merges. Until then, "no manifest" is the clean state; it is not a pass, it
+is the gate not yet firing.
+
+When it fires, run (Git Bash):
+
+```bash
+python -m pip install pip-audit && python -m pip_audit -r requirements.txt --strict
+```
+
+(If the manifest is a `pyproject.toml` instead, install the project into a
+fresh virtual environment and run `python -m pip_audit` there — pip-audit
+audits a requirements file directly but audits a `pyproject.toml` through the
+installed environment.)
+
+Reading the result:
+
+- **Exit code 0 = clean.** No dependency in the manifest matches a known
+  vulnerability in the PyPI advisory or OSV databases. Note this is the
+  opposite convention from the secret scan above, where exit 1 is clean —
+  do not carry one gate's reading over to the other.
+- **Exit code 1 = it found a known vulnerability. Do not merge.** The findings
+  are printed with package, version and advisory ID; upgrade or replace the
+  dependency and re-run.
+- **Any other nonzero exit = the audit did not run** (network failure, broken
+  manifest, missing tool). That is not clean — a gate that never fired proves
+  nothing. Fix the audit and re-run.
+
+pip-audit is deliberately not vendored into this repository — it would itself
+be the first dependency. The install line above is part of the gate command so
+the auditor does not depend on ambient tooling.
