@@ -388,6 +388,18 @@ def codex_measurement_lines(version_exit, version_out, clean, probed, untrusted)
     return measured, carried
 
 
+#: What the pinned build prints first on stderr when it refuses to start
+#: outside a trusted directory — the line the committed evidence records. The
+#: "refuses" verdict requires observing it: an exit code is one bit, and a
+#: changed flag or a broken install exits nonzero without identifying this
+#: check (#62).
+CODEX_UNTRUSTED_REFUSAL = (
+    "Not inside a trusted directory and --skip-git-repo-check was not specified."
+)
+
+UNTRUSTED_PROBE_TIMEOUT_SECONDS = 180
+
+
 def probe_untrusted_directory(env):
     """Does this build start a turn from a directory that is not a git repo?
 
@@ -397,25 +409,57 @@ def probe_untrusted_directory(env):
     about this exact build, so it is measured rather than read from
     documentation — the version's own behaviour is the record.
 
-    Costs no model turn either way: the refusal arrives before the request is
-    made. The probe deliberately sends no prompt, so the accepted path ends at
-    end-of-input rather than in a billed turn.
+    A prompt *is* submitted: the CLI requires one, and its missing-prompt
+    check fires before the trusted-directory one, so a promptless run would
+    exit nonzero for a reason that identifies nothing. On the pinned build the
+    refusal arrives before any request, so the prompt costs no model turn.
+    Because a build that accepts the turn would carry that prompt into an
+    authenticated exec, the run is bounded like the Claude-side bare probe:
+    on expiry the whole process tree is terminated and collection stops,
+    since a timed-out probe identified nothing either (#62).
+
+    The verdict is identified, not inferred. A nonzero exit counts as the
+    refusal only when the first stderr line is the pinned refusal; any other
+    failure stops collection — a surprising measurement is an event for a
+    person, not evidence.
     """
     with tempfile.TemporaryDirectory() as outside:
-        exit_code, _out, err = run(
-            "codex",
-            ["exec", "--json", "--sandbox", "read-only",
+        process = subprocess.Popen(
+            ["codex", "exec", "--json", "--sandbox", "read-only",
              "--ignore-user-config", "--ignore-rules", "-"],
-            env,
-            cwd=outside,
-            # A prompt is required, and the missing-prompt check fires
-            # *before* the trusted-directory one: without this the probe
-            # records a true nonzero exit for the wrong reason. Safe to
-            # send, because the directory guarantees the refusal — the
-            # request is never made.
-            stdin_text=UNTRUSTED_PROBE_PROMPT,
+            stdin=subprocess.PIPE,
+            # An accepted turn's stdout would be a model response, which
+            # section 5 does not permit persisting; never held, like the
+            # Claude-side probe. Only stderr's first line is ever rendered.
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+            env=dict(env),
+            shell=True,
+            cwd=str(outside),
+            text=True,
         )
-        return exit_code, err.splitlines()[0] if err else ""
+        try:
+            _, err = process.communicate(
+                input=UNTRUSTED_PROBE_PROMPT,
+                timeout=UNTRUSTED_PROBE_TIMEOUT_SECONDS,
+            )
+        except subprocess.TimeoutExpired:
+            terminate_process_tree(process)
+            raise CollectionFailed(
+                "the untrusted-directory probe outlived its bound; the tree "
+                "was terminated and nothing about the trusted-directory "
+                "check was identified"
+            ) from None
+
+        err = (err or "").strip()
+        first = err.splitlines()[0] if err else ""
+        if process.returncode != 0 and first != CODEX_UNTRUSTED_REFUSAL:
+            raise CollectionFailed(
+                "the codex probe exited nonzero without identifying the "
+                "trusted-directory refusal; the failure is not evidence "
+                "either way"
+            )
+        return process.returncode, first
 
 
 def collect_codex():
