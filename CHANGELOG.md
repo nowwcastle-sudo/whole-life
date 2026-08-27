@@ -45,6 +45,29 @@ issue holds the acceptance criteria; the merge commit holds the reasoning.
   against the current drive or directory, and both are refused. A directory that does not
   exist is refused at the same boundary, so it arrives as a pre-start refusal like every other
   decision checked there rather than as an operating-system error from the spawn itself.
+- **`close` reports what it could not reap instead of claiming a clean shutdown** (#46).
+  When the fallback direct kill timed out, its result was discarded: a child that survived
+  the wait came back in the same shape as a clean close, so "nothing left" was claimed while
+  a process could still be running. `close()` now returns a `CloseReport` — the counts of
+  child processes and drain tasks still standing, and the reasons the code observed, where a
+  missing killer and an unreaped direct kill are separate entries — and reports zero only
+  when zero was actually confirmed.
+- **Codex children run in the directory the plan chose, not wherever the broker happened to be** (#33).
+  Codex child processes inherited the broker's own current directory, which the pinned CLI
+  refuses when it is not a trusted workspace — so the broker's launch location, not the
+  plan, decided whether a turn could start. The plan's working directory is now a required
+  argument wired through both adapters, checked immediately before spawn — an undecided or
+  missing directory is refused before anything starts — and passed to the child explicitly,
+  with the git-repository check skipped for Codex where the neutral directory is not a
+  repository.
+- **Cleanup failure no longer masks the cancellation that asked for it** (#34).
+  When escalation to `taskkill` failed, that exception surfaced in place of the
+  cancellation's own answer, handing the caller a diagnosis about the broker's environment
+  for a run it had itself asked to stop. Cancel now answers `UNKNOWN` — which is exactly
+  "the tree's death was not confirmed" — and records the cleanup failure separately as a
+  fact about the broker rather than the turn; on the spawn path the original exception
+  keeps its type and place with the cleanup note attached; and the fallback kill also reaps
+  what it kills, so a child it ended is not counted as still alive at close.
 - **Native-worker limits that are reported honestly and held by the broker** (#17).
   Each provider now reports concurrency, total starts and delegation depth separately as
   `hard`, `cooperative` or `unsupported`, and reports them as measured. Claude Code 2.1.240
