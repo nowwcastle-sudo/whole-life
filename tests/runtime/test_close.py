@@ -301,7 +301,7 @@ class _JournallingTransport:
 
 class ShutdownOutcomeTests(unittest.IsolatedAsyncioTestCase):
     async def test_a_run_stopped_by_shutdown_is_unknown_not_success(self):
-        """Spec 210: an unresolved ending is never quietly upgraded."""
+        """Spec 213: an unresolved ending is never quietly upgraded."""
         runtime = await adapter(UNRESPONSIVE)
         handle = await runtime.start_turn(turn_request())
 
@@ -366,7 +366,7 @@ class NormativeDefaultTests(unittest.IsolatedAsyncioTestCase):
 
 
 class UnresolvedTerminationTests(unittest.IsolatedAsyncioTestCase):
-    """`종료 결과를 확정할 수 없으면 성공이나 재시도 가능으로 추정하지 않는다.` Spec 210.
+    """`종료 결과를 확정할 수 없으면 성공이나 재시도 가능으로 추정하지 않는다.` Spec 213.
 
     Two halves. A termination we could not confirm must say so rather than
     report a tidy `forced`; and the native session it may still be holding must

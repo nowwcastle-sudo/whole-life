@@ -48,7 +48,7 @@ def resolve_outcome(
     nonzero disowns the announcement.
 
     `cancelled_before_terminal` is consulted first because it is a fact about
-    *ordering*, and ordering is what spec 268, 279, 484 and 485 decide on. User
+    *ordering*, and ordering is what spec 271, 282, 487 and 488 decide on. User
     cancellation and the broker's twenty-minute timeout are one rule under two
     names: whichever came first wins. A terminal result committed before the
     cancellation stands; a cancellation that came first leaves the turn
@@ -126,7 +126,7 @@ def resolve_outcome(
         )
 
     if unresolved_worker:
-        # Spec line 282. The provider said the conversation ended; it did not
+        # Spec line 285. The provider said the conversation ended; it did not
         # say the worker it launched stopped. Reporting the turn complete over
         # a worker whose end was never announced would claim knowledge of
         # something nobody reported — and the thing still running is billable.

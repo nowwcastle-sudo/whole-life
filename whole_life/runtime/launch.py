@@ -195,7 +195,7 @@ def enforce_launch_safety(plan: LaunchPlan) -> None:
     if canonical != plan.version_conformance:
         raise PreStartRefusal(RefusalCode.UNSUPPORTED_CLI_VERSION)
 
-    # Spec line 121. Every v0 profile grants native delegation, so a runtime
+    # Spec line 124. Every v0 profile grants native delegation, so a runtime
     # that cannot show it holds the limits does not quietly become a
     # single-agent turn: it does not start.
     #

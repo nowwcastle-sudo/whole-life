@@ -148,7 +148,7 @@ class ExecutableResolutionTests(unittest.TestCase):
     def test_a_command_launcher_is_refused(self):
         """Measured, not assumed — see CommandLauncherArgvTests below.
 
-        Spec line 132 permits `.cmd` or `.exe`; line 202 requires shell=False
+        Spec line 135 permits `.cmd` or `.exe`; line 205 requires shell=False
         with split argv. A `.cmd` cannot satisfy the second, so the set that
         satisfies both is `.exe` alone. A fail-closed subset of the approved
         wording, not a contradiction of it — the baseline is left untouched for

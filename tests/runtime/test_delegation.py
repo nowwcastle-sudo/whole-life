@@ -153,7 +153,7 @@ class DepthBoundaryTests(unittest.TestCase):
         )
 
     def test_an_unannounced_depth_is_not_treated_as_a_violation(self):
-        """Spec line 118 forbids inventing what the provider did not publish.
+        """Spec line 121 forbids inventing what the provider did not publish.
         A start whose depth is absent is a start we cannot judge on depth, and
         guessing it is deep would cancel a turn on a number nobody sent."""
         ledger = DelegationLedger(self.BUDGET)
@@ -271,7 +271,7 @@ class BudgetEnforcementTests(unittest.IsolatedAsyncioTestCase):
 
         The worker is finished here on purpose. Written without the finish,
         this test asserted a completed turn over a worker whose end was never
-        announced — which spec line 282 says is exactly not a completion. It
+        announced — which spec line 285 says is exactly not a completion. It
         passed until the rule existed, which is what a test encoding the wrong
         expectation looks like.
         """
@@ -318,7 +318,7 @@ class BudgetEnforcementTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual("DelegationDepthExceeded", outcome.diagnostic)
 
 class UnresolvedWorkerTests(unittest.IsolatedAsyncioTestCase):
-    """Spec line 282: a terminal result arriving while a worker is still
+    """Spec line 285: a terminal result arriving while a worker is still
     unresolved does not make the turn complete. The provider says the
     conversation ended; it does not say the worker it launched stopped, and a
     turn reported complete over a live worker is a bill nobody is watching."""
@@ -411,7 +411,7 @@ class ReportedEnforcementTests(unittest.IsolatedAsyncioTestCase):
         )
 
     async def test_codex_total_starts_are_unsupported_until_measured(self):
-        """Spec line 119: a runtime whose worker starts cannot be counted
+        """Spec line 122: a runtime whose worker starts cannot be counted
         before the budget is broken reports `unsupported`. The 0.149.0 stream
         has no worker lifecycle item, and the live re-measurement is blocked
         until the subscription window reopens — so this is what is known, not
@@ -464,7 +464,7 @@ class ReportedEnforcementTests(unittest.IsolatedAsyncioTestCase):
         )
 
 class FailClosedCapabilityTests(unittest.IsolatedAsyncioTestCase):
-    """Spec line 121: delegation capability that preflight could not confirm
+    """Spec line 124: delegation capability that preflight could not confirm
     refuses the turn. Every v0 profile grants delegation, so a runtime that
     cannot show it holds the limits is not quietly demoted to a single-agent
     turn — it does not run."""
@@ -799,11 +799,11 @@ class ProductionPathTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual("NativeWorkerUnresolved", outcome.diagnostic)
 
     async def test_a_cancelled_turn_is_unknown_when_a_worker_never_resolved(self):
-        """Spec 282 over 279, through the door the broker uses.
+        """Spec 285 over 282, through the door the broker uses.
 
         A terminal result committed before the cancellation survives it — that
-        is 279, and it is why an ordinary post-terminal shutdown is not rewritten
-        into a failure. But 282 names the case where the same terminal result
+        is 282, and it is why an ordinary post-terminal shutdown is not rewritten
+        into a failure. But 285 names the case where the same terminal result
         arrives *over an announced worker nobody said stopped*, and there the
         honest answer is that we do not know. The two are only distinguishable
         after the terminal event has been consumed and the cancellation has
@@ -865,7 +865,7 @@ class ProductionPathTests(unittest.IsolatedAsyncioTestCase):
 
         Same shape — terminal result, then a cancellation on a child still
         running — but every worker the provider announced was announced
-        finished. Spec 279 stands here: an ordinary post-terminal shutdown is
+        finished. Spec 282 stands here: an ordinary post-terminal shutdown is
         not a failure and not an unknown. Without this, the test above could be
         satisfied by deleting the branch it depends on, which would silently
         rewrite every clean broker shutdown.
@@ -912,10 +912,10 @@ class ProductionPathTests(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(outcome.diagnostic)
 
     async def test_a_worker_start_without_a_depth_fails_the_stream(self):
-        """Spec 48 and 117, through the door the broker uses.
+        """Spec 48 and 120, through the door the broker uses.
 
         Line 48 makes observing `spawn_depth` the broker's one means of holding
-        the depth-1 bound, and line 117 gives that observability as the whole
+        the depth-1 bound, and line 120 gives that observability as the whole
         reason Claude's depth axis is reported `cooperative` rather than
         `unsupported`. A start that omits the field is therefore not a start
         with an unknown depth to be waved through — it is the enforcement

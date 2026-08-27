@@ -80,7 +80,7 @@ class RunObserver:
         #: that is what tells the cleanup to end the child rather than wait.
         self._stream_ended = False
         #: Set when a cancellation arrives before any terminal event. The
-        #: ordering is recorded once and never revisited: spec 279 makes a
+        #: ordering is recorded once and never revisited: spec 282 makes a
         #: late clean exit irrelevant, so this cannot be un-set.
         self._cancelled_before_terminal = False
         #: Set when a cancellation arrives *after* a terminal result. Then
@@ -169,9 +169,9 @@ class RunObserver:
     async def _emit(self, event) -> None:
         """Queue one canonical event, unless the turn has already ended."""
         if self._terminal is not TerminalEvent.NONE:
-            # Spec line 279: once a terminal result is committed, that state is
+            # Spec line 282: once a terminal result is committed, that state is
             # the end — so nothing after it is recorded, not a second terminal
-            # (line 281 forbids holding both) and not a message or activity
+            # (line 284 forbids holding both) and not a message or activity
             # either. A turn that has ended cannot go on producing history.
             #
             # Reading continues regardless: the pipes still have to be drained
@@ -224,8 +224,8 @@ class RunObserver:
         future provider path that holds stdin open, so the escalation does not
         silently become "wait, then kill".
 
-        The ordering fact is recorded before anything is ended. Spec 268, 279,
-        484 and 485 decide on which came first — a terminal result already
+        The ordering fact is recorded before anything is ended. Spec 271, 282,
+        487 and 488 decide on which came first — a terminal result already
         committed survives the cancellation, and a cancellation that came first
         makes the turn `unknown_outcome` permanently. Recording it here, before
         the process can produce anything else, is what makes that race already
@@ -238,8 +238,8 @@ class RunObserver:
         cancellation ends the only stream that could have said so.
 
         Deliberately no `cause`. Spec line 96 signs this as
-        `cancel(self, run) -> CancelOutcome`, and none of 268, 278, 279, 484 or
-        485 branches on why a run was stopped — user cancellation and the
+        `cancel(self, run) -> CancelOutcome`, and none of 271, 281, 282, 487 or
+        488 branches on why a run was stopped — user cancellation and the
         twenty-minute timeout are one rule, and the diagnostic is
         `CancelledBeforeTerminal` either way. A cause was carried here for one
         commit, stored in a field nothing read. When a consumer exists it comes
@@ -455,7 +455,7 @@ async def close_all_runs(
     graceful_wait: float = GRACEFUL_WAIT_SECONDS,
     forced_wait: float = FORCED_WAIT_SECONDS,
 ) -> CloseReport:
-    """Shut down every run this runtime started. Spec 209.
+    """Shut down every run this runtime started. Spec 212.
 
     Concurrently, because each shutdown may spend the graceful window waiting
     for a child that will not go: run sequentially, a broker with four active

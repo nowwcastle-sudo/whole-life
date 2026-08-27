@@ -60,7 +60,7 @@ DELEGATION_AXES = frozenset(
 #: recording lives at
 #: tests/recordings/codex-0.149.0-agents-enabled-turn.jsonl, and what it
 #: showed is pinned by tests/runtime/test_codex_delegation_measurement.py.
-#: Spec line 119 turns an uncountable start into `unsupported`, and section 12
+#: Spec line 122 turns an uncountable start into `unsupported`, and section 12
 #: turns `unsupported` into a refusal. The
 #: concurrency cap set by inline config is not listed as `hard` either: a cap
 #: nobody has watched being enforced is a claim, not a measurement.

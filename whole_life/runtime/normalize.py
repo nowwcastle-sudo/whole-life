@@ -117,7 +117,7 @@ CLAUDE_SYSTEM_SUBTYPES = frozenset(
     }
 )
 
-#: Spec line 118's one named value. What the provider publishes about a worker
+#: Spec line 121's one named value. What the provider publishes about a worker
 #: is its lifecycle id, its status and a summary — never the worker's prompt,
 #: reasoning or tool state — so a summary is the whole of what can be seen. The
 #: specification names no second value and this module does not invent one.
@@ -143,7 +143,7 @@ class NormalizedEvent:
     data: Mapping[str, object]
     terminal: TerminalEvent = TerminalEvent.NONE
     #: How deep a native worker was spawned, when the line announced one.
-    #: Kept off `data` for the same reason `terminal` is: spec line 247 fixes
+    #: Kept off `data` for the same reason `terminal` is: spec line 250 fixes
     #: what a worker activity may carry into the Journal, and depth is not in
     #: it — but the caller enforcing the delegation limit needs the number,
     #: because on this build the provider does not enforce it.
@@ -221,7 +221,7 @@ def _event(
 
 
 def _worker_event(parsed: dict, run_id: str, kind: str, **extra) -> NormalizedEvent:
-    """One native-worker lifecycle event, carrying only spec line 247's fields.
+    """One native-worker lifecycle event, carrying only spec line 250's fields.
 
     Built here rather than at each call site so that the payload allowlist is
     one statement. The provider's line also holds the worker's prompt, its
@@ -231,7 +231,7 @@ def _worker_event(parsed: dict, run_id: str, kind: str, **extra) -> NormalizedEv
     if kind == "runtime.activity.started":
         # Required on the start and only on the start. Spec 48 makes observing
         # `spawn_depth` the broker's means of holding the depth bound and spec
-        # 117 gives that observability as the reason Claude's depth axis is
+        # 120 gives that observability as the reason Claude's depth axis is
         # `cooperative` rather than `unsupported`; a start without it leaves
         # the bound unenforced while still reporting it as held. The finish
         # does not carry the field on this build, so requiring it everywhere

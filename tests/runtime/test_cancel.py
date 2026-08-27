@@ -56,7 +56,7 @@ class GracefulPathTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(0, process.returncode)
 
     async def test_the_graceful_window_defaults_to_the_spec_value(self):
-        """The injected window in the fast tests must not drift from spec 207."""
+        """The injected window in the fast tests must not drift from spec 210."""
         import inspect
 
         signature = inspect.signature(RunObserver.cancel)
@@ -136,7 +136,7 @@ class CancelledOutcomeTests(unittest.IsolatedAsyncioTestCase):
     # answer — which was the point while a cause existed. With the parameter
     # gone it became a character-for-character duplicate of the first test in
     # this class, so it is removed rather than kept as a second name for one
-    # assertion. What it was really guarding — spec 279, that the deadline
+    # assertion. What it was really guarding — spec 282, that the deadline
     # decides whatever arrives afterwards — is held by
     # `test_a_late_clean_exit_does_not_upgrade_a_cancelled_run` in
     # tests/runtime/test_outcome.py, which exercises the ordering directly.

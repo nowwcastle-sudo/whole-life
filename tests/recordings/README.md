@@ -93,7 +93,7 @@ The last two are left as the provider issued them. Two reasons, in order of weig
 
 `tests/runtime/test_normalize.py::test_the_worker_identity_comes_from_the_provider`
 reads the `task_id` values out of the recording and asserts that the
-`native_child_id` on each emitted event is *that* value. Spec line 118 forbids the
+`native_child_id` on each emitted event is *that* value. Spec line 121 forbids the
 broker from inventing a worker identity, and this is the check that the broker did
 not.
 
