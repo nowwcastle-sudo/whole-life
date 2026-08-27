@@ -175,6 +175,15 @@ def enforce_launch_safety(plan: LaunchPlan) -> None:
     if "CLAUDE_CODE_SIMPLE" in {name.upper() for name in plan.child_env}:
         raise PreStartRefusal(RefusalCode.CHILD_ENV_FORBIDDEN_VARIABLE)
 
+    # Same refusal the spawner raises, checked again here for the same reason
+    # as the variable above: a plan can be assembled, or mutated, without an
+    # undecided directory ever meeting a spawner that refuses one — `launch()`
+    # accepts any ProcessSpawner. The journal downstream records the directory
+    # as `Path`, never `None`, and that type only holds if this boundary
+    # refuses the undecided plan itself.
+    if plan.working_directory is None:
+        raise PreStartRefusal(RefusalCode.WORKING_DIRECTORY_UNDECIDED)
+
     canonical = SUPPORTED_VERSIONS[plan.provider].get(
         plan.version_conformance.cli_version
     )

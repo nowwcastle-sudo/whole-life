@@ -14,6 +14,7 @@ from whole_life.runtime.contract import (
 )
 from whole_life.runtime.launch import (
     PreStartRefusal,
+    RecordingJournal,
     RefusalCode,
     VersionConformance,
     launch,
@@ -167,6 +168,28 @@ class PreStartRefusalTests(unittest.IsolatedAsyncioTestCase):
         refusal = await self._refuse(plan)
 
         self.assertEqual(RefusalCode.TURN_REQUEST_INVALID, refusal.code)
+
+    async def test_a_plan_whose_working_directory_is_undecided_is_refused(self):
+        """The decision journal types `working_directory` as `Path`, not `None`.
+
+        The spawner refuses an undecided directory too, but `launch()` takes
+        any ProcessSpawner, so that refusal is the property of one
+        implementation. This boundary has to refuse it itself, or a plan
+        assembled or mutated without a directory journals a decision the
+        field's declared type says cannot exist.
+        """
+        plan = launch_plan(working_directory=None)
+        spawner = RecordingSpawner()
+        journal = RecordingJournal()
+
+        with self.assertRaises(PreStartRefusal) as caught:
+            await launch(plan, spawner, journal=journal)
+
+        self.assertEqual([], spawner.calls)
+        self.assertEqual([], journal.decisions)
+        self.assertEqual(
+            RefusalCode.WORKING_DIRECTORY_UNDECIDED, caught.exception.code
+        )
 
     async def test_refusal_reports_a_code_and_nothing_from_the_plan(self):
         env_sentinel = "SENTINEL-ENV-VALUE"
