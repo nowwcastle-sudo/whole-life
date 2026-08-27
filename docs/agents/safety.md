@@ -53,10 +53,23 @@ When it fires, run (Git Bash):
 python -m pip install pip-audit && python -m pip_audit -r requirements.txt --strict
 ```
 
-(If the manifest is a `pyproject.toml` instead, install the project into a
-fresh virtual environment and run `python -m pip_audit` there — pip-audit
-audits a requirements file directly but audits a `pyproject.toml` through the
-installed environment.)
+If the manifest is a `pyproject.toml` instead, do not install the project to
+audit it. Installing runs whatever build backend the tree under review
+declares (the PEP 517 hooks), so the audited tree's own code executes on the
+auditor's machine before the audit has started — and a virtual environment
+isolates `site-packages`, not the filesystem or the credentials the auditor
+holds. Audit from the manifest text instead: copy every declared dependency
+— `[project]` `dependencies`, every extra under
+`[project.optional-dependencies]`, and every PEP 735 `[dependency-groups]`
+group — into one flat requirements file, pin each entry to the exact version
+in use, and run the same `pip_audit -r` command on that file with
+`--no-deps` added. The exact pins are what `--no-deps` requires, and
+skipping dependency resolution is the point: pip-audit's own security model
+treats auditing a requirements input as functionally equivalent to
+installing it, because resolution may build the very packages under audit.
+Cover the whole declared set — a run over only the default install set exits
+0 while declared-but-unchecked dependencies remain, and by the rule above a
+gate that never fired on them proves nothing.
 
 Reading the result:
 
