@@ -10,7 +10,9 @@ be the same thing. A decision derived from anything other than the spawned plan
 would be a description of an intention, not of an event.
 """
 
+import tempfile
 import unittest
+from pathlib import Path
 
 from tests.support.launch_fixtures import (
     codex_delegation_measured,
@@ -50,11 +52,11 @@ CLEAN_PARENT_ENV = {"SYSTEMROOT": r"C:\Windows", "PATH": r"C:\Windows\system32"}
 NATIVE_SESSION = "1f0c6d9e-8f2a-4c3b-9d61-2b7a5e4f8c10"
 
 
-async def claude_adapter():
+async def claude_adapter(working_directory=WORKING_DIRECTORY):
     runtime = ClaudeRuntime(
         executable=CLAUDE_EXECUTABLE,
         runner=claude_runner(),
-        working_directory=WORKING_DIRECTORY,
+        working_directory=working_directory,
         parent_env=CLEAN_PARENT_ENV,
     )
     await runtime.preflight()
@@ -114,6 +116,27 @@ class LaunchDecisionTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(TurnMode.NEW, decision.mode)
         self.assertIsNone(decision.native_session_id)
+
+    async def test_two_launches_differing_only_in_the_directory_are_distinguishable(self):
+        """The record names the directory the spawn used, not the plan's intent.
+
+        Since #61 the directory is part of what actually spawns, so two runs
+        whose only difference is their input snapshot root must not journal
+        identically — an auditor could not tell which data the child could read.
+        """
+        with tempfile.TemporaryDirectory() as first, tempfile.TemporaryDirectory() as second:
+            recorded = []
+            for root in (first, second):
+                adapter = await claude_adapter(working_directory=Path(root))
+
+                decision, spawned = await self.decide(adapter, turn_request())
+
+                self.assertEqual(spawned.working_directory, decision.working_directory)
+                recorded.append(decision)
+
+            self.assertNotEqual(
+                recorded[0].working_directory, recorded[1].working_directory
+            )
 
     async def test_a_refused_launch_records_nothing(self):
         """The journal holds starts, not attempts."""

@@ -17,6 +17,22 @@ issue holds the acceptance criteria; the merge commit holds the reasoning.
 
 ### Added
 
+- **The launch decision records the directory the child ran in** (#63).
+  Once the working directory became part of what actually spawns (#61), two runs identical in
+  provider, executable and arguments but different in their input snapshot root journalled
+  identically — an auditor could not tell which data the child could have read. The recorded
+  decision now carries the directory the spawn used, derived from the spawned plan like every
+  other field, so the decision object keeps its promise of recording exactly what started. The
+  plan's maybe-unset intent is not recorded: a directory that is undecided or not absolute is
+  refused before spawn, and the journal holds starts.
+- **A working directory that is not absolute is refused before any child starts** (#61).
+  The operating system resolves a relative path against the Broker's own current directory at
+  spawn time, so accepting one would let the Broker's launch location — not the plan — decide
+  where the child lands. On Windows the refusal covers more than the plain "relative" reading:
+  drive-less rooted paths like `/Windows` and drive-relative paths like `C:foo` also resolve
+  against the current drive or directory, and both are refused. A directory that does not
+  exist is refused at the same boundary, so it arrives as a pre-start refusal like every other
+  decision checked there rather than as an operating-system error from the spawn itself.
 - **Native-worker limits that are reported honestly and held by the broker** (#17).
   Each provider now reports concurrency, total starts and delegation depth separately as
   `hard`, `cooperative` or `unsupported`, and reports them as measured. Claude Code 2.1.240

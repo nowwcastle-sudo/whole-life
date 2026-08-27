@@ -175,6 +175,20 @@ def enforce_launch_safety(plan: LaunchPlan) -> None:
     if "CLAUDE_CODE_SIMPLE" in {name.upper() for name in plan.child_env}:
         raise PreStartRefusal(RefusalCode.CHILD_ENV_FORBIDDEN_VARIABLE)
 
+    # The spawner refuses a working directory that is undecided, not absolute,
+    # or missing — but `launch()` accepts any ProcessSpawner, so a plan can be
+    # assembled, or mutated, without ever meeting a spawner that refuses one.
+    # The two checks that need no I/O are replicated here for the same reason
+    # as the variable above; the existence check stays with the spawner, which
+    # touches the filesystem anyway. The journal downstream records the
+    # directory as `Path`, and only these refusals keep that record from
+    # holding `None` or a value that never pinned down where the child ran.
+    if plan.working_directory is None:
+        raise PreStartRefusal(RefusalCode.WORKING_DIRECTORY_UNDECIDED)
+
+    if not plan.working_directory.is_absolute():
+        raise PreStartRefusal(RefusalCode.WORKING_DIRECTORY_UNDECIDED)
+
     canonical = SUPPORTED_VERSIONS[plan.provider].get(
         plan.version_conformance.cli_version
     )
@@ -254,6 +268,13 @@ class LaunchDecision:
     provider: Provider
     executable: Path
     args: tuple[str, ...]
+    #: The directory the child ran in — the plan's resolved value, not its
+    #: maybe-unset intent. Typed without `None` on purpose: a plan whose
+    #: directory is undecided is refused before spawn, and the journal holds
+    #: starts, so no recorded decision can carry one. Without this field two
+    #: runs differing only in their input snapshot root journal identically,
+    #: even though the child could read different data.
+    working_directory: Path
     mode: TurnMode
     native_session_id: str | None
     cli_version: str
@@ -273,6 +294,7 @@ def decide_launch(plan: LaunchPlan) -> LaunchDecision:
         provider=plan.provider,
         executable=plan.executable,
         args=plan.args,
+        working_directory=plan.working_directory,
         mode=request.mode,
         native_session_id=request.native_session_id,
         cli_version=plan.version_conformance.cli_version,
