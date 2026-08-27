@@ -66,7 +66,9 @@ Reading the result:
   do not carry one gate's reading over to the other.
 - **Exit code 1 = it found a known vulnerability. Do not merge.** The findings
   are printed with package, version and advisory ID; upgrade or replace the
-  dependency and re-run.
+  dependency and re-run. An exit 1 with no findings printed is the install leg
+  failing — pip also exits 1 — which is the "did not run" case below, not a
+  verdict: the verdict is the advisory listing, never the number alone.
 - **Any other nonzero exit = the audit did not run** (network failure, broken
   manifest, missing tool). That is not clean — a gate that never fired proves
   nothing. Fix the audit and re-run.
