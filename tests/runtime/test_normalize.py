@@ -664,7 +664,7 @@ class ClaudeNativeWorkerTests(unittest.TestCase):
 
     def test_the_worker_payload_is_exactly_these_keys(self):
         """Asserted as a whole set, not as the absence of one name. Spec line
-        247 states a whitelist, and a test that only forbids today's unwanted
+        250 states a whitelist, and a test that only forbids today's unwanted
         key lets tomorrow's walk in. `parent_participant_id` is absent because
         this function sees one line and not the roster; the caller that knows
         the participant is the one that can add it, and it stays inside the
