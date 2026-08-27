@@ -562,6 +562,23 @@ class UntrustedProbeTests(unittest.TestCase):
             collector.UNTRUSTED_PROBE_TIMEOUT_SECONDS, sent["timeout"]
         )
 
+    def test_the_probe_is_sandboxed_and_runs_in_a_fresh_temp_directory(self):
+        """The measurement's premise, pinned: where the probe ran, and how.
+
+        The recorded sentence is "the pinned build refuses to start in a
+        directory it never trusted". Drop the sandbox flags or the working
+        directory and the probe returns the same tuple while measuring a
+        different sentence — nothing else observes either argument.
+        """
+        _result, popen, _kill = self.probe(self.spawn())
+
+        argv = popen.call_args.args[0]
+        self.assertIn("--sandbox", argv)
+        self.assertEqual("read-only", argv[argv.index("--sandbox") + 1])
+
+        cwd = popen.call_args.kwargs["cwd"]
+        self.assertEqual(Path(tempfile.gettempdir()), Path(cwd).parent)
+
     def test_the_pinned_refusal_is_the_committed_observation(self):
         """The constant matches the recorded run, not a line this suite owns."""
         evidence = (REPO / "docs" / "conformance" / "codex-0.149.0.md").read_text(
