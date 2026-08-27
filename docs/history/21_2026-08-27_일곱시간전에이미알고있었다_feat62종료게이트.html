@@ -78,9 +78,9 @@
       ② merge-tree 통제 쌍 ③ Codex 👍 첫 실측 ④ GHAS 재발 ⑤ AC4 한정 문구의 착지
       경로」.<sup><a href="#f1">[1]</a></sup> 두 번째 지시가 여섯째를 얹었다 — 완결자가
       제20편 자신의 착지(PR#78)에서 <code>check-markdown-links.sh</code>의 사각(<code>*.md</code>만
-      봄)을 스스로 메운 것과, GHAS가 그 PR에서는 성공해 <code>실패 두 번·성공 한 번</code>
-      표본을 만든 것 — 「이번 편 또는 다음 편 어디에 실을지는 네 축」이라 이 편의 소재
-      ④에 세 번째 표본으로 접붙였다.<sup><a href="#f1">[1]</a></sup></p>
+      봄)을 스스로 메운 것과, GHAS가 그 PR에서는 성공해 표본 하나를 더 쌓은 것 —
+      「이번 편 또는 다음 편 어디에 실을지는 네 축」이라 이 편의 소재 ④에 접붙였다
+      (뒤에서 보듯 이 표본 헤아림 자체가 이 편 작성 뒤 정정됐다).<sup><a href="#f1">[1]</a></sup></p>
     <p style="margin:0" class="note">
       각주 형식은 제18~20편이 세운 절차 그대로 쓴다. 각주는 문구의 «존재»만 보증한다.</p>
   </div>
@@ -95,15 +95,17 @@
     음성 통제로 확인한 뒤 착지시켰다 — main <code>530ab00e</code>, 이슈 #62
     CLOSED.<sup><a href="#f11">[11]</a></sup> 같은 창에서 Codex의 👍 반응이
     「무반응이 정상값인 경우」와 「적극 통과인 경우」를 가르는 표본을 하나 더 쌓았고,<sup><a href="#f13">[13]</a></sup>
-    GHAS는 같은 오류로 두 번째 미실행됐다가 뒤이은 PR#78에서는 성공해 「그 실패는
-    브랜치 내용의 성질이 아니다」라는 추정에 세 번째 표본을 보탰다.<sup><a href="#f14">[14]</a></sup><sup><a href="#f19">[19]</a></sup>
+    GHAS는 같은 오류로 두 번째 미실행됐다가 뒤이은 PR#78에서는 다시 성공해 「그
+    실패는 브랜치 내용의 성질이 아니다」라는 추정에 표본을 보탰다 — 더 이른
+    PR#74도 이미 성공해 있었다는 사실은 완결자가 나중에 재조회하며 드러나,
+    표본은 넷(성공·실패·실패·성공)으로 정정됐다.<sup><a href="#f14">[14]</a></sup><sup><a href="#f19">[19]</a></sup><sup><a href="#f24">[24]</a></sup>
   </p>
 
   <h2>질문 2 · 어떤 흐름으로 진행됐나</h2>
   <figure>
     <svg viewBox="0 0 860 460" role="img" aria-labelledby="ep21-timeline-title ep21-timeline-desc">
       <title id="ep21-timeline-title">2026-08-27 리뷰어의 충돌 예측부터 feat/62 착지·PR#78 착지까지</title>
-      <desc id="ep21-timeline-desc">낮 12시 1분에 리뷰어가 feat/62와 feat/63의 CHANGELOG 삽입 충돌을 예측했고, 시간축이 일곱 시간 넘게 끊긴 뒤 저녁 19시 5분부터 47분 사이에 착지 지시 발행, 예측대로의 정지 발화, 리베이스 완료, feat/62 착지, 제20편 PR#78 착지, 이 장의 편집 잠금 해제가 조밀하게 이어진 타임라인.</desc>
+      <desc id="ep21-timeline-desc">낮 12시 1분에 리뷰어가 feat/62와 feat/63의 CHANGELOG 삽입 충돌을 예측했고, 시간축이 일곱 시간 넘게 끊긴 뒤 저녁 19시 5분부터 52분 사이에 착지 지시 발행, 예측대로의 정지 발화, 리베이스 완료, feat/62 착지, 제20편 PR#78 착지, 이 장의 편집 잠금 해제가 조밀하게 이어진 타임라인.</desc>
       <defs>
         <marker id="ep21-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
           <polygon points="0 0, 8 3, 0 6" fill="var(--muted)"/>
@@ -185,7 +187,7 @@
       <text x="712" y="332" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle"
             font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">PR#78 착지</text>
       <text x="712" y="348" font-size="9" fill="var(--soft)" text-anchor="middle"
-            font-family="'Geist Mono',ui-monospace,monospace">GHAS 세 번째 표본·성공</text>
+            font-family="'Geist Mono',ui-monospace,monospace">GHAS 네 번째 표본·성공</text>
 
       <!-- N7 · 19:52 편집 잠금 해제 -->
       <line x1="796" y1="222" x2="796" y2="256" stroke="var(--muted)" stroke-width="1"/>
@@ -217,7 +219,10 @@
       두 개의 주황 점이 이 편의 중심이다. <b>왼쪽은 예측이고 오른쪽은 그 예측의 실현이다</b> —
       사이의 일곱 시간은 실제로 비어 있었고(축을 끊어 그렸다), 그 공백 동안 예측은
       통치자의 지시문 안에서 «방아쇠»라는 이름으로 일곱 차례 다른 회차에 실려 다녔다.<sup><a href="#f3">[3]</a></sup>
-      파란 점(feat/62 착지)이 이 편이 다루는 유일한 되돌릴 수 없는 사건이다.
+      파란 점(feat/62 착지)이 이 <b>#62 게이트</b> 자체가 다루는 유일한 되돌릴 수 없는
+      사건이다 — 같은 시간대의 N6(PR#78 착지)도 main을 움직여 그 자체로 되돌릴 수
+      없지만, 그것은 제20편이 다루는 별도 게이트의 사건이라 이 편에서는 초점 표식
+      대신 중간 사건 표식으로 그렸다.<sup><a href="#f19">[19]</a></sup>
     </figcaption>
   </figure>
 
@@ -256,8 +261,11 @@
     <code>range-diff</code>로 무엇이 달라졌나를 기계 검증할 수 있다.」<sup><a href="#f8">[8]</a></sup>
     #62 항목은 최상단에, main 쪽 #63·#61 항목은 그 아래 그대로 두었다 — 근거는 파일의
     기존 관행(착지 역순: 가장 최근 것이 위)이었다.<sup><a href="#f8">[8]</a></sup>
-    내용이 그 자리 이동 말고 달라지지 않았다는 것은 판정이 아니라 바이트로 쟀다 —
-    CHANGELOG를 뺀 브랜치 델타가 리베이스 전후로 <b>정확히 같은 바이트 수(10047==10047)</b>였다.<sup><a href="#f10">[10]</a></sup>
+    내용이 그 자리 이동 말고 달라지지 않았다는 것은 판정이 아니라 두 겹으로 쟀다 —
+    CHANGELOG를 뺀 브랜치 델타가 리베이스 전후로 같은 바이트 수(10047==10047)였고,
+    <b>결정적 증거는 그 두 패치 파일을 직접 diff했을 때의 무출력·exit 0</b>이었다 —
+    같은 바이트 수는 치환 편집에서도 보존되므로 그 자체로는 내용 동일성을 보증하지
+    않는다.<sup><a href="#f10">[10]</a></sup>
   </p>
 
   <h2>대상 2 — 판정할 능력이 있는 「0」인가, 다시 물었다</h2>
@@ -283,7 +291,7 @@
     전 예측 트리와 <b>동일 객체</b>인지 <code>rev-parse</code>로 직접 대조했다.<sup><a href="#f15">[15]</a></sup>
   </p>
 
-  <h2>대상 3 — Codex의 침묵과 GHAS의 실패, 셋으로 갈라진 표본</h2>
+  <h2>대상 3 — Codex의 침묵과 GHAS의 실패, 갈라진 표본</h2>
   <p>
     PR#77은 신규 PR이라 지적이 있으면 코멘트, 없으면 👍로 반응한다는 Codex의 안내문을
     다시 시험했다. 결과는 코멘트 0건·👍 있음이었고, 완결자는 이것이 「무반응이 정상값인
@@ -301,10 +309,13 @@
     code scanning alert는 0건, PR 상태 롤업 밖이라 착지를 막지 않았지만
     <b>「초록이 아니라 미실행」</b>이라 조용히 빼지 않고 올렸다.<sup><a href="#f14">[14]</a></sup>
     같은 시간대에 뒤이어 착지한 PR#78(이 연대기 자신의 제20편)에서는 GHAS가
-    <b>처음으로 성공했다</b> — 완결자는 「같은 저장소에서 같은 워크플로가 PR마다
-    갈리므로, 그 실패는 브랜치 내용의 성질이 아니다」라고 적었다.<sup><a href="#f19">[19]</a></sup>
-    실패 둘(PR#76·77)·성공 하나(PR#78)로, 판정 근거는 아직 표본 셋뿐이다 —
-    이 편은 그 이상을 판정하지 않는다.
+    <b>#76·#77 실패 이후 다시 성공했다</b> — 완결자는 「같은 저장소에서 같은
+    워크플로가 PR마다 갈리므로, 그 실패는 브랜치 내용의 성질이 아니다」라고
+    적었다.<sup><a href="#f19">[19]</a></sup> 이 문단은 처음에 이 성공을 「처음으로」·
+    「표본 셋뿐」이라고 적었는데 <b>틀렸다</b> — 더 이른 PR#74 head도 GHAS가 이미
+    성공해 있었고, 실제 순서는 <b>성공(#74) → 실패(#76) → 실패(#77) →
+    성공(#78)</b>, 표본은 넷 이상이다.<sup><a href="#f24">[24]</a></sup> 이 편은
+    그 이상을 판정하지 않는다.
   </p>
   <p>
     같은 착지에서 완결자는 이 연대기 자체의 검증 사각도 하나 메웠다. 저장소의
@@ -333,9 +344,10 @@
   <h2>경계 — 관찰까지만</h2>
   <p>
     <b>GHAS의 실패 원인.</b> 「GitHub 측 세션 모델 오류」는 완결자의 로그 인용이지
-    이 편의 판정이 아니다. 표본이 셋(실패·실패·성공)인데 이 편은 그 이상을 추정하지
-    않는다 — 다음 실패 또는 성공이 넷째 표본을 더할 때까지 「당분간 판정력이
-    없다」는 통치자의 잠정 판단만 옮긴다.<sup><a href="#f21">[21]</a></sup>
+    이 편의 판정이 아니다. 표본은 넷(성공·실패·실패·성공 — PR#74·76·77·78)인데
+    이 편은 그 이상을 추정하지 않는다 — 다음 실패 또는 성공이 다섯째 표본을
+    더할 때까지 「당분간 판정력이 없다」는 통치자의 잠정 판단만
+    옮긴다.<sup><a href="#f21">[21]</a></sup><sup><a href="#f24">[24]</a></sup>
   </p>
   <p>
     <b>feat/62의 후속 사각지대(P1·P2).</b> 이 발주 범위 밖으로 분류됐고 착지를
@@ -457,6 +469,7 @@
     <li id="f21"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «[후보·보류] (19:40 절과 동일 + GHAS 두 번째 미실행 — GitHub 측, 당분간 판정력 없음)» · «[대기·결정] 대표 — #72 항목 3 (ADR 0002) A/B. BRF ffc08693.»</li>
     <li id="f22"><span class="path">REPOS/whole-life/AGENTS.md</span> — «역사 기록(`docs/history/`)은 **교육자만** 쓴다.»</li>
     <li id="f23"><span class="path">docs/project-context.md</span> — «Add a seam only after a second real implementation or process makes the existing concrete module leak complexity to callers.»</li>
+    <li id="f24">(1차 발행 뒤 정정 — Codex 인라인 지적을 완결자가 좌표 확인) <span class="path">WORK_LOGS/whole-life/CLS_docs-history-log-77__ORD-CLS-PR-79.md</span> — «github-advanced-security      success      # PR#74 에서 이미 성공했다 — #76·#77 «이전»이다» · «→ **PR#78 은 첫 성공이 아니다.** 성공(#74) → 실패(#76) → 실패(#77) → 성공(#78) 이고,» — 1차 발행판은 「처음으로 성공」·「표본 셋뿐」이라고 적었으나, 완결자가 라이브 API로 PR#74 head를 재조회해 그보다 이른 성공을 찾아 정정했다.</li>
   </ol>
 
 </div>
