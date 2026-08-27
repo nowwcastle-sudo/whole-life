@@ -28,7 +28,7 @@ Hashes are taken over the stored Git blob (LF line endings), reproducible with `
 
 The original 709-line research document is intentionally not copied into this repository. It remains non-normative source material with SHA-256 `C243DB1EF4C27662872C17E85350883C5663943D4C1F13F1D6D3F977643F831F`.
 
-ADR 0002 (`docs/adr/0002-close-report-contract.md`) is deliberately not pinned in this table — a representative decision of 2026-08-27 (issue #72 section 3), not an oversight. Pinning would give the ADR the same tamper-evidence the spec has, but every pinned document lengthens the chain that must be re-hashed whenever any of them moves, and the spec rows above already pin the contract language the ADR motivates. `scripts/check-approved-baseline.sh` therefore continues to verify only the spec and ADR 0001.
+ADR 0002 (`docs/adr/0002-close-report-contract.md`) is deliberately not pinned in this table — a representative decision of 2026-08-27 (issue #72 section 3), not an oversight. Pinning would give the ADR the same tamper-evidence the spec has, but each pinned document adds a hash row that must be regenerated whenever that document changes — `scripts/check-approved-baseline.sh` hashes every path independently — and the spec rows above already pin the contract language the ADR motivates. `scripts/check-approved-baseline.sh` therefore continues to verify only the spec and ADR 0001.
 
 Independent Codex and Claude Fable 5 audits applied architecture-improvement, code-review, grilling, brainstorming, and Ponytail/YAGNI criteria. The final targeted Claude review found no remaining P0/P1 findings, no reopened F-1–F-15 findings, and passed the private-repository design gate.
 
