@@ -2,9 +2,9 @@
 
 ## Current status
 
-The architecture is approved for a private, documentation-only repository. No implementation code or dependency manifest exists yet.
+The architecture is approved; the approval was given while this was a private, documentation-only repository. Implementation code exists now — 45 Python files under `whole_life/`, `tests/` and `scripts/` as of 2026-08-27 (`git ls-files '*.py'` at main `6e8a18d4`) — but there is still no dependency manifest: the code is standard-library only. The repository is public today; the full account is in Visibility history below.
 
-**Visibility history.** This repository was switched from private to public at approximately 2026-08-22 04:16 UTC to unblock a desktop client clone, and the owner reverted it to private the same hour (confirmed private again at 2026-08-22 04:57 UTC). Commit `4e38cee` and its author metadata were publicly fetchable during that window. Any later statement that this repository "has never been public" is false.
+**Visibility history.** This repository was switched from private to public at approximately 2026-08-22 04:16 UTC to unblock a desktop client clone, and the owner reverted it to private the same hour (confirmed private again at 2026-08-22 04:57 UTC). Commit `4e38cee` and its author metadata were publicly fetchable during that window. Any later statement that this repository "has never been public" is false. The repository later became public a second time, and is public now. The last confirmed-private observation on record is the 2026-08-22 04:57 UTC recheck above; the next visibility observation is from the close of PR #69 on 2026-08-26 at about 16:00 UTC (2026-08-27 KST), which found it public (`gh api repos/nowwcastle-sudo/whole-life` → `"visibility": "public"`). The exact switch time inside that interval was not captured. On 2026-08-27 the owner decided (decision VIS-B) that the repository stays public, so the current public interval is deliberate and open-ended. In summary: private from creation until 2026-08-22 04:16 UTC; public 04:16–04:57 UTC that day; private again from 04:57 UTC until an uncaptured moment before 2026-08-26 ~16:00 UTC; public from then on.
 
 ## Approved baseline
 
