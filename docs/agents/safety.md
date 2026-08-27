@@ -50,8 +50,22 @@ is the gate not yet firing.
 When it fires, run (Git Bash):
 
 ```bash
-python -m pip install pip-audit && python -m pip_audit -r requirements.txt --strict
+python -m pip install pip-audit && python -m pip_audit -r requirements.txt --strict --no-deps
 ```
+
+`--no-deps` is deliberate, and it applies to every manifest kind — the
+`pyproject.toml` path below gets no separate treatment. pip-audit's own
+security model treats auditing a requirements input as functionally
+equivalent to installing it — its README states that "`pip-audit -r INPUT`
+is functionally equivalent to `pip install -r INPUT`" — because dependency
+resolution may build the very packages under audit. Skipping resolution is
+the point, and it has a precondition: the same README's option list says
+`--no-deps` "requires all requirements are pinned to an exact version".
+Where those pins come from is the pin rule below. (Both quoted statements
+are pip-audit's own — README of `pypa/pip-audit`, "Security model" section
+and option list, read 2026-08-28. They have not been exercised in this
+repository, because the gate has not yet fired; the commit that lands the
+first manifest verifies them against the pip-audit version it installs.)
 
 If the manifest is a `pyproject.toml` instead, do not install the project to
 audit it. Installing runs whatever build backend the tree under review
@@ -61,12 +75,18 @@ isolates `site-packages`, not the filesystem or the credentials the auditor
 holds. Audit from the manifest text instead: copy every declared dependency
 — `[project]` `dependencies`, every extra under
 `[project.optional-dependencies]`, and every PEP 735 `[dependency-groups]`
-group — into one flat requirements file, pin each entry to the exact version
-in use, and run the same `pip_audit -r` command on that file with
-`--no-deps` added. The exact pins are what `--no-deps` requires, and
-skipping dependency resolution is the point: pip-audit's own security model
-treats auditing a requirements input as functionally equivalent to
-installing it, because resolution may build the very packages under audit.
+group — into one flat requirements file and run the same
+`pip_audit -r --strict --no-deps` command on that file.
+
+The pin rule — where the exact versions come from, for either manifest
+kind. Installation is banned above, so there is no installed environment to
+read versions from; the pins come from the tree under review itself: the
+resolved metadata in a lockfile the tree ships (`uv.lock`, `poetry.lock`)
+or the manifest's own `==` pins. If the tree declares only version ranges
+and ships no lockfile, there is no pin source without running a resolution
+— run that resolution inside a disposable OS-level sandbox, never on the
+auditor's machine, and audit the pins it produces.
+
 Cover the whole declared set — a run over only the default install set exits
 0 while declared-but-unchecked dependencies remain, and by the rule above a
 gate that never fired on them proves nothing.
