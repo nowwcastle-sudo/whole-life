@@ -473,5 +473,104 @@ class ResolvedTargetTests(unittest.TestCase):
             self.resolve("claude.exe", b"#!/usr/bin/env node")
 
 
+class UntrustedProbeTests(unittest.TestCase):
+    """The verdict is identified from the observed refusal, and the run is bounded.
+
+    Issue #62. The exit code is one bit: a changed CLI flag or a broken install
+    exits nonzero exactly like the trusted-directory refusal, so "refuses" is
+    recorded only when the observed first stderr line is the pinned refusal.
+    And the probe really does submit a prompt — the CLI's missing-prompt check
+    fires before its trusted-directory one — so the run is bounded, and expiry
+    terminates the whole tree rather than leaving a model request running
+    behind a tidy report.
+    """
+
+    def spawn(self, *, returncode=1, stderr=UNTRUSTED_REFUSAL[1], timeout=False):
+        proc = mock.Mock()
+        proc.pid = 8765
+        proc.returncode = returncode
+        if timeout:
+            proc.communicate.side_effect = subprocess.TimeoutExpired(
+                cmd="codex", timeout=1
+            )
+        else:
+            proc.communicate.return_value = (None, stderr)
+        proc.wait.return_value = 1
+        return proc
+
+    def probe(self, proc):
+        killer = Path("C:/Windows/System32/taskkill.exe")
+        with (
+            mock.patch.object(subprocess, "Popen", return_value=proc) as popen,
+            mock.patch.object(subprocess, "run") as kill,
+            mock.patch.object(collector, "system_taskkill", return_value=killer),
+        ):
+            kill.return_value = mock.Mock(returncode=0)
+            result = collector.probe_untrusted_directory({})
+        return result, popen, kill
+
+    def test_a_genuine_refusal_is_recorded_with_its_first_stderr_line(self):
+        """Preserved, not broken: the true refusal still reads as refusing."""
+        result, _popen, kill = self.probe(
+            self.spawn(stderr=UNTRUSTED_REFUSAL[1] + "\nsecond line")
+        )
+
+        self.assertEqual(UNTRUSTED_REFUSAL, result)
+        kill.assert_not_called()
+
+    def test_a_nonzero_exit_for_another_reason_stops_the_collection(self):
+        """A failure that identifies nothing must not become evidence."""
+        with self.assertRaises(collector.CollectionFailed) as caught:
+            self.probe(self.spawn(stderr="error: SENTINEL-UNEXPECTED-ARGUMENT"))
+
+        self.assertNotIn("SENTINEL", str(caught.exception))
+
+    def test_an_accepting_build_is_still_recordable(self):
+        """The forward-compatibility case: exit 0 still reaches the composer."""
+        result, _popen, _kill = self.probe(self.spawn(returncode=0, stderr=""))
+
+        self.assertEqual((0, ""), result)
+
+    def test_a_hung_probe_is_terminated_with_its_tree_and_stops_the_collection(self):
+        proc = self.spawn(timeout=True)
+        killer = Path("C:/Windows/System32/taskkill.exe")
+        with (
+            mock.patch.object(subprocess, "Popen", return_value=proc),
+            mock.patch.object(subprocess, "run") as kill,
+            mock.patch.object(collector, "system_taskkill", return_value=killer),
+        ):
+            kill.return_value = mock.Mock(returncode=0)
+            with self.assertRaises(collector.CollectionFailed):
+                collector.probe_untrusted_directory({})
+
+        argv = [str(a) for a in kill.call_args.args[0]]
+        self.assertIn("/T", argv)
+        self.assertIn("8765", argv)
+        proc.wait.assert_called()
+
+    def test_the_prompt_is_bounded_and_the_response_is_never_held(self):
+        proc = self.spawn()
+
+        _result, popen, _kill = self.probe(proc)
+
+        kwargs = popen.call_args.kwargs
+        self.assertIs(subprocess.DEVNULL, kwargs["stdout"])
+        self.assertIs(subprocess.PIPE, kwargs["stderr"])
+        sent = proc.communicate.call_args.kwargs
+        self.assertEqual(collector.UNTRUSTED_PROBE_PROMPT, sent["input"])
+        self.assertEqual(
+            collector.UNTRUSTED_PROBE_TIMEOUT_SECONDS, sent["timeout"]
+        )
+
+    def test_the_pinned_refusal_is_the_committed_observation(self):
+        """The constant matches the recorded run, not a line this suite owns."""
+        evidence = (REPO / "docs" / "conformance" / "codex-0.149.0.md").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertEqual(UNTRUSTED_REFUSAL[1], collector.CODEX_UNTRUSTED_REFUSAL)
+        self.assertIn(collector.CODEX_UNTRUSTED_REFUSAL, evidence)
+
+
 if __name__ == "__main__":
     unittest.main()

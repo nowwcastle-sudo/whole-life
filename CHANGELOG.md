@@ -17,6 +17,18 @@ issue holds the acceptance criteria; the merge commit holds the reasoning.
 
 ### Added
 
+- **Conformance evidence that says "refuses an untrusted directory" only when that refusal
+  was observed, from a probe that cannot outlive its bound** (#62).
+  The Codex collector concluded "refuses" from a nonzero exit alone: the first stderr line
+  was rendered but never checked, so a changed CLI flag or a broken install would have
+  committed the same sentence as evidence. The verdict is now identified — a nonzero exit
+  counts as the refusal only when the observed first stderr line is the pinned
+  trusted-directory refusal, any other failure stops collection instead of committing a
+  conclusion, and an accepting build is still recordable. The probe's documentation also
+  claimed it submits no prompt while its code submitted one; the docstring now tells the
+  truth, and the run is bounded like the Claude-side bare probe — on expiry the whole
+  process tree is terminated and collection stops, so the probe cannot become an unbounded
+  hang or leave a model request running behind a tidy report.
 - **The launch decision records the directory the child ran in** (#63).
   Once the working directory became part of what actually spawns (#61), two runs identical in
   provider, executable and arguments but different in their input snapshot root journalled
