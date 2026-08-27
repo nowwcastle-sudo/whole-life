@@ -231,7 +231,7 @@ class RunObserver:
         the process can produce anything else, is what makes that race already
         settled by the time the outcome is resolved.
 
-        One exception, and it is not about ordering: line 282. A committed
+        One exception, and it is not about ordering: line 285. A committed
         result carries through the cancellation for everything except a native
         worker that was announced and never announced finished. The provider
         said the conversation ended; it never said the worker stopped, and the

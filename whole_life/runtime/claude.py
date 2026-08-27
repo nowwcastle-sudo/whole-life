@@ -41,7 +41,7 @@ from whole_life.runtime.preflight import (
 _LATER_SLICE = "arrives with a later ticket; this slice ends at preflight"
 
 #: The final arguments for one Claude turn, as spec section 4 lists them
-#: (lines 128 and 139). `--safe-mode`, never `--bare`: `--bare` replaces the
+#: (lines 131 and 142). `--safe-mode`, never `--bare`: `--bare` replaces the
 #: authentication path and would break the subscription premise.
 #:
 #: `--safe-mode` alone is *not* the read-only boundary. The spec says plainly

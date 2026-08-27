@@ -57,7 +57,7 @@ def resolve_outcome(
     race is already settled.
 
     `unresolved_worker` is the one thing a committed result does not carry
-    through a cancellation (line 282). It is checked twice — inside the
+    through a cancellation (line 285). It is checked twice — inside the
     post-terminal cancellation branch and again below — because the two paths
     reach it past different evidence: after a cancellation the exit status is
     our own signal and must not be read, while on an ordinary ending it is the
@@ -90,7 +90,7 @@ def resolve_outcome(
         # post-terminal cancellation — including an ordinary broker shutdown —
         # into a failure the provider never had.
         if unresolved_worker:
-            # Line 282 names this exact case, and it is the one thing a
+            # Line 285 names this exact case, and it is the one thing a
             # committed result does not carry through the cancellation: the
             # provider said the conversation ended, never said the worker it
             # announced stopped, and we then killed the process it would have
