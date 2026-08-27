@@ -23,8 +23,8 @@ issue holds the acceptance criteria; the merge commit holds the reasoning.
   identically — an auditor could not tell which data the child could have read. The recorded
   decision now carries the directory the spawn used, derived from the spawned plan like every
   other field, so the decision object keeps its promise of recording exactly what started. The
-  plan's maybe-unset intent is not recorded: an undecided directory is refused before spawn,
-  and the journal holds starts.
+  plan's maybe-unset intent is not recorded: a directory that is undecided or not absolute is
+  refused before spawn, and the journal holds starts.
 - **A working directory that is not absolute is refused before any child starts** (#61).
   The operating system resolves a relative path against the Broker's own current directory at
   spawn time, so accepting one would let the Broker's launch location — not the plan — decide

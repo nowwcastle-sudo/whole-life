@@ -41,13 +41,19 @@ class AcceptedLaunchTests(unittest.IsolatedAsyncioTestCase):
 
 class PreStartRefusalTests(unittest.IsolatedAsyncioTestCase):
     async def _refuse(self, plan) -> PreStartRefusal:
-        """Launch a plan that must be refused, and prove nothing was spawned."""
+        """Launch a plan that must be refused, and prove nothing was spawned.
+
+        A journal rides along on every refusal: the journal holds starts, so
+        any refused plan must also leave it empty, whichever control refused.
+        """
         spawner = RecordingSpawner()
+        journal = RecordingJournal()
 
         with self.assertRaises(PreStartRefusal) as caught:
-            await launch(plan, spawner)
+            await launch(plan, spawner, journal=journal)
 
         self.assertEqual([], spawner.calls)
+        self.assertEqual([], journal.decisions)
         self.assertEqual("pre_start", caught.exception.phase)
         return caught.exception
 
@@ -179,17 +185,24 @@ class PreStartRefusalTests(unittest.IsolatedAsyncioTestCase):
         field's declared type says cannot exist.
         """
         plan = launch_plan(working_directory=None)
-        spawner = RecordingSpawner()
-        journal = RecordingJournal()
 
-        with self.assertRaises(PreStartRefusal) as caught:
-            await launch(plan, spawner, journal=journal)
+        refusal = await self._refuse(plan)
 
-        self.assertEqual([], spawner.calls)
-        self.assertEqual([], journal.decisions)
-        self.assertEqual(
-            RefusalCode.WORKING_DIRECTORY_UNDECIDED, caught.exception.code
-        )
+        self.assertEqual(RefusalCode.WORKING_DIRECTORY_UNDECIDED, refusal.code)
+
+    async def test_a_plan_whose_working_directory_is_not_absolute_is_refused(self):
+        """A relative directory resolves against the Broker's own location.
+
+        The spawner refuses one too, but for the same reason as the undecided
+        case above that refusal belongs to one implementation — a plan
+        carrying `.` through any other ProcessSpawner would journal a
+        directory that does not pin down where the child ran.
+        """
+        plan = launch_plan(working_directory=Path("."))
+
+        refusal = await self._refuse(plan)
+
+        self.assertEqual(RefusalCode.WORKING_DIRECTORY_UNDECIDED, refusal.code)
 
     async def test_refusal_reports_a_code_and_nothing_from_the_plan(self):
         env_sentinel = "SENTINEL-ENV-VALUE"
