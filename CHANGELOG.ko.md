@@ -46,21 +46,6 @@
   주장됐다. 이제 `close()`는 `CloseReport`를 반환한다 — 남아 있는 child process 수와
   drain task 수, 코드가 관측한 사유 목록(killer 부재와 직접 킬 미거둠은 별개 항목) —
   그리고 0은 실제로 0이 확인됐을 때만 보고한다.
-- **Codex 자식은 broker가 어쩌다 있던 곳이 아니라 plan이 고른 디렉터리에서 돈다** (#33).
-  Codex child process는 broker 자신의 현재 디렉터리를 물려받았고, 고정된 CLI는 그곳이
-  신뢰된 workspace가 아니면 거부한다 — 즉 turn이 시작될 수 있는지를 plan이 아니라
-  broker의 실행 위치가 정하고 있었다. 이제 plan의 working directory가 양쪽 adapter의
-  필수 인자로 배선되고, spawn 직전에 검사되며 — 미정이거나 없는 디렉터리는 아무것도
-  시작되기 전에 거부된다 — 자식에게 명시적으로 전달된다. 중립 디렉터리가 저장소가
-  아닌 Codex 쪽에서는 git 저장소 검사를 건너뛴다.
-- **정리 실패가 정리를 요청한 취소를 덮지 않는다** (#34).
-  `taskkill`로의 escalation이 실패하면 그 예외가 취소 자신의 답 자리에 올라와, 자기가
-  멈추라고 한 run에 대해 호출자가 broker 환경에 대한 진단을 받았다. 이제 cancel은
-  `UNKNOWN`을 답한다 — 그 말이 정확히 「트리가 죽었다고 확인하지 못했다」이다 — 그리고
-  정리 실패는 turn이 아니라 broker에 대한 사실로 따로 기록한다. spawn 경로에서는 원래
-  예외가 타입과 자리를 그대로 지키고 정리 실패는 note로 함께 실리며, fallback 킬은
-  죽인 것을 거두기까지 하므로 자기가 끝낸 자식이 close에서 살아 있는 것으로 세어지지
-  않는다.
 - **정직하게 보고되고 broker가 지키는 native worker 상한** (#17).
   이제 각 provider가 동시 실행·총 start·위임 depth를 각각 `hard`·`cooperative`·`unsupported`로
   나눠 보고하고, **측정된 대로** 보고한다. Claude Code 2.1.240은 worker의 시작과 끝을 provider가
@@ -109,6 +94,21 @@
 
 ### 수정
 
+- **Codex 자식은 broker가 어쩌다 있던 곳이 아니라 plan이 고른 디렉터리에서 돈다** (#33).
+  Codex child process는 broker 자신의 현재 디렉터리를 물려받았고, 고정된 CLI는 그곳이
+  신뢰된 workspace가 아니면 거부한다 — 즉 turn이 시작될 수 있는지를 plan이 아니라
+  broker의 실행 위치가 정하고 있었다. 이제 plan의 working directory가 양쪽 adapter의
+  필수 인자로 배선되고, spawn 직전에 검사되며 — 미정이거나 없는 디렉터리는 아무것도
+  시작되기 전에 거부된다 — 자식에게 명시적으로 전달된다. 중립 디렉터리가 저장소가
+  아닌 Codex 쪽에서는 git 저장소 검사를 건너뛴다.
+- **정리 실패가 정리를 요청한 취소를 덮지 않는다** (#34).
+  `taskkill`로의 escalation이 실패하면 그 예외가 취소 자신의 답 자리에 올라와, 자기가
+  멈추라고 한 run에 대해 호출자가 broker 환경에 대한 진단을 받았다. 이제 cancel은
+  `UNKNOWN`을 답한다 — 그 말이 정확히 「트리가 죽었다고 확인하지 못했다」이다 — 그리고
+  정리 실패는 turn이 아니라 broker에 대한 사실로 따로 기록한다. spawn 경로에서는 원래
+  예외가 타입과 자리를 그대로 지키고 정리 실패는 note로 함께 실리며, fallback 킬은
+  죽인 것을 거두기까지 하므로 자기가 끝낸 자식이 close에서 살아 있는 것으로 세어지지
+  않는다.
 - **끝까지 도는 실제 provider 턴** (#32). 진짜 Claude Code 턴이 매번 쓰는 줄 두 종류 —
   top-level 사용량 한도 통지와 `system` thinking token 추정치 — 가 stream 허용목록에 없어서
   첫 미인식 줄에서 run이 끝났다. 위임과는 아무 상관이 없었다. 인사 한 줄만 하는 턴도 한도 통지에서
