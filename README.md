@@ -74,6 +74,7 @@ Technical feasibility is not the same as provider-policy approval. The public-re
 
 - [Whole Life v0 normative specification](docs/spec/whole-life-v0.md)
 - [ADR 0001: local subscription v0](docs/adr/0001-local-subscription-v0.md)
+- [ADR 0002: close reports a value — CloseReport](docs/adr/0002-close-report-contract.md)
 - [Gate 2 usage-attribution smoke test design](docs/smoke/gate-2-usage-attribution.md)
 - [Domain glossary](CONTEXT.md)
 - [Project context — baseline, invariants, release gate](docs/project-context.md)
