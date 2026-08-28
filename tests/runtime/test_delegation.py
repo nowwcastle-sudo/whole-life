@@ -287,13 +287,19 @@ class BudgetEnforcementTests(unittest.IsolatedAsyncioTestCase):
         )
 
     async def test_the_start_past_the_budget_cancels_the_turn(self):
+        """The expectation grew a second fact on purpose (issue #45): the
+        breach cancels the turn over workers nobody announced finished, so
+        the outcome names the unresolved worker too, in the caller's own
+        budget wording rather than the generic cancellation one."""
         events, outcome, process = await observe_claude(
             [INIT, started("a"), started("b"), RESULT],
             budget=self.ONE_START,
         )
 
         self.assertEqual(RunStatus.UNKNOWN_OUTCOME, outcome.status)
-        self.assertEqual("DelegationBudgetExceeded", outcome.diagnostic)
+        self.assertEqual(
+            "DelegationBudgetExceeded+NativeWorkerUnresolved", outcome.diagnostic
+        )
 
     async def test_the_cancelled_turn_leaves_no_child_running(self):
         """`unknown_outcome` is about not knowing what the turn did, not about
@@ -771,7 +777,11 @@ class ProductionPathTests(unittest.IsolatedAsyncioTestCase):
             await runtime.close()
 
         self.assertEqual(RunStatus.UNKNOWN_OUTCOME, outcome.status)
-        self.assertEqual("DelegationBudgetExceeded", outcome.diagnostic)
+        # Both facts, not the first one found — issue #45. The workers the
+        # breach cancelled were never announced finished.
+        self.assertEqual(
+            "DelegationBudgetExceeded+NativeWorkerUnresolved", outcome.diagnostic
+        )
 
     async def test_a_started_turn_is_unknown_while_a_worker_is_unresolved(self):
         request = turn_request(
@@ -910,6 +920,69 @@ class ProductionPathTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(RunStatus.COMPLETED, outcome.status)
         self.assertIsNone(outcome.diagnostic)
+
+    async def test_a_cancel_before_terminal_names_the_worker_it_strands(self):
+        """Issue #45, through the door the broker uses.
+
+        The run is cancelled before any terminal event while a worker the
+        provider announced was never announced finished. Both facts are true
+        and the outcome used to carry only the first one consulted — an
+        operator reading `CancelledBeforeTerminal` had no way to know a
+        billable worker was also left unaccounted for. Driven start to finish
+        rather than resolved directly, so removing the composition in
+        `resolve_outcome` turns this red on the path production takes.
+        """
+        request = turn_request(
+            prompt="hi",
+            delegation_budget=DelegationBudget(
+                max_concurrent_workers=3,
+                max_total_worker_starts=3,
+                max_depth=1,
+            ),
+        )
+        # No RESULT and a lingering child: the cancellation must land before
+        # any terminal event, on a run that is genuinely still going.
+        runtime, handle = await self.claude_running(
+            [INIT, started("a")], request=request, linger=True
+        )
+        stream = runtime.events(handle)
+        seen = []
+
+        try:
+            # Consumed up to the worker start, so the ledger has seen the
+            # worker this test is about before the cancellation lands.
+            async def until_worker_started():
+                async for event in stream:
+                    seen.append(event)
+                    if event.kind == "runtime.activity.started":
+                        return
+
+            await asyncio.wait_for(
+                until_worker_started(), timeout=OBSERVE_TIMEOUT_SECONDS
+            )
+            self.assertTrue(
+                any(
+                    event.kind == "runtime.activity.started" for event in seen
+                ),
+                "the worker never started, so there is no unresolved worker "
+                "for the cancellation to strand",
+            )
+
+            await runtime.cancel(handle, graceful_wait=0.2)
+
+            async def rest():
+                async for event in stream:
+                    seen.append(event)
+
+            await asyncio.wait_for(rest(), timeout=OBSERVE_TIMEOUT_SECONDS)
+            outcome = await runtime.wait(handle)
+        finally:
+            await runtime.close()
+
+        self.assertEqual(RunStatus.UNKNOWN_OUTCOME, outcome.status)
+        self.assertEqual(
+            "CancelledBeforeTerminal+NativeWorkerUnresolved", outcome.diagnostic
+        )
 
     async def test_a_worker_start_without_a_depth_fails_the_stream(self):
         """Spec 48 and 120, through the door the broker uses.
