@@ -92,7 +92,7 @@ if __name__ == "__main__":
 
 
 class CancellationPrecedenceTests(unittest.TestCase):
-    """Whichever came first wins — spec 268, 279, 484, 485.
+    """Whichever came first wins — spec 271, 282, 487, 488.
 
     User cancellation and the broker's hard timeout are the same rule wearing
     two names. If a terminal result was committed before the cancellation, that
@@ -100,7 +100,7 @@ class CancellationPrecedenceTests(unittest.TestCase):
     cancellation came first, the turn is `unknown_outcome` permanently: a clean
     exit or a terminal event arriving afterwards does not upgrade it.
 
-    Spec 279 is explicit that a late clean exit changes nothing, which is the
+    Spec 282 is explicit that a late clean exit changes nothing, which is the
     case that makes this more than bookkeeping — the process really can end
     tidily after the deadline, and reporting that as success would claim a turn
     completed when the broker had already stopped waiting for it.
@@ -114,7 +114,7 @@ class CancellationPrecedenceTests(unittest.TestCase):
         self.assertEqual(RunStatus.UNKNOWN_OUTCOME, outcome.status)
 
     def test_a_late_clean_exit_does_not_upgrade_a_cancelled_run(self):
-        """The exact case spec 279 names: tidy ending, deadline already passed."""
+        """The exact case spec 282 names: tidy ending, deadline already passed."""
         outcome = resolve_outcome(
             TerminalEvent.COMPLETED, exit_code=0, cancelled_before_terminal=True
         )
@@ -147,7 +147,7 @@ class CancellationPrecedenceTests(unittest.TestCase):
 
 
 class CancelledAfterTerminalTests(unittest.TestCase):
-    """Our own kill is not evidence that the provider failed — spec 279, 484.
+    """Our own kill is not evidence that the provider failed — spec 282, 487.
 
     Once a terminal result is committed, stopping the process afterwards is a
     decision we made. The nonzero exit that follows is the sound of our own

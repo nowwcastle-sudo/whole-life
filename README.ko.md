@@ -74,6 +74,7 @@ Whole Life는 Claude나 ChatGPT의 **자격증명을 읽거나, 복사하거나,
 
 - [Whole Life v0 규범 명세](docs/spec/whole-life-v0.md)
 - [ADR 0001: 로컬 구독 v0](docs/adr/0001-local-subscription-v0.md)
+- [ADR 0002: close 계약을 값 보고로 — CloseReport](docs/adr/0002-close-report-contract.md)
 - [게이트 2 사용량 귀속 스모크 테스트 설계](docs/smoke/gate-2-usage-attribution.md)
 - [도메인 용어집](CONTEXT.ko.md)
 - [프로젝트 컨텍스트 — 베이스라인·불변식·배포 관문](docs/project-context.md)

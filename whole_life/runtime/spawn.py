@@ -24,7 +24,7 @@ from whole_life.runtime.lifecycle import (
     terminate_process_tree,
 )
 
-#: Only a real image. Spec line 132 permits `.cmd` or `.exe` and line 202
+#: Only a real image. Spec line 135 permits `.cmd` or `.exe` and line 205
 #: requires shell=False with split argv — and a `.cmd` cannot deliver the
 #: second. Measured on this machine: passing `%PATH%` to a `.cmd` under
 #: `create_subprocess_exec` yields the expanded value, split on spaces into

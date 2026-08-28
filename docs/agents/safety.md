@@ -37,3 +37,75 @@ Reading the result:
 
 Verified in this repository on 2026-08-22 with all bootstrap files staged: the
 command printed nothing and exited 1.
+
+## Dependency audit — reviewer (REV) gate
+
+This repository has no dependency manifest today (no `requirements.txt`, no
+`pyproject.toml`) and the code is standard-library only, so there is nothing to
+audit yet. The gate fires the moment the first manifest lands: the commit that
+adds it — and every commit that changes it afterwards — must be audited before
+it merges. Until then, "no manifest" is the clean state; it is not a pass, it
+is the gate not yet firing.
+
+When it fires, run (Git Bash):
+
+```bash
+python -m pip install pip-audit && python -m pip_audit -r requirements.txt --strict --no-deps
+```
+
+`--no-deps` is deliberate, and it applies to every manifest kind — the
+`pyproject.toml` path below gets no separate treatment. pip-audit's own
+security model treats auditing a requirements input as functionally
+equivalent to installing it — its README states that "`pip-audit -r INPUT`
+is functionally equivalent to `pip install -r INPUT`" — because dependency
+resolution may build the very packages under audit. Skipping resolution is
+the point, and it has a precondition: the same README's option list says
+`--no-deps` "requires all requirements are pinned to an exact version".
+Where those pins come from is the pin rule below. (Both quoted statements
+are pip-audit's own — README of `pypa/pip-audit`, "Security model" section
+and option list, read 2026-08-28. They have not been exercised in this
+repository, because the gate has not yet fired; the commit that lands the
+first manifest verifies them against the pip-audit version it installs.)
+
+If the manifest is a `pyproject.toml` instead, do not install the project to
+audit it. Installing runs whatever build backend the tree under review
+declares (the PEP 517 hooks), so the audited tree's own code executes on the
+auditor's machine before the audit has started — and a virtual environment
+isolates `site-packages`, not the filesystem or the credentials the auditor
+holds. Audit from the manifest text instead: copy every declared dependency
+— `[project]` `dependencies`, every extra under
+`[project.optional-dependencies]`, and every PEP 735 `[dependency-groups]`
+group — into one flat requirements file and run the same
+`pip_audit -r --strict --no-deps` command on that file.
+
+The pin rule — where the exact versions come from, for either manifest
+kind. Installation is banned above, so there is no installed environment to
+read versions from; the pins come from the tree under review itself: the
+resolved metadata in a lockfile the tree ships (`uv.lock`, `poetry.lock`)
+or the manifest's own `==` pins. If the tree declares only version ranges
+and ships no lockfile, there is no pin source without running a resolution
+— run that resolution inside a disposable OS-level sandbox, never on the
+auditor's machine, and audit the pins it produces.
+
+Cover the whole declared set — a run over only the default install set exits
+0 while declared-but-unchecked dependencies remain, and by the rule above a
+gate that never fired on them proves nothing.
+
+Reading the result:
+
+- **Exit code 0 = clean.** No dependency in the manifest matches a known
+  vulnerability in the PyPI advisory or OSV databases. Note this is the
+  opposite convention from the secret scan above, where exit 1 is clean —
+  do not carry one gate's reading over to the other.
+- **Exit code 1 = it found a known vulnerability. Do not merge.** The findings
+  are printed with package, version and advisory ID; upgrade or replace the
+  dependency and re-run. An exit 1 with no findings printed is the install leg
+  failing — pip also exits 1 — which is the "did not run" case below, not a
+  verdict: the verdict is the advisory listing, never the number alone.
+- **Any other nonzero exit = the audit did not run** (network failure, broken
+  manifest, missing tool). That is not clean — a gate that never fired proves
+  nothing. Fix the audit and re-run.
+
+pip-audit is deliberately not vendored into this repository — it would itself
+be the first dependency. The install line above is part of the gate command so
+the auditor does not depend on ambient tooling.

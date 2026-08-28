@@ -72,7 +72,7 @@ def reap_tree(process, *pids):
 
 
 class NormativeConstantsTests(unittest.TestCase):
-    """The numbers are conformance fixtures, not tuning knobs (spec 212)."""
+    """The numbers are conformance fixtures, not tuning knobs (spec 215)."""
 
     def test_the_escalation_delays_are_the_specified_ones(self):
         self.assertEqual(5, GRACEFUL_WAIT_SECONDS)
@@ -139,7 +139,7 @@ class ProcessTreeTerminationTests(unittest.IsolatedAsyncioTestCase):
 
 
 class TurnDeadlineTests(unittest.TestCase):
-    """`timeout은 provider 응답이 계속 streaming 중이어도 연장하지 않는다.` Spec 208.
+    """`timeout은 provider 응답이 계속 streaming 중이어도 연장하지 않는다.` Spec 211.
 
     A deadline computed from the turn's start is the whole mechanism. The
     tempting alternative — an idle timer reset whenever something arrives — is

@@ -562,7 +562,7 @@ class FirstTerminalWinsTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(RunStatus.FAILED, outcome.status)
 
     async def test_nothing_at_all_is_recorded_after_the_first_terminal(self):
-        """Spec line 279: the committed terminal state *is* the end.
+        """Spec line 282: the committed terminal state *is* the end.
 
         Not merely "no second terminal" — no message and no activity either. A
         turn that has ended cannot keep producing history, and a Journal that

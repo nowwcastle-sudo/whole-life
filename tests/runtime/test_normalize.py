@@ -632,7 +632,7 @@ class ClaudeNativeWorkerTests(unittest.TestCase):
         self.assertEqual("native_worker", event.data["activity_kind"])
 
     def test_the_worker_carries_the_provider_issued_lifecycle_id(self):
-        """Spec line 118. The broker never invents one, but this build publishes
+        """Spec line 121. The broker never invents one, but this build publishes
         `task_id`, so leaving `native_child_id` empty would discard a real
         identifier and record less than was observed."""
         (event,) = normalize_claude_line(
@@ -641,7 +641,7 @@ class ClaudeNativeWorkerTests(unittest.TestCase):
 
         self.assertEqual("a46dacfacc666a194", event.data["native_child_id"])
 
-    #: Spec line 247 names the whole permitted payload for a native-worker
+    #: Spec line 250 names the whole permitted payload for a native-worker
     #: activity. `parent_participant_id` belongs to the caller, which knows the
     #: participant; the normalizer sees one line and cannot supply it.
     WORKER_PAYLOAD_FIELDS = frozenset(
@@ -655,7 +655,7 @@ class ClaudeNativeWorkerTests(unittest.TestCase):
     )
 
     def test_the_worker_payload_records_how_much_can_be_seen(self):
-        """Spec line 118 requires `observability` on a worker activity. The
+        """Spec line 121 requires `observability` on a worker activity. The
         provider publishes a lifecycle id, a status and a summary — never the
         worker's reasoning or tool state — so what is seen is a summary."""
         (event,) = normalize_claude_line(self.task_started(), run_id=RUN_ID)
@@ -664,7 +664,7 @@ class ClaudeNativeWorkerTests(unittest.TestCase):
 
     def test_the_worker_payload_is_exactly_these_keys(self):
         """Asserted as a whole set, not as the absence of one name. Spec line
-        247 states a whitelist, and a test that only forbids today's unwanted
+        250 states a whitelist, and a test that only forbids today's unwanted
         key lets tomorrow's walk in. `parent_participant_id` is absent because
         this function sees one line and not the roster; the caller that knows
         the participant is the one that can add it, and it stays inside the
@@ -712,7 +712,7 @@ class ClaudeNativeWorkerTests(unittest.TestCase):
         self.assertEqual("a3755a9018fbc95a8", event.data["native_child_id"])
 
     def test_the_finish_carries_the_status_the_provider_reported(self):
-        """Spec line 247 permits `status`. A worker that ended is not the same
+        """Spec line 250 permits `status`. A worker that ended is not the same
         fact as a worker that ended *well*, and the turn gate below needs the
         difference."""
         (event,) = normalize_claude_line(
@@ -722,7 +722,7 @@ class ClaudeNativeWorkerTests(unittest.TestCase):
         self.assertEqual("completed", event.data["status"])
 
     def test_no_worker_prompt_or_summary_survives_normalization(self):
-        """Spec line 247 and AC5. The provider hands us the worker's prompt on
+        """Spec line 250 and AC5. The provider hands us the worker's prompt on
         the start line and its answer on the finish line; neither is ours to
         carry into another participant's history."""
         started = normalize_claude_line(
@@ -975,7 +975,7 @@ class ClaudeRecordedDelegationTests(unittest.TestCase):
         )
 
     def test_the_worker_identity_comes_from_the_provider(self):
-        """Spec line 118 forbids inventing one. This build issues `task_id`,
+        """Spec line 121 forbids inventing one. This build issues `task_id`,
         and the identifier on the event is that value rather than anything
         this module made up."""
         recorded = [
@@ -1030,7 +1030,7 @@ class ClaudeRecordedDelegationTests(unittest.TestCase):
         )
 
     def test_worker_depth_reaches_the_caller_without_entering_the_payload(self):
-        """Spec line 247 fixes the payload of a native-worker activity, and
+        """Spec line 250 fixes the payload of a native-worker activity, and
         depth is not in it — so depth cannot be recorded as Journal content.
         But delegation depth is a limit somebody has to enforce, and on this
         build the provider does not: the nested recording completed with a

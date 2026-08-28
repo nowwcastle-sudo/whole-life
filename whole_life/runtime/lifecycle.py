@@ -21,12 +21,12 @@ import asyncio
 import os
 from pathlib import Path
 
-#: Spec 207. Conformance fixtures, not tuning knobs (spec 212): a longer
+#: Spec 210. Conformance fixtures, not tuning knobs (spec 215): a longer
 #: graceful window is a longer wait before a runaway turn actually stops.
 GRACEFUL_WAIT_SECONDS = 5
 FORCED_WAIT_SECONDS = 10
 
-#: Spec 208. The broker's timer owns this; the runtime exposes it so both sides
+#: Spec 211. The broker's timer owns this; the runtime exposes it so both sides
 #: name the same number.
 HARD_TIMEOUT_SECONDS = 20 * 60
 
@@ -133,7 +133,7 @@ async def terminate_process_tree(
 
 
 class TurnDeadline:
-    """The participant turn's wall-clock deadline. Spec 208.
+    """The participant turn's wall-clock deadline. Spec 211.
 
     `timeout은 provider 응답이 계속 streaming 중이어도 연장하지 않는다.`
 

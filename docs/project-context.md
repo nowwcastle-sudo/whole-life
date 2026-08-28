@@ -2,9 +2,9 @@
 
 ## Current status
 
-The architecture is approved for a private, documentation-only repository. No implementation code or dependency manifest exists yet.
+The architecture is approved; the approval was given while this was a private, documentation-only repository. Implementation code exists now — 45 Python files under `whole_life/`, `tests/` and `scripts/` as of 2026-08-27 (`git ls-files '*.py'` at main `6e8a18d4`) — but there is still no dependency manifest: the code is standard-library only. The repository is public today; the full account is in Visibility history below.
 
-**Visibility history.** This repository was switched from private to public at approximately 2026-08-22 04:16 UTC to unblock a desktop client clone, and the owner reverted it to private the same hour (confirmed private again at 2026-08-22 04:57 UTC). Commit `4e38cee` and its author metadata were publicly fetchable during that window. Any later statement that this repository "has never been public" is false.
+**Visibility history.** This repository was switched from private to public at approximately 2026-08-22 04:16 UTC to unblock a desktop client clone, and the owner reverted it to private the same hour (confirmed private again at 2026-08-22 04:57 UTC). Commit `4e38cee` and its author metadata were publicly fetchable during that window. Any later statement that this repository "has never been public" is false. The repository later became public a second time, and is public now. The last confirmed-private observation on record is the 2026-08-22 04:57 UTC recheck above; the next visibility observation is from the close of PR #69 on 2026-08-26 at about 16:00 UTC (2026-08-27 KST), which found it public (`gh api repos/nowwcastle-sudo/whole-life` → `"visibility": "public"`). The exact switch time inside that interval was not captured. On 2026-08-27 the owner decided (decision VIS-B) that the repository stays public, so the current public interval is deliberate and open-ended. In summary: private from creation until 2026-08-22 04:16 UTC; public 04:16–04:57 UTC that day; private again from 04:57 UTC until an uncaptured moment before 2026-08-26 ~16:00 UTC; public from then on.
 
 ## Approved baseline
 
@@ -27,6 +27,8 @@ The audited baseline row is kept so the 2026-08-20 audit provenance stays verifi
 Hashes are taken over the stored Git blob (LF line endings), reproducible with `git show HEAD:<path> | sha256sum`. Do not hash the working-tree file on a checkout with `core.autocrlf=true` — it will differ.
 
 The original 709-line research document is intentionally not copied into this repository. It remains non-normative source material with SHA-256 `C243DB1EF4C27662872C17E85350883C5663943D4C1F13F1D6D3F977643F831F`.
+
+ADR 0002 (`docs/adr/0002-close-report-contract.md`) is deliberately not pinned in this table — a representative decision of 2026-08-27 (issue #72 section 3), not an oversight. Pinning would give the ADR the same tamper-evidence the spec has, but each pinned document adds a hash row that must be regenerated whenever that document changes — `scripts/check-approved-baseline.sh` hashes every path independently — and the spec rows above already pin the contract language the ADR motivates. `scripts/check-approved-baseline.sh` therefore continues to verify only the spec and ADR 0001.
 
 Independent Codex and Claude Fable 5 audits applied architecture-improvement, code-review, grilling, brainstorming, and Ponytail/YAGNI criteria. The final targeted Claude review found no remaining P0/P1 findings, no reopened F-1–F-15 findings, and passed the private-repository design gate.
 

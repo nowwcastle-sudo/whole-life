@@ -32,7 +32,7 @@ Everything the table does not list is filled in progressively, as the flow reach
 
 **Where each kind of knowledge goes.** The engineering skills assume `CONTEXT.md` is a glossary and nothing else, so that is what it is here. Everything that used to share the file now lives in `docs/project-context.md`. A term belongs in `CONTEXT.md`; a decision belongs in `docs/adr/`; status, baseline hashes, and gates belong in `docs/project-context.md`. If you are unsure which, it is not a term.
 
-**Contribution surface.** This file and `SECURITY.md` exist, but the repository stays private until the gates in the README's *Security and policy boundary* clear. No external triage process is in place, and none is created until distribution is unblocked.
+**Contribution surface.** This file and `SECURITY.md` exist. The repository is public today, and it stays public by an explicit owner decision of 2026-08-27 — the visibility history and the still-open public-release gate are tracked in [`docs/project-context.md`](docs/project-context.md) — and being public is not a release. No external triage process is in place, and none is created until distribution is unblocked.
 
 **Push and merge are owner-gated.** The Closer verifies the branch and prepares complete copy-paste-ready push commands. The owner runs the push; after confirmation, the Closer may open the pull request. Merging into `main` is also the owner's decision, made on the evidence in that pull request. Destructive git operations — force push, `reset --hard`, history rewriting, remote branch deletion — are never performed by an agent: it stops and reports instead.
 

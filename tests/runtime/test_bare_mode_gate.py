@@ -69,7 +69,7 @@ class AcceptedTurnTests(unittest.IsolatedAsyncioTestCase):
 
 
 class ReadOnlyArgvTests(unittest.IsolatedAsyncioTestCase):
-    """Spec section 4 line 139 lists what a Claude turn must carry.
+    """Spec section 4 line 142 lists what a Claude turn must carry.
 
     `--safe-mode` alone is not the read-only boundary. The spec is explicit that
     it leaves built-in tools and permissions working, which is why the tool

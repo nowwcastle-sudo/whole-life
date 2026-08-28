@@ -2,7 +2,7 @@
 
 ## Project maturity
 
-Whole Life currently contains architecture documentation only. There is no supported runtime release. Security reports about the design and future implementation are still welcome.
+Whole Life contains architecture documentation and implementation code; the current status, including the repository's visibility history, is tracked in [`docs/project-context.md`](docs/project-context.md). There is no supported runtime release. Security reports about the design and the implementation are welcome.
 
 ## Reporting a vulnerability
 

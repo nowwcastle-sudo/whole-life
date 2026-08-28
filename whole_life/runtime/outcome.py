@@ -48,7 +48,7 @@ def resolve_outcome(
     nonzero disowns the announcement.
 
     `cancelled_before_terminal` is consulted first because it is a fact about
-    *ordering*, and ordering is what spec 268, 279, 484 and 485 decide on. User
+    *ordering*, and ordering is what spec 271, 282, 487 and 488 decide on. User
     cancellation and the broker's twenty-minute timeout are one rule under two
     names: whichever came first wins. A terminal result committed before the
     cancellation stands; a cancellation that came first leaves the turn
@@ -57,7 +57,7 @@ def resolve_outcome(
     race is already settled.
 
     `unresolved_worker` is the one thing a committed result does not carry
-    through a cancellation (line 282). It is checked twice — inside the
+    through a cancellation (line 285). It is checked twice — inside the
     post-terminal cancellation branch and again below — because the two paths
     reach it past different evidence: after a cancellation the exit status is
     our own signal and must not be read, while on an ordinary ending it is the
@@ -90,7 +90,7 @@ def resolve_outcome(
         # post-terminal cancellation — including an ordinary broker shutdown —
         # into a failure the provider never had.
         if unresolved_worker:
-            # Line 282 names this exact case, and it is the one thing a
+            # Line 285 names this exact case, and it is the one thing a
             # committed result does not carry through the cancellation: the
             # provider said the conversation ended, never said the worker it
             # announced stopped, and we then killed the process it would have
@@ -126,7 +126,7 @@ def resolve_outcome(
         )
 
     if unresolved_worker:
-        # Spec line 282. The provider said the conversation ended; it did not
+        # Spec line 285. The provider said the conversation ended; it did not
         # say the worker it launched stopped. Reporting the turn complete over
         # a worker whose end was never announced would claim knowledge of
         # something nobody reported — and the thing still running is billable.
