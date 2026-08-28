@@ -56,9 +56,9 @@
   .tbl tr:last-child td{border-bottom:0}
   .tbl td:first-child{white-space:nowrap; font-family:"Geist Mono",ui-monospace,"Consolas",monospace;
        font-size:13px; color:var(--soft)}
-  figure{margin:34px 0}
+  figure{margin:34px 0; overflow-x:auto}
   figcaption{font-size:14px; color:var(--muted); margin-top:12px; text-align:center; line-height:1.6}
-  svg{display:block; width:100%; height:auto}
+  svg{display:block; width:100%; height:auto; min-width:720px}
   sup a{color:var(--link); text-decoration:none; font-size:12px; font-weight:600; padding:0 1px}
   a{color:var(--link); text-underline-offset:3px; text-decoration-thickness:1px}
   .fnotes{margin-top:64px; border-top:1px solid var(--rule-solid); padding-top:26px;
@@ -74,14 +74,14 @@
   <h1>0건의 이름을, 대표가 정했다</h1>
   <p class="sub">이슈 #51은 되돌림 없이 한 번에 PR#82로 착지했지만, 그 착지를 판정하는 기준 자체가
     관측 도중 다시 쓰였다. 완결자는 통치자가 준 대조군이 PR#81 한 건의 표본 넷뿐이었음을 21회차
-    전수로 뒤집었고, 대표는 그 관측이 채 끝나기도 전에 직접 병합해 두고 «지적 0건이면 통과»라는
+    전수로 뒤집었고, 대표는 병합 의논 BRF가 채 끝나기도 전에 직접 병합해 두고 «지적 0건이면 통과»라는
     새 상시 규칙을 세웠다.</p>
 
   <div class="card">
     <p style="margin:0 0 12px"><b>읽기 전에 — 이 편이 묶는 범위.</b>
       통치자 지시가 이 편을 「#51 사이클의 기편(일지편 포함)」으로 명시하고, 사이클 경계를
       「<code>ORD-IMP-51</code> 발행(08-28 18:4x, <code>c89dbd90</code>) ~ PR#82 병합(19:52,
-      대표 결정 N)」으로 그었다.<sup><a href="#f1">[1]</a></sup> 제22편이 다룬 사이클(PR#81 병합)은
+      대표 결정 N)」으로 그었다.<sup><a href="#f1">[1]</a></sup><sup><a href="#f33">[33]</a></sup> 제22편이 다룬 사이클(PR#81 병합)은
       <b>이 편의 대상이 아니다.</b></p>
     <p style="margin:0" class="note">
       각주는 문구의 «존재»만 보증한다. 줄 번호는 쓰지 않는다 — 파일이 바뀌면 조용히 다른 곳을
@@ -93,7 +93,7 @@
     이슈 #51 — 「모든 턴에 켜 둔 협업 능력이 <code>collab_tool_call</code> 항목을 낼 때, 그 턴이
     죽지 않고 끝까지 완주하게 한다」<sup><a href="#f2">[2]</a></sup> — 는 구현자가 이슈가 제시한
     두 갈래 중 <b>갈래 A(항목 인식·매핑)</b>를 스펙 118·124행 근거로 골라, RED 두 라운드(그중
-    첫 라운드는 스스로 <b>«잘못된 이유»</b>임을 잡아내 테스트 자체를 고친 뒤 다시 RED를 받았다)와
+    두 번째는 <b>«잘못된 이유»</b>를 스스로 잡았다)와
     변이 3종을 거쳐 <b>되돌림 없이</b> PR#82로 한 번에 착지시켰다.<sup><a href="#f3">[3]</a></sup>
     그런데 그 착지를 판정하는 과정에서, 완결자가 <b>통치자 자신의 관측 지시에 박힌 대조군
     (PR#81 표본 넷)</b>이 21회차 전수에서 뒤집히는 것을 찾아냈고,<sup><a href="#f4">[4]</a></sup>
@@ -457,12 +457,12 @@
 
   <h2>각주</h2>
   <ol class="fnotes">
-    <li id="f1"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «ORD-EDU-cycle-51(`23a75667`, 새 톱레벨) — 제23편 기편(600759a9 충족: 사이클 병합 완료), 「하지 않기로 한 것」 4갈래 지목, 사료 실물 지시.» · 같은 절 «발행 둘: ORD-IMP-45(`69596d5d`, 새 톱레벨) … CHANGELOG 승계 1건.»</li>
+    <li id="f1"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «ORD-EDU-cycle-51(`23a75667`, 새 톱레벨) — 제23편 기편(600759a9 충족: 사이클 병합 완료), 「하지 않기로 한 것」 4갈래 지목, 사료 실물 지시.» · 같은 절 발행 둘 중 «ORD-IMP-45(`69596d5d`, 새 톱레벨)» · «CHANGELOG 승계 1건.»</li>
     <li id="f2"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «이슈 #51 「Finish a Codex turn that uses the collaboration capability we enable on every turn」 착수.»</li>
     <li id="f3"><span class="path">WORK_LOGS/whole-life/IMP_feat-51-collab-tool-call__ORD-IMP-51.md</span> — 변경 규모 「4파일 +267 −33」· 최종 검증 절 참조([14]·[18]).</li>
     <li id="f4"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «내가 ORD-CLS-PR-82-observe 4번에 준 대조군(완주 26/59 vs 소형 4/3)은 전부 PR#81 한 PR의 4표본 — 좁은 모집단이었고, 21회차 전수에서 **소형(opus 없음)이 다수 모드(13/21, 08-26부터)**로 뒤집혔다.»</li>
     <li id="f5"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «**새 상시 규칙 확정: 관측 ORD는 토큰 소비량(작업량) 기록은 유지하되, 리뷰 지적 0건이면 실행 모드와 무관하게 «통과»로 판정하고 진행**»</li>
-    <li id="f6"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — 「19:5x — RPT-ORD-CLS-PR-82-observe 통과 · BRF(N/P·Q/R) 상정」 절과 「19:5x — 대표 결정 N 이행」 절이 모두 같은 시간대(`19:5x`) 표기이고, 대표 답신은 19:52로 명기됨.</li>
+    <li id="f6"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «2026-08-28 19:5x KST — RPT-ORD-CLS-PR-82-observe 통과 · BRF(N/P·Q/R) 상정» 절과 «2026-08-28 19:5x KST — 대표 결정 N 이행» 절이 모두 같은 시간대(`19:5x`) 표기이고, 대표 답신은 19:52로 명기됨.</li>
     <li id="f7"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «대표 답신 19:52 (`c04ad159`, 대표 키 37215881 — 되돌릴 수 없는 조작이나 이번은 지시가 아니라 «이미 했다» 통보).» · «**N 확정·이행 실측**: PR#82 **MERGED** — squash `17c8be2b`, 2026-08-28T10:52:30Z, 병합자 nowwcastle-sudo(대표 직접).»</li>
     <li id="f8"><span class="path">WORK_LOGS/whole-life/IMP_feat-51-collab-tool-call__ORD-IMP-51.md</span> — «blocker #35: `gh issue view 35` → CLOSED · 녹화물 `tests/recordings/codex-0.149.0-agents-enabled-turn.jsonl` origin/main `ls-tree` 실재 확인»</li>
     <li id="f9"><span class="path">WORK_LOGS/whole-life/IMP_feat-51-collab-tool-call__ORD-IMP-51.md</span> — «스펙 118행이 「Codex participant에는 current release의 subagent workflow를 **활성화하고** `agents.max_concurrent_threads_per_session = 3`을 inline config로 고정한다」고 **요구**한다. 124행은 「native delegation capability가 확인되지 않으면 … 조용히 single-agent로 낮추지 않는다」.»</li>
@@ -489,6 +489,7 @@
     <li id="f30"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «**N 확정·이행 실측**: PR#82 **MERGED** — squash `17c8be2b`, 2026-08-28T10:52:30Z, 병합자 nowwcastle-sudo(대표 직접). `git ls-remote origin main` = `17c8be2b` 일치. 「이미 했다」를 객관 증거로 확인 후 진행.»</li>
     <li id="f31"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «**Q/R 해소(대표)**: 「해소됐으므로 보류 기록 폐기」 — 조사 방아쇠(claude-review 두 모드)·«미도착» 보류 틀 폐기. **새 상시 규칙 확정: 관측 ORD는 토큰 소비량(작업량) 기록은 유지하되, 리뷰 지적 0건이면 실행 모드와 무관하게 «통과»로 판정하고 진행**(`c04ad159`). 점검표 10의 «소형이면 판정 없이 상신» 분기는 이 규칙으로 대체된다.»</li>
     <li id="f32"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «**직접 병합이 건너뛴 관례 기록**: ① CHANGELOG(관례 ②) — PR#82(feat)에 항목 없음 → **ORD-IMP-45에 #51 항목 동반 추가로 승계**(사유 명기). ② 트레일러 — 웹 병합은 Co-authored-by가 떨어지는 기지 사실, 착지 후 재작성 없이 못 고침 → 기록만. ③ 병합 후 스위트 — ORD-IMP-45의 착수 기준선 스위트(새 main, 기대 415)가 겸하도록 명기.»</li>
+    <li id="f33"><span class="path">WORK_LOGS/whole-life/EDU_23__ORD-EDU-cycle-51.md</span> — «발주: 통치자 event `23a75667`(#51 사이클 기편 — 일지편 포함, 사이클 경계» · «「ORD-IMP-51 발행(08-28 18:4x, `c89dbd90`) ~ PR#82 병합(19:52, 대표 결정 N)」» — 통치자 ORD 원문(`23a75667`)이 GOV_LEDGER.md에 요약만 남아 경계 문구 그대로는 없어, 그 문구를 받아 적은 이 편 자신의 완료 보고를 출처로 단다.</li>
   </ol>
 
 </div>
