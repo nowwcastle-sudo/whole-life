@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>제22편 — 고칠수록 새로 나와서, 착지를 택했다</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:       #282828;
+    --paper-2:     #32302f;
+    --zone:        #302e2c;
+    --ink:         #ebdbb2;
+    --muted:       #a89984;
+    --soft:        #928374;
+    --rule:        rgba(235,219,178,0.12);
+    --rule-solid:  #504945;
+    --accent:      #fe8019;
+    --accent-tint: rgba(254,128,25,0.12);
+    --link:        #83a598;
+    --green:       #b8bb26;
+    --red:         #fb4934;
+    --yellow:      #fabd2f;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--paper); color:var(--ink);
+       font-family:"Geist","Pretendard","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;
+       line-height:1.75; -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:880px; margin:0 auto; padding:64px 28px 120px}
+  .kicker{font-size:13px; letter-spacing:.14em; color:var(--soft); text-transform:uppercase;
+          font-family:"Geist Mono",ui-monospace,"Consolas",monospace}
+  h1{font-family:"Instrument Serif","Malgun Gothic",serif;
+     font-size:48px; line-height:1.2; margin:14px 0 10px; letter-spacing:-.01em; font-weight:400}
+  .sub{font-size:18px; color:var(--muted); margin:0 0 8px}
+  h2{font-family:"Instrument Serif","Malgun Gothic",serif;
+     font-size:30px; line-height:1.32; margin:56px 0 14px; font-weight:400; letter-spacing:-.01em}
+  h3{font-size:16px; letter-spacing:.06em; color:var(--ink); margin:34px 0 12px; font-weight:600}
+  p{font-size:17px; margin:0 0 18px}
+  .note{font-size:15px; color:var(--muted)}
+  hr{border:0; border-top:1px solid var(--rule); margin:44px 0}
+  code{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; font-size:.9em;
+       background:var(--zone); color:var(--ink); padding:1px 6px; border-radius:4px}
+  .card{background:var(--paper-2); border:1px solid var(--rule-solid); border-radius:8px;
+        padding:26px 28px; margin:26px 0}
+  .warn{border-color:var(--yellow)}
+  .warn .tag{color:var(--yellow); font-weight:600; font-size:13px; letter-spacing:.1em;
+             font-family:"Geist Mono",ui-monospace,monospace}
+  .tbl{width:100%; border-collapse:collapse; font-size:14.5px}
+  .tbl th{text-align:left; font-size:11.5px; letter-spacing:.08em; text-transform:uppercase;
+          color:var(--soft); font-weight:500; padding:0 12px 10px 0; border-bottom:1px solid var(--rule-solid);
+          font-family:"Geist Mono",ui-monospace,monospace}
+  .tbl td{padding:12px 12px 12px 0; border-bottom:1px solid var(--rule); vertical-align:top; line-height:1.6}
+  .tbl tr:last-child td{border-bottom:0}
+  .tbl td:first-child{white-space:nowrap; font-family:"Geist Mono",ui-monospace,"Consolas",monospace;
+       font-size:13px; color:var(--soft)}
+  figure{margin:34px 0}
+  figcaption{font-size:14px; color:var(--muted); margin-top:12px; text-align:center; line-height:1.6}
+  svg{display:block; width:100%; height:auto}
+  sup a{color:var(--link); text-decoration:none; font-size:12px; font-weight:600; padding:0 1px}
+  a{color:var(--link); text-underline-offset:3px; text-decoration-thickness:1px}
+  .fnotes{margin-top:64px; border-top:1px solid var(--rule-solid); padding-top:26px;
+          list-style:none; padding-left:0}
+  .fnotes li{font-size:14px; color:var(--muted); margin-bottom:11px; line-height:1.65}
+  .fnotes .path{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; color:var(--ink); font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kicker">제 22 편 · 기편 · #72 종료 게이트 · 당대에 씀</div>
+  <h1>고칠수록 새로 나와서, 착지를 택했다</h1>
+  <p class="sub">이슈 #72(문서 기록 여섯 항목)는 리뷰 다섯 차례·구현 되돌림 넷·대표 결정 셋을 거쳐
+    PR#80으로 착지했다. 스펙 인용 재번호가 스스로 새 모순을 만든 자리를 그물이 세 번에 걸쳐
+    찾아냈고, 아직 발화하지 않는 게이트의 문안은 고칠수록 새 판단을 냈다 — 그래서 대표는
+    끝까지 고치는 대신 착지하고 나머지를 다음 방아쇠로 넘겼다.</p>
+
+  <div class="card">
+    <p style="margin:0 0 12px"><b>읽기 전에 — 이 편이 묶는 범위.</b>
+      통치자 지시가 이 편을 「#72 사이클의 기편(일지편 뭉치 포함)」으로 명시했다.<sup><a href="#f1">[1]</a></sup>
+      같은 시각 착지한 PR#79(제21편 자신의 착지)는 <b>이 편의 대상이 아니다</b> — 그 착지에서
+      나온 비차단 잔여 둘만 각주로 승계한다.<sup><a href="#f2">[2]</a></sup></p>
+    <p style="margin:0" class="note">
+      각주는 문구의 «존재»만 보증한다. 줄 번호는 쓰지 않는다 — 파일이 바뀌면 조용히 다른 곳을
+      가리키므로, 인용문은 <code>grep</code>으로 대조한다.</p>
+  </div>
+
+  <h2>질문 1 · 무슨 일이</h2>
+  <p>
+    이슈 #72(문서 기록 정비 여섯 항목)는 리뷰가 두 번 차단(§1 인용 5자리, 그리고 그물이 놓친
+    한 자리 더)하고, 첫 착지 시도가 정지(롤업은 초록인데 Codex 새 코멘트 3건이 실재)한 뒤,
+    구현이 셋 되돌아가고 리뷰가 다섯 번(원본·d1·d2·d3·d4) 걸리는 동안, 아직 발화하지 않는
+    의존성 감사 게이트의 문안이 반영할수록 새 판단을 냈다.<sup><a href="#f3">[3]</a></sup>
+    대표는 그 판단 넷(ST-1~4)을 먼저 반영하는 길(결정 B)을 골랐지만 반영 직후 재검이 새 판단
+    셋(ST-5~7)을 또 냈고,<sup><a href="#f4">[4]</a></sup> 통치자는 게이트 규약대로 다시 대표를
+    불렀다 — 이번엔 <b>착지하고 나머지를 다음 방아쇠(첫 매니페스트 착지 커밋)로 넘기는 길(결정 A)</b>을
+    골랐다.<sup><a href="#f5">[5]</a></sup> 착지 자체는 롤업 신호 대신 봇 API를 직접 물어
+    죽은 통제 하나와 재앵커 함정 하나를 스스로 잡아낸 뒤에 이뤄졌다 — main은
+    <code>4fd92a37</code>, 이슈 #72는 CLOSED다.<sup><a href="#f6">[6]</a></sup>
+  </p>
+
+  <h2>질문 2 · 어떤 흐름으로 진행됐나</h2>
+  <figure>
+    <svg viewBox="0 0 900 520" role="img" aria-labelledby="ep22-timeline-title ep22-timeline-desc">
+      <title id="ep22-timeline-title">이슈 #72 발행부터 PR#80 착지까지</title>
+      <desc id="ep22-timeline-desc">2026-08-27 새벽 이슈 #72가 발행된 뒤 하루 가까이 비어 있다가, 같은 날 밤부터 다음 날 낮까지 리뷰 차단과 구현 되돌림이 반복되고, 첫 착지 시도가 봇 신규 지적으로 정지되며, 반영해도 새 판단이 다시 나오는 재검 다섯 차례를 거쳐, 대표가 착지를 택하는 순간까지 이어지는 타임라인.</desc>
+      <defs>
+        <marker id="ep22-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="var(--muted)"/>
+        </marker>
+      </defs>
+      <rect width="100%" height="100%" fill="var(--paper)"/>
+
+      <text x="24" y="30" font-size="12" fill="var(--soft)" letter-spacing="0.08em"
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">2026-08-27 → 2026-08-28 KST</text>
+
+      <!-- axis -->
+      <line x1="60" y1="440" x2="150" y2="440" stroke="var(--rule-solid)" stroke-width="1"/>
+      <line x1="156" y1="452" x2="168" y2="428" stroke="var(--soft)" stroke-width="1.4"/>
+      <line x1="172" y1="452" x2="184" y2="428" stroke="var(--soft)" stroke-width="1.4"/>
+      <line x1="190" y1="440" x2="860" y2="440" stroke="var(--rule-solid)" stroke-width="1"/>
+      <text x="170" y="472" font-size="10" fill="var(--soft)" text-anchor="middle"
+            font-family="'Geist Mono',ui-monospace,monospace">비어 있음</text>
+
+      <!-- N1 이슈 발행 -->
+      <circle cx="90" cy="440" r="6" fill="var(--accent)"/>
+      <line x1="90" y1="404" x2="90" y2="434" stroke="var(--accent)" stroke-width="1"/>
+      <text x="90" y="356" font-size="10" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">08-27 01:51</text>
+      <text x="90" y="376" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">이슈 #72 발행</text>
+      <text x="90" y="392" font-size="9" fill="var(--accent)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">6항목 · 항목3 보류</text>
+
+      <!-- N2 원REV 차단 -->
+      <circle cx="228" cy="440" r="5" fill="var(--red)"/>
+      <line x1="228" y1="404" x2="228" y2="434" stroke="var(--muted)" stroke-width="1"/>
+      <text x="228" y="356" font-size="10" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">08-27</text>
+      <text x="228" y="376" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">원 REV 차단</text>
+      <text x="228" y="392" font-size="9" fill="var(--red)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">SP1 인용 5자리</text>
+
+      <!-- N3 되돌림1→d1 -->
+      <circle cx="330" cy="440" r="5" fill="var(--red)"/>
+      <line x1="330" y1="404" x2="330" y2="434" stroke="var(--muted)" stroke-width="1"/>
+      <text x="330" y="356" font-size="10" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">08-27 밤</text>
+      <text x="330" y="376" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">d1 — SP3 신규 차단</text>
+      <text x="330" y="392" font-size="9" fill="var(--red)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">그물이 놓친 한 자리 더</text>
+
+      <!-- N4 되돌림2→d2 -->
+      <circle cx="432" cy="440" r="5" fill="var(--green)"/>
+      <line x1="432" y1="404" x2="432" y2="434" stroke="var(--muted)" stroke-width="1"/>
+      <text x="432" y="356" font-size="10" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">08-28 새벽</text>
+      <text x="432" y="376" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">d2 — 「병합 가능」</text>
+      <text x="432" y="392" font-size="9" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">ST5 신규(판단)</text>
+
+      <!-- N5 착지 정지 -->
+      <circle cx="534" cy="440" r="6" fill="var(--accent)"/>
+      <line x1="534" y1="404" x2="534" y2="434" stroke="var(--accent)" stroke-width="1"/>
+      <text x="534" y="356" font-size="10" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">08-28 03:1x</text>
+      <text x="534" y="376" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">착지 시도 정지</text>
+      <text x="534" y="392" font-size="9" fill="var(--accent)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">롤업 초록, Codex 신규 3건 실재</text>
+
+      <!-- N6 되돌림3→d3 -->
+      <circle cx="636" cy="440" r="5" fill="var(--green)"/>
+      <line x1="636" y1="404" x2="636" y2="434" stroke="var(--muted)" stroke-width="1"/>
+      <text x="636" y="356" font-size="10" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">08-28 05:35</text>
+      <text x="636" y="376" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">d3 — 「병합 가능」</text>
+      <text x="636" y="392" font-size="9" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">Codex 3/3 해소·ST-1~4 신규</text>
+
+      <!-- N7 결정B -->
+      <circle cx="712" cy="440" r="6" fill="var(--link)"/>
+      <line x1="712" y1="404" x2="712" y2="434" stroke="var(--link)" stroke-width="1"/>
+      <text x="712" y="356" font-size="10" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">08-28 07:52</text>
+      <text x="712" y="376" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">대표 결정 B</text>
+      <text x="712" y="392" font-size="9" fill="var(--link)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">ST-1~4 선반영 후 병합</text>
+
+      <!-- N8 ST1-4반영→d4 -->
+      <circle cx="792" cy="440" r="5" fill="var(--yellow)"/>
+      <line x1="792" y1="404" x2="792" y2="434" stroke="var(--muted)" stroke-width="1"/>
+      <text x="792" y="356" font-size="10" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">08-28 08:28</text>
+      <text x="792" y="376" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">d4 — 「병합 가능」</text>
+      <text x="792" y="392" font-size="9" fill="var(--yellow)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">ST-1~4 4/4 해소·ST-5~7 신규</text>
+
+      <!-- N9 재의논→결정A -->
+      <circle cx="860" cy="440" r="7" fill="var(--accent)"/>
+      <line x1="860" y1="404" x2="860" y2="434" stroke="var(--accent)" stroke-width="1.4"/>
+      <text x="860" y="352" font-size="10" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">08-28 08:3x → 12:22</text>
+      <text x="860" y="372" font-size="12" font-weight="700" fill="var(--ink)" text-anchor="middle" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">재의논 → 결정 A</text>
+      <text x="860" y="388" font-size="9" fill="var(--accent)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">착지 · main 4fd92a37</text>
+
+      <!-- legend -->
+      <line x1="24" y1="480" x2="876" y2="480" stroke="var(--rule)" stroke-width="1"/>
+      <text x="24" y="502" font-size="12" fill="var(--soft)" letter-spacing="0.14em" font-family="'Geist Mono',ui-monospace,monospace">범례</text>
+      <circle cx="108" cy="498" r="6" fill="var(--accent)"/>
+      <text x="124" y="502" font-size="11" fill="var(--muted)" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">이 편의 초점</text>
+      <circle cx="252" cy="498" r="5" fill="var(--red)"/>
+      <text x="264" y="502" font-size="11" fill="var(--muted)" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">차단</text>
+      <circle cx="332" cy="498" r="5" fill="var(--green)"/>
+      <text x="344" y="502" font-size="11" fill="var(--muted)" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">병합 가능 판정</text>
+      <circle cx="472" cy="498" r="5" fill="var(--yellow)"/>
+      <text x="484" y="502" font-size="11" fill="var(--muted)" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">병합 가능(신규 판단 동반)</text>
+      <circle cx="644" cy="498" r="6" fill="var(--link)"/>
+      <text x="660" y="502" font-size="11" fill="var(--muted)" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">되돌릴 수 없는 대표 결정</text>
+    </svg>
+    <figcaption>
+      리뷰가 초록(「병합 가능」)을 냈다고 흐름이 끝나지 않는다 — <b>d2·d3·d4 세 번 모두 「병합
+      가능」이면서 동시에 새 판단을 남겼다.</b> 착지로 이어진 것은 초록이 쌓여서가 아니라,
+      대표가 「더 고쳐도 수렴이 보장되지 않는다」는 관찰을 받아 <b>착지 쪽으로 판단을 옮긴 것</b>이다.<sup><a href="#f5">[5]</a></sup>
+    </figcaption>
+  </figure>
+
+  <h2>대상 1 — 여섯 항목, 그리고 하나는 처음부터 사람 몫이었다</h2>
+  <p>
+    이슈 #72는 분해자가 앞선 close-계약 작업(#46)이 남긴 문서 부채를 단일 이슈로 묶어
+    발행한 것이다 — 여섯 절, 절마다 체크박스와 출처.<sup><a href="#f1">[1]</a></sup> 분해자
+    스스로 이슈를 쓰던 중 한 번 더 자기 정정을 했다 — 첫 조사 명령의 <code>-- src tests</code>
+    경로가 <code>src/</code>를 조용히 0건으로 매칭시켜 집계가 사실상 <code>tests/</code>만
+    읽은 수였고, 올바른 코퍼스(<code>whole_life/</code>)로 다시 재서 45행/59토큰을
+    실었다.<sup><a href="#f7">[7]</a></sup> <b>이 저장소가 프로젝트 초기부터 반복해 온 「없는
+    경로를 훑으면 0건」 함정의 새 표본이었고, 이슈 본문에 그 사실 자체를 남겨 다음 사람이
+    같은 착시를 겪지 않게 했다.</b>
+  </p>
+  <p>
+    항목 3(ADR 0002를 승인 baseline에 등재할지)은 이슈 본문이 스스로 「한 작업자가 혼자
+    정할 일이 아니다」라고 적어 두었고,<sup><a href="#f2">[2]</a></sup> 구현자는 그 항목만
+    손대지 않고 통치자에게 상신했다. 대표는 08-27 밤 <b>B</b>를 골랐다 — ADR 0002를
+    baseline에 등재하지 않고, 「일부러 미등재」라는 사실만 문서에 기록한다.<sup><a href="#f3">[3]</a></sup>
+    나머지 다섯 항목(§1 스펙 인용 재번호·§2 ADR 0002 도달성·§4 CHANGELOG 누락분·§5 의존성
+    감사 게이트·§6 공개 구간 기록)이 이 편이 다루는 구현·리뷰 왕복의 몸통이다.
+  </p>
+
+  <h2>대상 2 — 재번호가 스스로 만든 모순, 그물이 세 번에 걸쳐 찾았다</h2>
+  <p>
+    §1은 스펙 §4 개정이 뒤 문단을 3줄 밀어낸 것을 따라, 코드·테스트 전역의 「Spec line
+    N」류 인용을 재번호하는 작업이었다. 구현자의 첫 스윕은 <b>같은 줄에 「spec」이라는
+    낱말이 있는 토큰만</b> 잡는 질의였고, 원 리뷰가 그 그물이 놓친 자리 다섯을 찾았다 —
+    <code>(line 282)</code>·<code># Line 282</code>류처럼 앞선 줄의 「spec」에 기대는 이어진
+    인용은 그물 밖이었다. <b>더 나쁜 것은 방향이었다</b> — 그 다섯 자리는 「못 고친 것」이
+    아니라 <b>「이 브랜치가 새로 깨뜨린 것」</b>이었다. base에서는 파일마다 내부적으로 일관돼
+    있었는데, 재번호가 절반만 닿아 같은 번호(282)가 한 파일 안에서 서로 다른 두 조항을
+    가리키게 됐다.<sup><a href="#f8">[8]</a></sup>
+  </p>
+  <p>
+    되돌림 1이 다섯 자리를 고쳤고, d1은 그 다섯이 옳은 문장에 닿는 것을 스펙 원문 대조로
+    확인했다. <b>그런데 d1은 같은 파일에서 그물이 놓친 자리를 하나 더 찾았다</b> —
+    <code>test_normalize.py:667</code>. 이번엔 이유가 달랐다: 인용 문구가
+    「… Spec line」으로 666행에서 끝나고 <b>다음 줄인 667행이 「247 states a whitelist,」로
+    시작</b>했다. 줄 단위 grep은 원리상 이 형태를 못 본다 — d1 자신이 「45가 바닥값」이라는
+    티켓 경고의 <b>세 번째 형태</b>라고 적었다.<sup><a href="#f9">[9]</a></sup>
+  </p>
+  <p>
+    되돌림 2가 그 한 자리를 고쳤고, d2가 닫힌 것을 확인하며 <b>d1 자신의 새 스윕 규칙
+    (줄 끝이 「spec」·「line(s)」로 끝나는 줄)을 다시 돌렸다.</b> 그 규칙조차 한 자리를
+    놓쳤다 — <code>observe.py:227</code>이 「Spec 271, 282,」로 <b>쉼표로 끝나</b> 규칙이
+    잡는 「낱말로 끝나는 줄」의 그물 밖이었다. d2는 <b>줄 끝이 아니라 줄 시작을 보는 질의</b>를
+    새로 추가해서야 그 자리를 잡았고(원문은 정확했다 — 새로 깨진 것은 아니었다), 「내 규칙
+    자신에 구멍이 있었다」는 것을 스스로 적어 다음 스윕에 두 질의를 함께 걸라고
+    남겼다.<sup><a href="#f10">[10]</a></sup>
+  </p>
+  <table class="tbl">
+    <thead><tr><th>발견 라운드</th><th>그물이 놓친 형태</th><th>차단·판정</th></tr></thead>
+    <tbody>
+      <tr><td>원 REV</td><td>같은 줄에 「spec」이 없는 이어진 인용 — <code>(line 282)</code></td><td>SP1 차단 → 되돌림1</td></tr>
+      <tr><td>d1</td><td>인용 낱말이 <b>다음 줄</b>에서 시작 — <code>… Spec line</code> ↵ <code>247 states</code></td><td>SP3 신규 차단 → 되돌림2</td></tr>
+      <tr><td>d2</td><td>인용이 <b>쉼표로</b> 끝나 줄 끝 낱말 질의도 못 잡음 — <code>Spec 271, 282,</code></td><td>d1 규칙 자신의 구멍 — 시작쪽 질의로 보완, 신규 결함 아님</td></tr>
+    </tbody>
+  </table>
+  <p class="note">
+    세 형태 모두 「같은 조항을 찾는 검사가 검사 자신의 사각지대를 갖는다」는 같은 모양이다.
+    d2는 이 자리에서 「검사기를 먼저 의심한다」는 점검표를 그대로 이행했다고 적었다 — 구현자
+    「2건」과 자신의 「1건」이 다른 이유도 서로 다른 정규식이 「private」의 부분어
+    「privately」를 잡느냐 마느냐였다고 규명했다.<sup><a href="#f11">[11]</a></sup>
+  </p>
+
+  <h2>대상 3 — 아직 열리지 않은 문의 문패를 고칠수록, 새 흠이 나왔다</h2>
+  <p>
+    §5는 의존성 감사 게이트를 문서에 새로 적는 항목이었다. 이 저장소에는 매니페스트
+    (requirements.txt 등)가 하나도 없어 <b>이 게이트는 이 사이클 내내 한 번도 발화하지
+    않았다</b> — 저장소 자신의 문서가 「매니페스트가 없으면 발화하지 않은 것이지 통과가
+    아니다」라고 못박아 둔 그대로다.<sup><a href="#f12">[12]</a></sup> 그런데 <b>발화하지
+    않는 문패를 고치는 일 자체는 라운드마다 새 판단을 냈다.</b>
+  </p>
+  <table class="tbl">
+    <thead><tr><th>라운드</th><th>이름</th><th>지적</th><th>결과</th></tr></thead>
+    <tbody>
+      <tr><td>원 REV</td><td>S1</td><td>복합 명령의 설치 실패가 exit 1을 내는데, 독해표가 1을 「취약점 발견」으로 먼저 선점</td><td>되돌림1에서 닫힘</td></tr>
+      <tr><td>d2</td><td><b>ST5</b>(하이픈 없음)</td><td><code>project-context.md:31</code> 「must be regenerated」가 실제 스크립트(경로별 독립 해싱)보다 세게 읽힘</td><td>판단·비차단, <b>고치지 않고 그대로 유지</b> — d3·d4가 「ST5 유지」로 재확인만 함</td></tr>
+      <tr><td>d3</td><td>ST-1~4(하이픈)</td><td>Codex 지적 ①②③ 해소 확인 + safety.md 신규 문단이 같은 위험에 두 처방(비대칭)</td><td>대표 결정 B로 반영 지시</td></tr>
+      <tr><td>d4</td><td><b>ST-5~7</b>(하이픈)</td><td>「Installation is banned above」가 같은 절의 설치 명령과 부딪히는 절대어, 「the same command」 문자 불일치, 새 실패 양상이 독해표 밖</td><td><b>반영하지 않고</b> 다음 매니페스트 착지 커밋으로 승계</td></tr>
+    </tbody>
+  </table>
+  <div class="card warn">
+    <div class="tag">이름이 겹친다 — 통치자가 갈라 적으라고 지시한 자리</div>
+    <p style="margin:8px 0 0">
+      d2의 <b><code>ST5</code></b>(하이픈 없음)와 d4의 <b><code>ST-5</code></b>(하이픈)는
+      <b>다른 파일, 다른 라운드, 다른 내용이다.</b> ST5는 <code>docs/project-context.md</code>의
+      한 문장에 대한 판단이고 이 사이클 내내 고치지 않은 채 유지됐다.<sup><a href="#f13">[13]</a></sup>
+      ST-5는 <code>docs/agents/safety.md</code>의 새 문단에 대한 판단이고 d4에서 처음
+      나와 착지까지 반영되지 않은 채 남았다.<sup><a href="#f4">[4]</a></sup> 짧은 이름이
+      같아 보이지만 가리키는 것이 다르다.
+    </p>
+  </div>
+  <p>
+    ST-1~4가 반영된 방식도 한 줄로 넘길 게 아니다 — 구현자는 「requirements 경로가 왜
+    면제인지 정당화하는」 길 대신 <b>비대칭 자체를 없애는</b> 길을 골랐다: 주 게이트 명령에
+    <code>--no-deps</code>를 추가해 매니페스트 종류를 가리지 않게 했다.<sup><a href="#f14">[14]</a></sup>
+    문안을 다듬은 게 아니라 <b>절차 실질을 바꾼 것</b>이고, d4는 그 새 절차의 전제(전부
+    핀 고정)가 바로 아래 문단으로 채워지는지까지 확인했다.
+  </p>
+
+  <h2>대상 4 — 착지, 롤업이 아니라 API를 믿었다</h2>
+  <p>
+    첫 착지 시도(08-28 03:15)는 <b>PR 상태 롤업이 MERGEABLE·CLEAN·6/7 success인 채로</b>
+    정지했다 — 완결자가 롤업을 그대로 두지 않고 <code>reviews</code>·<code>comments</code>
+    API를 직접 물어, 그 초록 아래에 Codex의 새 코멘트 셋(P1 하나·P2 둘)이 실재하는 것을
+    잡았다.<sup><a href="#f15">[15]</a></sup> 이 규칙(관례 ①)이 없었다면 PR#79에서 같은
+    사각지대가 이미 한 번 재현됐던 것처럼, 초록 롤업이 실제 지적을 가려 그대로 착지시켰을
+    자리다.
+  </p>
+  <p>
+    최종 착지 직전 봇 질의에서도 두 가지가 더 걸렸다.
+  </p>
+  <p>
+    <b>죽은 통제.</b> 관측 ORD는 「직전 head를 양성 대조로 대라」고 값을 박아 지시했는데,
+    이 PR의 봇 코멘트는 전부 그보다 더 오래된 head 하나(<code>6aa0fe64</code>)에만
+    앵커돼 있어 지시대로 걸면 대조 자체가 0을 냈다 — <b>술어가 살아 있는지 증명하지 못하는
+    통제였다.</b> 완결자는 <code>original_commit_id</code> 전수 분포(<code>sort | uniq -c</code>)에서
+    실제로 표본이 사는 값을 직접 골라 대조를 다시 세웠다.<sup><a href="#f16">[16]</a></sup>
+    이 정정 이후 지시 방식 자체가 바뀌었다 — 값을 지시에 박지 않고 <b>「전수 분포에서 살아
+    있는 앵커를 골라라」</b>로 고정됐다.<sup><a href="#f17">[17]</a></sup>
+  </p>
+  <p>
+    <b>재앵커 함정.</b> 봇 코멘트 하나가 원래 남긴 커밋(<code>original_commit_id</code>)은
+    옛 head인데, GitHub가 그 코멘트의 <code>commit_id</code> 필드를 최신 push 시점의
+    head로 조용히 갈아 둔 사례가 <b>두 번 실물로 나왔다</b>(08-28 08:19 관측, 그리고
+    최종 착지 직전).<sup><a href="#f18">[18]</a></sup> 신규 판별을 <code>commit_id</code>로
+    걸었다면 옛 지적이 새 지적으로 보여, <b>이미 준비된 착지를 잘못 막았을 자리</b>다.
+    저장소 관례가 처음부터 <code>original_commit_id</code>를 쓰도록 정해 둔 것이 이번에
+    그대로 값을 했다.
+  </p>
+  <p>
+    GHAS 쪽에서도 대조 하나를 실측했다 — <code>code-scanning/alerts?ref=</code> 엔드포인트에
+    <b>존재하지 않는 브랜치 ref</b>를 걸어도 실재하는 브랜치와 똑같이 빈 배열을 냈다. 「스캔해서
+    0건」과 「스캔 자체가 없어서 0건」을 이 엔드포인트가 구별하지 못한다는 뜻이라, 착지 판정은
+    <code>analyses</code>의 <code>results_count</code>와 <code>commit_sha</code>로만
+    삼았다.<sup><a href="#f19">[19]</a></sup>
+  </p>
+
+  <h2>대상 5 — 결정의 사슬: B에서 A로</h2>
+  <p>
+    d3가 「병합 가능」을 냈지만 비차단 판단 넷(ST-1~4)을 남기자, 통치자는 A(그대로 착지)/B(먼저
+    반영 후 병합)/C(보류) 세 갈래를 대표에게 올렸다. 대표는 <b>B</b>를 골랐다 — 반영 후 병합,
+    그리고 「d4 재검 + 봇 관측 통과 시 추가 의논 없이 착지 ORD」까지 미리 정해 뒀다.<sup><a href="#f20">[20]</a></sup>
+  </p>
+  <p>
+    그런데 반영은 새 판단 셋(ST-5~7)을 또 냈다. 이 저장소의 G4 규약은 「지적이 남아 있으면
+    대표가 연다」고 정해 두었고, 통치자는 그 규약대로 <b>「추가 의논 없이 착지」라는 앞선
+    지시는 «새 지적 없음»을 전제로 한 것이었는데 전제가 깨졌다</b>고 판단해 착지 ORD를 내지
+    않고 다시 대표에게 올렸다.<sup><a href="#f21">[21]</a></sup> 이때 함께 올린 것이
+    이 편의 핵심 관찰이다 — <b>「d3 판단 4건 반영 → d4 새 판단 3건. 아직 발화하지 않는
+    게이트 문안은 재검마다 새 판단이 나올 수 있어, 선반영 경로가 수렴한다는 보장이
+    없다.」</b><sup><a href="#f22">[22]</a></sup>
+  </p>
+  <p>
+    대표는 <b>A</b>를 골랐다 — 착지를 진행하고, ST-5~7은 반영하지 않되 「매니페스트가
+    실제로 들어오는 첫 커밋」에 승계 항목으로 묶어 기록한다.<sup><a href="#f23">[23]</a></sup>
+    끝까지 고쳐 0으로 만드는 대신, <b>고쳐도 끝나지 않는 것을 알아차린 시점에서 멈추고
+    남은 것에 이름을 붙여 다음 방아쇠로 넘긴 것</b>이다.
+  </p>
+
+  <h2>경계 — 착지가 남긴 것, 조용히 빼지 않는다</h2>
+  <p>
+    착지 보고 스스로 다섯 가지를 「못 한 것」으로 적었다: README를 깨끗한 자리에 새로 clone해
+    명령을 실제로 따라 해보는 실측은 하지 않았고(설치법 자체는 이 브랜치가 바꾸지 않았다),
+    의존성 감사 게이트는 매니페스트가 없어 여전히 미발화이며, GHAS의 AI findings는
+    GitHub 쪽 400 오류로 미실행이고, ST-5~7은 지시대로 반영하지 않았고, semver 태그는
+    이 발주 범위 밖이라 달지 않았다.<sup><a href="#f24">[24]</a></sup>
+  </p>
+  <p>
+    같은 시각 착지한 PR#79(제21편 자신의 착지)에서도 비차단 잔여 둘이 남았다 —
+    <b>둘 다 「숫자는 맞는데 경계 표기가 없는」 자리다.</b> 「확립 전 표본까지 넣은 라이브
+    전수는 여섯」이라는 문장은 시작 경계(#59부터)를 옆 절만큼 명시하지 않았고, 「#59부터
+    전수는 열일곱」이라는 문장은 끝 경계(어느 시점 기준인지)가 없어 GHAS #80 실패가 반영되기
+    41분 전 값으로 읽힌다. 둘 다 오류가 아니라 정밀도 문제로 분류됐고, 다음 편의 각주·정정으로
+    되돌릴 수 있는 경로가 이미 있다.<sup><a href="#f25">[25]</a></sup>
+  </p>
+
+  <h2>질문 6 · 다음 담당에게 무엇을 위임하나</h2>
+  <p>
+    ST-5~7과 §5 게이트의 실동작 검증(pip-audit 두 주장이 인용으로는 대조됐지만 실행으로는
+    아직 확인되지 않았다)은 <b>이 저장소에 첫 의존성 매니페스트가 실제로 착지하는 커밋</b>에
+    승계된다.<sup><a href="#f23">[23]</a></sup> README 실측 부채는 다음 릴리스 태그
+    작업으로 넘어간다.<sup><a href="#f24">[24]</a></sup> 원격 CodeQL의 <code>Analyze
+    (actions)</code> results=2(브랜치가 아니라 base main 쪽에 이미 있던 값) 정체 규명은
+    별건으로 통치자 판단에 남는다.
+  </p>
+
+  <h2>질문 7 · 왜 그 담당에게 맡기나</h2>
+  <p>
+    저장소 자신의 문서가 게이트 발화 조건을 「첫 매니페스트가 착지하는 순간」으로 이미
+    정해 뒀으므로,<sup><a href="#f12">[12]</a></sup> 문안 판단(ST-5~7)을 지금 억지로
+    닫기보다 실제로 발화하는 그 커밋에서 실동작과 함께 검증하는 쪽이 「검사해서 0건」과
+    「검사 범위 밖」을 뒤섞지 않는다는 이 저장소의 반복된 원칙과 맞는다.
+  </p>
+
+  <h2>질문 8 · 왜 이걸 제안했나</h2>
+  <p>
+    통치자가 재의논 BRF에서 이 관찰을 직접 이름표를 붙여 올렸다 — 「d3 판단 4건 반영 →
+    d4 새 판단 3건」이 <b>선반영 경로의 수렴을 보장하지 않는다</b>는 것.<sup><a href="#f22">[22]</a></sup>
+    대표는 그 관찰을 근거로 A(착지+승계)를 골랐다.
+  </p>
+
+  <h2>질문 9 · 왜 이런 오류가 나왔나</h2>
+  <p>
+    §1의 세 번째 그물 구멍(대상 2)은 하나의 원인으로 모인다 — <b>스펙 문서 개정 하나(§4의
+    +3줄)가 코드 전역에 흩어진 인용을 재번호하도록 강제했는데, 그 재번호를 확인하는 검사
+    자신이 「인용이 어떤 모양으로 적혀 있는지」의 전수 목록 없이 짜였다.</b> 같은 줄에
+    「spec」이 있는 것만 잡는 첫 규칙, 그다음 줄이 시작하는 형태를 놓치는 둘째 규칙, 줄 끝이
+    쉼표로 끊기는 형태를 놓치는 셋째 규칙까지 — 매번 「이번엔 다 잡았다」고 여긴 다음
+    라운드에서 다음 형태가 나왔다.<sup><a href="#f8">[8]</a></sup><sup><a href="#f9">[9]</a></sup><sup><a href="#f10">[10]</a></sup>
+  </p>
+  <p>
+    ST 계열의 반복(원 REV의 S1 → d2의 ST5 → d3의 ST-1~4 → d4의 ST-5~7)은 다른 모양의
+    같은 근본에서 온다 — <b>발화하지 않는 게이트의 문안은 실제로 돌려 볼 수가 없으므로,
+    독해로만 판단해야 한다.</b> 독해로 잡을 수 있는 것(면제의 비대칭·문자 불일치)은
+    라운드마다 새로 보였고, 실행으로만 잡을 수 있는 것(<code>--strict</code>×<code>--no-deps</code>
+    상호작용)은 이 사이클 안에서 끝내 확인되지 못했다.<sup><a href="#f14">[14]</a></sup>
+  </p>
+
+  <h2>질문 10 · 무엇이 있었으면 이걸 막았을까</h2>
+  <p>
+    §1의 세 라운드는 「인용이 취할 수 있는 형태의 전수 목록(같은 줄·다음 줄 시작·줄 끝
+    쉼표)」을 처음부터 세워 뒀다면 한 번에 닫혔을 것이다 — 세 형태 모두 사후적으로는 단순한
+    grep 패턴 셋이었다. 다만 이 저장소는 그 전수 목록을 «미리 상상해서» 세우는 대신
+    «걸릴 때마다 넓히는» 길을 택해 왔고, 이번에도 매번 다음 라운드가 그 구멍을 실제로
+    찾아 메웠다 — 이 편은 어느 쪽이 나은지 판정하지 않는다.
+  </p>
+  <p>
+    ST 계열의 반복을 막을 수 있었던 자리는 따로 있다 — 처음부터 결정을 <b>A(그대로
+    착지)</b>로 뒀다면 문안 판단은 애초에 발생하지 않았을 것이다. 하지만 그건 결과를
+    알고 나서야 보이는 지름길이고, <b>정작 이 저장소를 막은 것이 없었다는 사실 자체가
+    값지다</b> — G4 규약(「지적이 남아 있으면 대표가 연다」)이 «추가 의논 없이 착지»라는
+    이미 나가 있던 사전 승인을 «새 지적 없음»이라는 전제 조건에 다시 걸어, 전제가 깨지자
+    스스로 멈췄다.<sup><a href="#f21">[21]</a></sup>
+  </p>
+
+  <h2>질문 11 · 원점에 비춰, 이번 걸음이 그쪽으로 갔나</h2>
+  <p>
+    <b>그쪽으로 갔다.</b> 이 편에서 되풀이된 것은 「검사 자신을 의심하고, 검사가 놓친
+    자리를 검사로 다시 찾는다」는 절차였다 — 롤업 대신 봇 API를 직접 물었고,<sup><a href="#f15">[15]</a></sup>
+    지시가 박아 준 대조 앵커조차 죽어 있는지 다시 확인했으며,<sup><a href="#f16">[16]</a></sup>
+    <code>alerts?ref=</code>의 fail-open을 존재하지 않는 ref로 직접 실측했다.<sup><a href="#f19">[19]</a></sup>
+  </p>
+  <p class="note">
+    내 이해를 덧붙이면 — 원점편은 「반대 의견과 근거를 조용히 없애지 않는다」를 <b>다중
+    에이전트 협업</b>에 대해 적어 두었는데, 이번 걸음은 같은 규율을 <b>한 문서를 다섯 번
+    재검하는 과정</b>에 적용한 사례로 읽힌다. d4가 낸 ST-5~7을 조용히 닫아 버리지 않고
+    「반영하지 않는다」고 이름 붙여 승계한 것,<sup><a href="#f23">[23]</a></sup> ST5와
+    ST-5의 이름 충돌을 뭉개지 않고 각주로 가른 것<sup><a href="#f13">[13]</a></sup>이
+    같은 규율이다 — 편해지자고 겹쳐 읽지 않는다.
+  </p>
+
+  <h2>질문 12 · 처음 범위에서 새로 늘어난 것이 있나</h2>
+  <p>
+    <b>없습니다.</b> 이 편이 다루는 여섯 항목은 전부 08-27 이슈 발행 시점에 이미 이름이
+    있던 것이고,<sup><a href="#f1">[1]</a></sup> §4의 CHANGELOG 확대분(#33·#34)도
+    구현자가 리뷰어의 유보 원문을 이송받아 판정한 것으로 이슈가 예정해 둔 범위 안이다.<sup><a href="#f26">[26]</a></sup>
+    원점편의 「범위 밖」 목록 어느 항목도 건드리지 않았다 — 이 사이클 전체가 산문·문서
+    정정이고 런타임 코드는 0줄이다(AST 대조로 확인됨).
+  </p>
+
+  <hr>
+  <p class="note">
+    여기서 멈춘다 — 기록과 PR, 보고까지. 판정하지 않는다. 질문 11·12 모두 「그쪽으로
+    갔다·없음」이라 통치자 에스컬레이션 의무는 발생하지 않았다. GHAS의 base쪽 관측 1건과
+    pip-audit 실동작 미확인은 관찰·사실까지만 적었다.
+  </p>
+
+  <h2>각주</h2>
+  <ol class="fnotes">
+    <li id="f1"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «## 2026-08-27 01:51 KST — RPT-ORD-TKT-followup-bundle 통과: 이슈 #72 발행» · 대조표 «단일 이슈 | #72 OPEN·ready-for-agent·blocked_by 0(dependencies summary)·근거 main 0da79d3 — 내 gh 재조회 일치 | 충족» · «여섯 절 1:1 | 지시 1~6 ↔ ### 1..6 매핑 명시 · 미끼 ^### 7 → 0 · 체크박스 26 | 충족»</li>
+    <li id="f2"><span class="path">WORK_LOGS/whole-life/IMP_feat-72-repair-doc-records__ORD-IMP-72.md</span> — «## 항목 3 — 무손대 / 이슈 본문 「not something a worker should decide alone」 + ORD 지시. 통치자가 별도 상신.»</li>
+    <li id="f3"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «대표(3721588106, event 1f3ea758, 20:21 KST): 「#72 항목 3 -> B」. B = ADR 0002 를 baseline 에 등재하지 않고 「일부러 미등재」로 기록만(BRF ffc08693 재게시안의 B — 이슈 본문이 유효한 결과로 명시).»</li>
+    <li id="f4"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span>(통치자가 d4 RPT를 옮겨 적은 절) — «**신규 판단 3건(ST-5·6·7, 전부 비차단·미발화 게이트 문안)**: ST-5 "Installation is banned above" 절대어 vs 같은 절의 pip-audit 설치 명령 2회(좁은 보장을 넓은 절대어로) · ST-6 "the same command" 문자 불일치 · ST-7 핀 미고정 실패 양상이 판독표에 없음(단 판정은 did not run 으로 안전 쪽).» 원 리뷰 정본에서는 각 항목이 <span class="path">REV_feat-72-repair-doc-records__ORD-REV-feat-72-d4.md</span>에 「**ST-5**」·「**ST-6**」·「**ST-7**」로 따로 표기된다(각 줄 서두).</li>
+    <li id="f5"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «대표 답신 원문(12:22 `4d3a5449`): 「A로 진행」 → **A. 착지 진행** 확정. ST-5~7 은 «매니페스트 유입 커밋» 승계로 기록(반영 안 함).»</li>
+    <li id="f6"><span class="path">WORK_LOGS/whole-life/CLS_feat-72-repair-doc-records__ORD-CLS-PR-80-착지.md</span> — «**결과: 착지 완료.** main = `4fd92a379d35ed14eed238988392ae09403779bc`, 그 트리가 예측 트리 `609ee32c…` 와 **같은 객체**. 이슈 #72 CLOSED. 원격 브랜치 삭제됨. 트레일러 2.»</li>
+    <li id="f7"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «**함정 가족 새 표본(분해자 자기 정정)** — 첫 본문 조사 명령의 `-- src tests` 에서 `src/` 가 «조용히 0 매칭» → 집계가 사실상 tests/ 만 읽은 수. 올바른 corpus(whole_life/)로 45행/59토큰·런타임 모듈 7개 추가. … «없는 경로를 훑으면 0건» 가족 — 이번엔 pathspec 판.»</li>
+    <li id="f8"><span class="path">WORK_LOGS/whole-life/REV_feat-72-repair-doc-records__ORD-REV-feat-72.md</span> — «SP1 (P1 · 차단) — §1 이 미완이고, **일부는 이 브랜치가 새로 만든 모순**이다 … 스윕이 놓친 인용 **5자리**. 원인은 구현자가 쓴 질의가 **같은 줄에 `spec` 이라는 낱말이 있는 토큰만** 잡는다는 것 … **핵심은 개수가 아니라 방향이다. 세 자리는 「못 고친 것」이 아니라 「깨뜨린 것」이다.**»</li>
+    <li id="f9"><span class="path">WORK_LOGS/whole-life/REV_feat-72-repair-doc-records__ORD-REV-feat-72-d1.md</span> — «### SP3 (P1·차단·**신규**) — 같은 결함이 한 자리 더 남았다. 그물 밖이라 **내 지난 스윕도 못 잡았다.** … **왜 두 스윕 다 놓쳤나 — 숫자가 다음 줄에 있다.** 666행이 `… Spec line` 으로 끝나고 667행이 `247 states a whitelist,` 로 시작한다. … 「45 is a floor」 경고의 **세 번째 형태**이고»</li>
+    <li id="f10"><span class="path">WORK_LOGS/whole-life/REV_feat-72-repair-doc-records__ORD-REV-feat-72-d2.md</span> — «**이 질의는 `whole_life/runtime/observe.py:227` 를 못 잡는다** — 그 줄은 `Spec 271, 282,` 로 **쉼표**로 끝나고 다음 줄이 `487 and 488 decide ...` 로 시작한다. 줄 끝 낱말을 보는 어떤 질의도 이 형태를 놓친다.» · «**규칙 8(줄바꿈으로 끊긴 인용은 줄 단위 grep 이 원리상 못 본다)의 내 질의 자신에 구멍이 있었다.**»</li>
+    <li id="f11"><span class="path">WORK_LOGS/whole-life/REV_feat-72-repair-doc-records__ORD-REV-feat-72-d3.md</span> — «**지적 자리만 고치는 함정 검사 — 구현자보다 넓은 모집단으로 다시 셌다.** … **모순 잔여 0건 — 「검사해서 0건」이다.** 구현자 보고의 「잔여 2건」과 내 「1건」 차이는 패턴 차이로 규명됐다: 구현자 `-i 'private'` 는 32행 "privately" 를 잡고, 내 `\bprivate\b` 는 안 잡는다.»</li>
+    <li id="f12"><span class="path">WORK_LOGS/whole-life/REV_feat-72-repair-doc-records__ORD-REV-feat-72.md</span> — «저장소 자신의 게이트 규정(이 브랜치가 §5로 추가한 바로 그 문단)이 발화 조건을 이렇게 정한다: 「The gate fires the moment the first manifest lands.」 … **따라서 이 항목은 「검사해서 0건」이 아니라 「검사 범위 밖이라 미실행」이다.**»</li>
+    <li id="f13"><span class="path">WORK_LOGS/whole-life/REV_feat-72-repair-doc-records__ORD-REV-feat-72-d2.md</span> — «### ST5 (신규 · **판단** · 비차단) `docs/project-context.md:31` 의 `must be regenerated` 는, 그 표가 실제로는 **개정마다 행을 덧붙이는 이력 표**라는 점과 살짝 어긋난다. 「행이 재생성된다」보다 「새 행을 덧붙인다」가 관측에 가깝다. … **차단하지 않는다.**» · d3/d4 회귀표에서 「ST5 유지」로 재확인(예: <span class="path">REV_feat-72-repair-doc-records__ORD-REV-feat-72-d4.md</span> «ST5 유지 | `git grep -nI 'must be regenerated' 851f31a7` | `docs/project-context.md:31` 1건 생존»).</li>
+    <li id="f14"><span class="path">WORK_LOGS/whole-life/REV_feat-72-repair-doc-records__ORD-REV-feat-72-d4.md</span> — «### ST-1 「한 절 안에 같은 위험의 두 처방」 — **해소** … 구현자는 「면제 정당화」가 아니라 **비대칭 제거**를 골랐다. 주 게이트 명령이 바뀌었다 … `+ --no-deps` … **한 조항이 한 파일 안에서 두 이름을 갖는 상태가 사라졌다.**» · 사각지대: 「`--strict` 와 `--no-deps` 의 상호작용은 README 가 어느 쪽으로도 진술하지 않는다. 나도 실행으로 확인하지 못했다.」</li>
+    <li id="f15"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «⚠️ **롤업 MERGEABLE·CLEAN·6/7 success 인 채 P1 실재** — PR#79 사각지대 재현, 관례 ① 이 잡았다.»</li>
+    <li id="f16"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «### ⚠️ 내 정정 — ORD 가 지정한 양성 대조 앵커가 «죽은 통제»였다 … 이 PR 의 봇 코멘트는 **전부 `6aa0fe64` 한 커밋에만** 앵커돼 있어 지시대로 걸면 0 — 술어 생존을 증명하지 못하는 통제였다. 완결자가 `original_commit_id` 전수 분포(`sort | uniq -c` → `3 6aa0fe64…`)로 규명하고 살아 있는 앵커로 대체해 3건 확인.»</li>
+    <li id="f17"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «교훈: 대조 앵커 값을 지시에 박지 말고 **「전수 분포에서 살아 있는 앵커를 골라 대조하라」** 로 지시한다(분포 명령이 곧 앵커 검증이다).»</li>
+    <li id="f18"><span class="path">WORK_LOGS/whole-life/CLS_feat-72-repair-doc-records__ORD-CLS-PR-80-착지.md</span> — «⚠️ **재앵커 함정이 이번에 실물로 나왔다.** 세 번째 코멘트는 `original_commit_id=6aa0fe64` 인데 `commit_id=851f31a7` 이다. … **`commit_id` 로 걸렀다면 옛 지적 1건이 신규로 보여 준비된 착지를 막았을 것이다.**» — 첫 관측은 <span class="path">WORK_LOGS/whole-life/CLS_feat-72-repair-doc-records__ORD-CLS-PR-80-observe.md</span> «옛 지적 3건 중 1건(`docs/project-context.md` P2, id 3874780471)이 **새 head 로 재앵커**돼 `commit_id` 가 `0063d376…` 로 바뀌어 있다.»</li>
+    <li id="f19"><span class="path">WORK_LOGS/whole-life/CLS_feat-72-repair-doc-records__ORD-CLS-PR-80-착지.md</span> — «⚠️ **`alerts?ref=` 가 fail-open 임을 이번에 직접 실측했다** — `refs/heads/main` 도 0, **없는 ref `refs/heads/no-such-branch-xyz` 도 0**. 둘이 구별되지 않으므로 판정에 쓰지 않았다.»</li>
+    <li id="f20"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «대표 결정: **B** (event `bbb6e39a`, 07:52) — 리뷰어 d3 비차단 판단 4건(ST-1~4)을 먼저 반영한 뒤 병합. … B = «반영 후 병합» 이므로 d4 재검 + push 후 봇 관측(10분/양 봇 준용) 통과 시 **추가 의논 없이 착지 ORD 발행**.»</li>
+    <li id="f21"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «근거: **G4 규약 「지적이 남아 있으면 대표가 연다」** — 「추가 의논 없이 착지」 고지(ce9a6d52)는 «새 지적 없음» 전제의 내 연장이었고, ST-5~7 이 새로 남았으므로 착지 ORD 를 내지 않고 대표께 올림.»</li>
+    <li id="f22"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «동봉: 리뷰어 끝줄 원문 · **수렴 관찰**(제 관찰 이름표 — d3 판단 4건 반영 → d4 새 판단 3건, 미발화 게이트 문안은 재검마다 새 판단이 나올 수 있어 선반영 경로 수렴 보장 없음) · 선택지 A(착지+승계)/B(선반영+d5)/C(보류).»</li>
+    <li id="f23"><span class="path">WORK_LOGS/whole-life/CLS_feat-72-repair-doc-records__ORD-CLS-PR-80-착지.md</span> — «4. **ST-5~7 은 미반영** — 지시대로. 통치자 원장이 「매니페스트 유입 커밋」으로 승계.»</li>
+    <li id="f24"><span class="path">WORK_LOGS/whole-life/CLS_feat-72-repair-doc-records__ORD-CLS-PR-80-착지.md</span> — «## 못 한 것 · 남는 것 (조용히 빼지 않는다) 1. **README 실측 … 하지 않았다.** … 다음 릴리스 태그 작업에서 갚아야 할 항목이다. 2. **의존성 감사 게이트는 발화하지 않는다** … 3. **GHAS AI findings 미실행** … 4. **ST-5~7 은 미반영** … 7. **semver 태그는 달지 않았다** — 대표 승인 항목이고 이 ORD 범위 밖.»</li>
+    <li id="f25"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-log-77__ORD-CLS-PR-79.md</span> — «## R4-8. 착지시켰지만 남겨 두는 것 — 조용히 빼지 않는다 … 1. 「확립 전 표본(#69·#70·#73)까지 넣은 라이브 전수는 여섯」 — … **시작 경계가 문장에 없다.** … 2. 「#59 부터 전수는 열일곱(성공 11·실패 6)」 — **끝 경계가 없다.** … 둘 다 **다음 편 각주·정정으로 되돌릴 수 있는 경로**가 이미 있다(연대기의 자기정정 관례).»</li>
+    <li id="f26"><span class="path">WORK_LOGS/whole-life/IMP_feat-72-repair-doc-records__ORD-IMP-72.md</span> — «**확대분 자격 판정(리뷰어 판정 ③의 다섯 후보 전수)**: … **#46 자격 있음** … **#33 자격 있음** … **#34 자격 있음** … **#35 부적격** … **#38 부적격** …»</li>
+  </ol>
+
+</div>
+</body>
+</html>
