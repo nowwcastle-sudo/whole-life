@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>제23편 — 0건의 이름을, 대표가 정했다</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:       #282828;
+    --paper-2:     #32302f;
+    --zone:        #302e2c;
+    --ink:         #ebdbb2;
+    --muted:       #a89984;
+    --soft:        #928374;
+    --rule:        rgba(235,219,178,0.12);
+    --rule-solid:  #504945;
+    --accent:      #fe8019;
+    --accent-tint: rgba(254,128,25,0.12);
+    --link:        #83a598;
+    --green:       #b8bb26;
+    --red:         #fb4934;
+    --yellow:      #fabd2f;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--paper); color:var(--ink);
+       font-family:"Geist","Pretendard","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;
+       line-height:1.75; -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:880px; margin:0 auto; padding:64px 28px 120px}
+  .kicker{font-size:13px; letter-spacing:.14em; color:var(--soft); text-transform:uppercase;
+          font-family:"Geist Mono",ui-monospace,"Consolas",monospace}
+  h1{font-family:"Instrument Serif","Malgun Gothic",serif;
+     font-size:48px; line-height:1.2; margin:14px 0 10px; letter-spacing:-.01em; font-weight:400}
+  .sub{font-size:18px; color:var(--muted); margin:0 0 8px}
+  h2{font-family:"Instrument Serif","Malgun Gothic",serif;
+     font-size:30px; line-height:1.32; margin:56px 0 14px; font-weight:400; letter-spacing:-.01em}
+  h3{font-size:16px; letter-spacing:.06em; color:var(--ink); margin:34px 0 12px; font-weight:600}
+  p{font-size:17px; margin:0 0 18px}
+  .note{font-size:15px; color:var(--muted)}
+  hr{border:0; border-top:1px solid var(--rule); margin:44px 0}
+  code{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; font-size:.9em;
+       background:var(--zone); color:var(--ink); padding:1px 6px; border-radius:4px}
+  .card{background:var(--paper-2); border:1px solid var(--rule-solid); border-radius:8px;
+        padding:26px 28px; margin:26px 0}
+  .warn{border-color:var(--yellow)}
+  .warn .tag{color:var(--yellow); font-weight:600; font-size:13px; letter-spacing:.1em;
+             font-family:"Geist Mono",ui-monospace,monospace}
+  .rule-card{border-color:var(--accent)}
+  .rule-card .tag{color:var(--accent); font-weight:600; font-size:13px; letter-spacing:.1em;
+                  font-family:"Geist Mono",ui-monospace,monospace}
+  .tbl{width:100%; border-collapse:collapse; font-size:14.5px}
+  .tbl th{text-align:left; font-size:11.5px; letter-spacing:.08em; text-transform:uppercase;
+          color:var(--soft); font-weight:500; padding:0 12px 10px 0; border-bottom:1px solid var(--rule-solid);
+          font-family:"Geist Mono",ui-monospace,monospace}
+  .tbl td{padding:12px 12px 12px 0; border-bottom:1px solid var(--rule); vertical-align:top; line-height:1.6}
+  .tbl tr:last-child td{border-bottom:0}
+  .tbl td:first-child{white-space:nowrap; font-family:"Geist Mono",ui-monospace,"Consolas",monospace;
+       font-size:13px; color:var(--soft)}
+  figure{margin:34px 0}
+  figcaption{font-size:14px; color:var(--muted); margin-top:12px; text-align:center; line-height:1.6}
+  svg{display:block; width:100%; height:auto}
+  sup a{color:var(--link); text-decoration:none; font-size:12px; font-weight:600; padding:0 1px}
+  a{color:var(--link); text-underline-offset:3px; text-decoration-thickness:1px}
+  .fnotes{margin-top:64px; border-top:1px solid var(--rule-solid); padding-top:26px;
+          list-style:none; padding-left:0}
+  .fnotes li{font-size:14px; color:var(--muted); margin-bottom:11px; line-height:1.65}
+  .fnotes .path{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; color:var(--ink); font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kicker">제 23 편 · 기편 · #51 종료 게이트 · 당대에 씀</div>
+  <h1>0건의 이름을, 대표가 정했다</h1>
+  <p class="sub">이슈 #51은 되돌림 없이 한 번에 PR#82로 착지했지만, 그 착지를 판정하는 기준 자체가
+    관측 도중 다시 쓰였다. 완결자는 통치자가 준 대조군이 PR#81 한 건의 표본 넷뿐이었음을 21회차
+    전수로 뒤집었고, 대표는 그 관측이 채 끝나기도 전에 직접 병합해 두고 «지적 0건이면 통과»라는
+    새 상시 규칙을 세웠다.</p>
+
+  <div class="card">
+    <p style="margin:0 0 12px"><b>읽기 전에 — 이 편이 묶는 범위.</b>
+      통치자 지시가 이 편을 「#51 사이클의 기편(일지편 포함)」으로 명시하고, 사이클 경계를
+      「<code>ORD-IMP-51</code> 발행(08-28 18:4x, <code>c89dbd90</code>) ~ PR#82 병합(19:52,
+      대표 결정 N)」으로 그었다.<sup><a href="#f1">[1]</a></sup> 제22편이 다룬 사이클(PR#81 병합)은
+      <b>이 편의 대상이 아니다.</b></p>
+    <p style="margin:0" class="note">
+      각주는 문구의 «존재»만 보증한다. 줄 번호는 쓰지 않는다 — 파일이 바뀌면 조용히 다른 곳을
+      가리키므로, 인용문은 <code>grep</code>으로 대조한다.</p>
+  </div>
+
+  <h2>질문 1 · 무슨 일이</h2>
+  <p>
+    이슈 #51 — 「모든 턴에 켜 둔 협업 능력이 <code>collab_tool_call</code> 항목을 낼 때, 그 턴이
+    죽지 않고 끝까지 완주하게 한다」<sup><a href="#f2">[2]</a></sup> — 는 구현자가 이슈가 제시한
+    두 갈래 중 <b>갈래 A(항목 인식·매핑)</b>를 스펙 118·124행 근거로 골라, RED 두 라운드(그중
+    첫 라운드는 스스로 <b>«잘못된 이유»</b>임을 잡아내 테스트 자체를 고친 뒤 다시 RED를 받았다)와
+    변이 3종을 거쳐 <b>되돌림 없이</b> PR#82로 한 번에 착지시켰다.<sup><a href="#f3">[3]</a></sup>
+    그런데 그 착지를 판정하는 과정에서, 완결자가 <b>통치자 자신의 관측 지시에 박힌 대조군
+    (PR#81 표본 넷)</b>이 21회차 전수에서 뒤집히는 것을 찾아냈고,<sup><a href="#f4">[4]</a></sup>
+    대표는 병합 여부를 묻는 BRF가 채 완결되기도 전에 <b>직접 병합(squash <code>17c8be2b</code>)</b>해
+    두고 <b>「지적 0건이면 실행 모드와 무관하게 통과로 판정한다」</b>는 새 상시 규칙을
+    세웠다.<sup><a href="#f5">[5]</a></sup>
+  </p>
+
+  <h2>질문 2 · 어떤 흐름으로 진행됐나</h2>
+  <figure>
+    <svg viewBox="0 0 960 560" role="img" aria-labelledby="ep23-timeline-title ep23-timeline-desc">
+      <title id="ep23-timeline-title">ORD-IMP-51 발행부터 후속 ORD 둘 발행까지</title>
+      <desc id="ep23-timeline-desc">2026-08-28 18시 40분대 ORD-IMP-51 발행부터 구현자의 방향 선택, PR#82 게시, 완결자의 관측 두 차례, 대표에게 올라간 병합 의논 BRF, 대표가 이미 직접 병합했다고 통보한 결정, 그리고 그 뒤를 이은 두 신규 ORD 발행까지 아홉 사건을 순서대로 배치한 다이어그램. 가로축은 사건 순서이며 실제 경과 시간에 비례하지 않는다.</desc>
+      <defs>
+        <marker id="ep23-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="var(--muted)"/>
+        </marker>
+      </defs>
+      <rect width="100%" height="100%" fill="var(--paper)"/>
+
+      <text x="24" y="30" font-size="12" fill="var(--soft)" letter-spacing="0.08em"
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">2026-08-28 18:4x → 19:5x KST · 가로축 = 순서(시간 비례 아님)</text>
+
+      <line x1="60" y1="380" x2="900" y2="380" stroke="var(--rule-solid)" stroke-width="1"/>
+
+      <!-- N0 -->
+      <circle cx="90" cy="380" r="5" fill="var(--paper)" stroke="var(--muted)" stroke-width="1"/>
+      <line x1="90" y1="344" x2="90" y2="374" stroke="var(--muted)" stroke-width="1"/>
+      <text x="90" y="296" font-size="10" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">18:4x</text>
+      <text x="90" y="316" font-size="12" font-weight="700" fill="var(--ink)" text-anchor="middle" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">ORD-IMP-51 발행</text>
+      <text x="90" y="332" font-size="9" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">c89dbd90 · 이슈 #51</text>
+
+      <!-- N1 -->
+      <circle cx="187" cy="380" r="5" fill="var(--muted)"/>
+      <line x1="187" y1="386" x2="187" y2="416" stroke="var(--muted)" stroke-width="1"/>
+      <text x="187" y="440" font-size="10" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">19:01</text>
+      <text x="187" y="424" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">착수 회신</text>
+      <text x="187" y="408" font-size="9" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">방향 A 선택</text>
+
+      <!-- N2 -->
+      <circle cx="284" cy="380" r="6" fill="var(--green)"/>
+      <line x1="284" y1="344" x2="284" y2="374" stroke="var(--green)" stroke-width="1"/>
+      <text x="284" y="296" font-size="10" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">19:19</text>
+      <text x="284" y="316" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">RPT 통과</text>
+      <text x="284" y="332" font-size="9" fill="var(--green)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">PR#82 게시 · 415 tests OK</text>
+
+      <!-- N3 -->
+      <circle cx="381" cy="380" r="5" fill="var(--paper)" stroke="var(--muted)" stroke-width="1"/>
+      <line x1="381" y1="386" x2="381" y2="416" stroke="var(--muted)" stroke-width="1"/>
+      <text x="381" y="440" font-size="10" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">19:2x</text>
+      <text x="381" y="424" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">관측 ORD 발행</text>
+      <text x="381" y="408" font-size="9" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">c4356581</text>
+
+      <!-- N4 -->
+      <circle cx="478" cy="380" r="5" fill="var(--yellow)"/>
+      <line x1="478" y1="344" x2="478" y2="374" stroke="var(--yellow)" stroke-width="1"/>
+      <text x="478" y="296" font-size="10" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">19:34</text>
+      <text x="478" y="316" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">중간 회신</text>
+      <text x="478" y="332" font-size="9" fill="var(--yellow)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">소형 재발 · 4턴·$0.108</text>
+
+      <!-- N5 -->
+      <circle cx="575" cy="380" r="6" fill="var(--green)"/>
+      <line x1="575" y1="386" x2="575" y2="416" stroke="var(--green)" stroke-width="1"/>
+      <text x="575" y="440" font-size="10" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">19:45</text>
+      <text x="575" y="424" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">RPT 통과</text>
+      <text x="575" y="408" font-size="9" fill="var(--green)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">21회차 census · 대조군 정정</text>
+
+      <!-- N6 -->
+      <circle cx="672" cy="380" r="6" fill="var(--link)"/>
+      <line x1="672" y1="344" x2="672" y2="374" stroke="var(--link)" stroke-width="1"/>
+      <text x="672" y="296" font-size="10" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">19:5x</text>
+      <text x="672" y="316" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">BRF 상정</text>
+      <text x="672" y="332" font-size="9" fill="var(--link)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">2586f18a · N/P · Q/R</text>
+
+      <!-- N7 : the pivotal one -->
+      <circle cx="769" cy="380" r="9" fill="var(--accent)"/>
+      <line x1="769" y1="386" x2="769" y2="416" stroke="var(--accent)" stroke-width="1.4"/>
+      <text x="769" y="444" font-size="10" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">19:52</text>
+      <text x="769" y="424" font-size="12" font-weight="700" fill="var(--ink)" text-anchor="middle" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">대표 결정 N</text>
+      <text x="769" y="408" font-size="9" fill="var(--accent)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">「이미 했다」 · 직접 병합 17c8be2b</text>
+
+      <!-- N8 -->
+      <circle cx="866" cy="380" r="6" fill="var(--muted)"/>
+      <line x1="866" y1="344" x2="866" y2="374" stroke="var(--muted)" stroke-width="1"/>
+      <text x="866" y="296" font-size="10" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">19:5x</text>
+      <text x="866" y="316" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">후속 ORD 둘 발행</text>
+      <text x="866" y="332" font-size="9" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">IMP-45 · EDU-cycle-51(이 편)</text>
+
+      <!-- connecting arrows along axis -->
+      <line x1="97" y1="380" x2="180" y2="380" stroke="var(--muted)" stroke-width="1" marker-end="url(#ep23-arrow)"/>
+      <line x1="194" y1="380" x2="278" y2="380" stroke="var(--muted)" stroke-width="1" marker-end="url(#ep23-arrow)"/>
+      <line x1="290" y1="380" x2="375" y2="380" stroke="var(--muted)" stroke-width="1" marker-end="url(#ep23-arrow)"/>
+      <line x1="387" y1="380" x2="472" y2="380" stroke="var(--muted)" stroke-width="1" marker-end="url(#ep23-arrow)"/>
+      <line x1="484" y1="380" x2="569" y2="380" stroke="var(--muted)" stroke-width="1" marker-end="url(#ep23-arrow)"/>
+      <line x1="581" y1="380" x2="666" y2="380" stroke="var(--muted)" stroke-width="1" marker-end="url(#ep23-arrow)"/>
+      <line x1="679" y1="380" x2="760" y2="380" stroke="var(--muted)" stroke-width="1" marker-end="url(#ep23-arrow)"/>
+      <line x1="779" y1="380" x2="860" y2="380" stroke="var(--muted)" stroke-width="1" marker-end="url(#ep23-arrow)"/>
+
+      <!-- legend -->
+      <line x1="24" y1="480" x2="900" y2="480" stroke="var(--rule)" stroke-width="1"/>
+      <text x="24" y="508" font-size="12" fill="var(--soft)" letter-spacing="0.14em"
+            font-family="'Geist Mono',ui-monospace,monospace">범례</text>
+      <circle cx="108" cy="536" r="5" fill="var(--paper)" stroke="var(--muted)" stroke-width="1"/>
+      <text x="124" y="540" font-size="11" fill="var(--muted)" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">절차성 사건</text>
+      <circle cx="252" cy="536" r="6" fill="var(--green)"/>
+      <text x="264" y="540" font-size="11" fill="var(--muted)" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">게이트 통과</text>
+      <circle cx="380" cy="536" r="5" fill="var(--yellow)"/>
+      <text x="392" y="540" font-size="11" fill="var(--muted)" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">통과하되 새 판단 동반</text>
+      <circle cx="568" cy="536" r="6" fill="var(--link)"/>
+      <text x="580" y="540" font-size="11" fill="var(--muted)" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">대표 결정을 요청</text>
+      <circle cx="716" cy="536" r="9" fill="var(--accent)"/>
+      <text x="732" y="540" font-size="11" fill="var(--muted)" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">이 편의 초점 — 되돌릴 수 없는 대표 결정</text>
+    </svg>
+    <figcaption>
+      마지막 세 사건(BRF 상정 → 대표 결정 N → 후속 ORD 둘)은 실제로는 몇 분 안에 몰려 있다.<sup><a href="#f6">[6]</a></sup>
+      대표는 병합 여부를 묻는 BRF에 <b>«선택»이 아니라 «이미 했다»는 통보</b>로
+      답했다.<sup><a href="#f7">[7]</a></sup>
+    </figcaption>
+  </figure>
+
+  <h2>대상 1 — 이슈 #51, 되돌림 없이 한 번에</h2>
+  <p>
+    이슈 #51은 「모든 턴에 켜 둔 협업 능력이 <code>collab_tool_call</code> 항목을 낼 때 그 턴이
+    죽지 않고 완주하게 한다」를 요구했다.<sup><a href="#f2">[2]</a></sup> 구현자는 착수 즉시
+    blocker #35(CLOSED)와 녹화물 실재를 재확인하고,<sup><a href="#f8">[8]</a></sup> 이슈가
+    제시한 두 갈래 중 하나를 골라야 했다.
+  </p>
+  <p>
+    <b>갈래 B(협업을 상시 활성한 것 자체를 중단)</b>는 처음부터 닫혀 있었다 — 스펙 118행이
+    「Codex participant에는 current release의 subagent workflow를 <b>활성화하고</b>
+    <code>agents.max_concurrent_threads_per_session = 3</code>을 inline config로 고정한다」고
+    요구하고,<sup><a href="#f9">[9]</a></sup> B는 그 요구를 뒤집는 스펙 개정(ADR — 쓰기 주인은
+    기획자)이 없이는 선택지가 될 수 없었다.<sup><a href="#f10">[10]</a></sup> 그래서 구현자는
+    <b>갈래 A(item type 인식·매핑)</b>를 골랐다 — 통치자가 안 정하고 구현자·리뷰어 몫으로
+    지정한 판단이었다.<sup><a href="#f11">[11]</a></sup>
+  </p>
+  <p>
+    매핑 자체는 단순하다 — <code>collab_tool_call</code>을 <code>runtime.activity.*</code>/
+    <code>tool_use</code>로 취급한다. 다만 <b>주장 범위를 측정 범위로 한정</b>하는 트레이드오프를
+    함께 걸었다 — 측정된 4개 호출 전부 <code>receiver_thread_ids=[]</code>·
+    <code>agents_states={}</code>였으므로, <b>비어 있지 않은</b> 형상은 「이 빌드가 측정한 적
+    없는 형상」으로 남겨 계속 <code>StdoutSchemaMismatch</code>로 턴을 실패시킨다.<sup><a href="#f12">[12]</a></sup>
+    구현자 자신의 말로 — 「스트림이 보고한 적 없는 위임을 발명하게 된다」.<sup><a href="#f13">[13]</a></sup>
+  </p>
+
+  <h3>RED가 두 번 나왔다 — 두 번째는 «잘못된 이유»를 스스로 잡았다</h3>
+  <p>
+    첫 RED는 매핑이 없는 상태의 신규·개정 테스트 일괄이었다 — <code>Ran 79 tests → FAILED
+    (failures=11, errors=9) / RED_EXIT=1</code>.<sup><a href="#f14">[14]</a></sup> GREEN 뒤
+    구현자는 조립 경로(assembly path)를 검증하는 신규 테스트를 매핑 제거 상태에서 한 번 더
+    돌렸는데, <b>1차 실행이 <code>StdoutNotUtf8</code>로 죽었다</b> — 이슈가 예고한 증상이
+    아니었다. 원인은 녹화물 3행의 비ASCII 177바이트(한국어 산문)를 공유 재생 헬퍼가 Windows
+    기본 인코딩으로 찍은 것이었고, 구현자는 <b>이것을 코드 결함이 아니라 테스트(재생 장치)
+    결함으로 판정</b>해 <code>sys.stdout.buffer.write</code>로 수리한 뒤 <b>2차 실행에서야
+    올바른 이유의 RED</b>(<code>UnknownProviderEvent</code>)를 받았다.<sup><a href="#f15">[15]</a></sup>
+    「테스트를 고쳐서 통과시키는 것은 통과가 아니다 — 코드 결함인지 테스트 결함인지 먼저 가른다」는
+    규율이, 이번엔 RED 단계에서부터 실행됐다.
+  </p>
+
+  <table class="tbl">
+    <thead><tr><th>변이</th><th>내용</th><th>결과</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>매핑 항목 제거(「변경을 제거」)</td><td>20건 red</td></tr>
+      <tr><td>2</td><td>unknown-type raise 제거 + <code>.get(…, ACTIVITY)</code> 폴백(「모든 타입 통과」)</td><td>정확히 2건 red</td></tr>
+      <tr><td>3</td><td>공집합 가드 제거(보존해야 할 것을 변이)</td><td>정확히 2건 red</td></tr>
+    </tbody>
+  </table>
+  <p class="note">
+    3종 전부 정확한 개수로 죽었고, 복원은 <code>cmp</code> 동일성과 판별 토큰
+    <code>grep=1</code>로 잔류 없음을 확인했다.<sup><a href="#f16">[16]</a></sup> 「다음에 또 모르는
+    item type이 오면?」이라는 이슈의 물음에는 「똑같이 <code>UnknownProviderEvent</code>로
+    죽는다 — 의도된 동작」이라고 <code>normalize.py</code> 주석에 소리 내어 답을
+    남겼다.<sup><a href="#f17">[17]</a></sup> 최종 스위트는 <code>Ran 415 tests in 229.552s /
+    OK / SUITE_EXIT=0</code>(기준선 408 + 신규 7, 계수 일치)였다.<sup><a href="#f18">[18]</a></sup>
+  </p>
+  <p class="note">
+    편차 둘을 접수했다 — <code>buzz repos list</code>가 빈 배열이라 <code>buzz pr open
+    --channel</code> 대신 <code>gh pr create</code>로 열고 PR 본문 첫머리에 채널 UUID를
+    명기했고,<sup><a href="#f19">[19]</a></sup> #35의 고정 테스트를 교체했다 — 그 테스트의
+    docstring 자체가 「인식 여부는 다른 티켓의 몫, 변경은 의도적이어야 한다」고 예고해 둔
+    자리였다.<sup><a href="#f20">[20]</a></sup>
+  </p>
+
+  <h2>대상 2 — 관측, 그리고 통치자 자신의 대조군이 뒤집힌 자리</h2>
+  <p>
+    완결자는 첫 관측에서 <b>롤업을 믿지 않고 API를 직접 물었다</b> — 체크 7종 전부
+    completed/success였지만, PR#81에서 롤업이 전부 초록인데 지적 9건이 실재했던 전례가 있었기
+    때문이다. Codex는 리액션 👍만 남겨 「지적 없음」으로 판정했고,<sup><a href="#f21">[21]</a></sup>
+    claude[bot]의 인라인은 <code>reviews</code>·<code>comments</code> 모두 빈 출력이었다 — 다만
+    완결자는 이 0을 곧장 「통과」로 읽지 않고 <b>「미도착」</b>으로 상신했다.<sup><a href="#f22">[22]</a></sup>
+  </p>
+  <p>
+    이유는 통치자가 관측 ORD에 박아 준 대조군에 있었다. ORD는 「완주 26/59턴 대 소형 4/3턴」을
+    기준으로 소형 실행을 이상치로 다루라고 지시해 두었는데, 완결자가 <code>claude-review</code>
+    워크플로의 <b>21회차 전수</b>를 새로 세자 그 대조군이 <b>PR#81 한 건에서 나온 표본 넷</b>일
+    뿐이었다는 것이 드러났다. 21회차 전체에서는 <b>소형(opus 없음)이 8 대 13으로 다수 모드</b>였고,
+    2026-08-26부터 이미 존재했으며, 같은 브랜치 안에서도 두 모드가 섞였다.<sup><a href="#f23">[23]</a></sup>
+    완결자는 자기 자신의 PR#81 레그 기록까지 함께 정정했다 — <b>「소형은 이상」이라고 적은 것이
+    좁은 모집단에서 나온 오판이었다」.</b><sup><a href="#f24">[24]</a></sup>
+  </p>
+  <p>
+    그런데 <b>이 재산정이 곧 「PR#82는 안전하다」로 이어지지는 않았다.</b> 완결자가 PR#74~#82
+    전수에서 claude[bot] 인라인 지적을 <code>original_commit_id</code>로 귀속시키자, 지적을 낸
+    head 넷이 <b>전부 opus 있음 회차</b>였다 — opus 있음 8회 중 4회가 지적을 냈고, opus 없음
+    (소형) 13회는 <b>지적을 낸 전례가 0</b>이었다.<sup><a href="#f25">[25]</a></sup> 그래서 완결자는
+    「PR#82의 claude[bot] 0건은 지적 없음의 증거가 아니다」라고 다시 상신했다 — <b>대조군은
+    고쳤지만, 그 고친 대조군으로도 이 0을 «통과»로 확정할 근거는 나오지 않았다.</b><sup><a href="#f26">[26]</a></sup>
+  </p>
+  <table class="tbl">
+    <thead><tr><th>대조</th><th>모집단</th><th>결과</th></tr></thead>
+    <tbody>
+      <tr><td>ORD가 준 대조군</td><td>PR#81 표본 4개</td><td>완주 26/59턴 vs 소형 4/3턴 — 「소형=이상」</td></tr>
+      <tr><td>완결자가 다시 센 것</td><td>08-26~08-28 · 21회차</td><td>소형이 다수(13/21) · 시간 체제 아님 · 「소형=이상」 뒤집힘</td></tr>
+      <tr><td>지적을 낸 head의 성격</td><td>PR#74~#82 인라인 지적 4건</td><td>4건 전부 opus 있음 — 소형 13회는 지적 산출 0/13</td></tr>
+    </tbody>
+  </table>
+  <p class="note">
+    CodeQL/GHAS는 별개 결로 초록이었다 — <code>analyses</code> 100행 창에서 PR#82의 두 분석 모두
+    <code>results_count=0</code>이었고, 같은 창의 값 분포(0×81·2×19)로 필드가 죽어서 0이 아님을
+    통제했다.<sup><a href="#f27">[27]</a></sup> GHAS 실패/성공 census는 20표본(성공13·실패7)으로
+    독립 재산정됐고 PR#82는 success였다.<sup><a href="#f28">[28]</a></sup>
+  </p>
+
+  <h2>대상 3 — 대표가 먼저 눌렀다</h2>
+  <p>
+    완결자의 정본 RPT가 통과하자 통치자는 병합 여부를 묻는 BRF를 대표에게 올렸다 — 결정 1(병합):
+    N=현 증거로 병합 / P=재실행 후 재관측, 결정 2(조사): Q=두 모드를 가르는 원인을 새 ORD로
+    조사 배정 / R=보류. 두 결정은 서로 독립이고, <b>병합 결정만 착지·기편·#45를 막는다</b>고
+    명기했다.<sup><a href="#f29">[29]</a></sup>
+  </p>
+  <p>
+    대표의 답신은 19:52에 왔다 — 그런데 그 내용은 「N을 고른다」는 지시가 아니라, <b>「이미 했다」는
+    통보</b>였다. PR#82는 이미 대표 자신의 계정으로 squash 병합돼 있었다(<code>17c8be2b</code>,
+    2026-08-28T10:52:30Z).<sup><a href="#f7">[7]</a></sup> 통치자는 그 사실을
+    <code>git ls-remote</code>로 재실측해 확인한 뒤에야 「N 확정·이행」으로
+    적었다.<sup><a href="#f30">[30]</a></sup> 되돌릴 수 없는 조작이었지만, 「대표만 최종 확정
+    행위를 한다」는 이 저장소의 규약 안에서는 지시가 아니라 <b>사실 통보</b>로 다뤄졌다.
+  </p>
+  <p>
+    같은 답신이 결정 2(Q/R)도 함께 접었다 — 「해소됐으므로 보류 기록 폐기」. 조사 방아쇠와
+    «미도착» 보류 틀을 버리는 대신, <b>새 상시 규칙</b>을 세웠다: <b>「관측 ORD는 토큰 소비량
+    (작업량) 기록은 유지하되, 리뷰 지적이 0건이면 실행 모드와 무관하게 «통과»로 판정하고
+    진행한다」.</b> 점검표 10의 「소형이면 판정 없이 상신」 분기는 이 규칙으로
+    대체됐다.<sup><a href="#f31">[31]</a></sup>
+  </p>
+  <p>
+    직접 병합은 이 저장소가 매 착지마다 지키던 관례 셋을 건너뛰었고, 통치자는 그것을 조용히
+    넘기지 않고 승계 경로를 찾아 기록했다 — <b>①</b> CHANGELOG(관례 ②) 항목이 이 PR에는 없어
+    다음 ORD-IMP-45에 #51 항목을 동반 추가하는 것으로 승계, <b>②</b> 웹 병합은
+    Co-authored-by 트레일러가 떨어지는 것이 알려진 한계라 기록만 남기고 재작성하지 않음,
+    <b>③</b> 병합 전후 스위트 재확인은 ORD-IMP-45의 착수 기준선 스위트(새 main, 기대 415)가
+    겸하도록 명기.<sup><a href="#f32">[32]</a></sup> 같은 답신에서 ORD-IMP-45와 이 편
+    (<code>ORD-EDU-cycle-51</code>) 둘이 함께 발행됐다.<sup><a href="#f1">[1]</a></sup>
+  </p>
+
+  <div class="card rule-card">
+    <div class="tag">대신 무엇을 하지 않기로 했나 — 이 사이클의 값진 자리 넷</div>
+    <table class="tbl" style="margin-top:12px">
+      <tbody>
+        <tr>
+          <td>갈래 B<br><span class="note">협업 상시 활성 중단</span></td>
+          <td>구현자가 스펙 118·124행을 근거로 처음부터 불선택 — ADR(기획자 소관) 없이는
+            선택지가 아니었다.<sup><a href="#f9">[9]</a></sup><sup><a href="#f10">[10]</a></sup></td>
+        </tr>
+        <tr>
+          <td>비공집합 형상 지원</td>
+          <td><code>receivers</code>/<code>agents_states</code>가 비어 있지 않은 collab 호출을
+            계속 fail-closed로 남겼다 — 「주장 범위를 측정 범위로 한정」한 트레이드오프.<sup><a href="#f12">[12]</a></sup></td>
+        </tr>
+        <tr>
+          <td>0건을 완결자가 판정</td>
+          <td>완결자는 claude[bot] 0건을 스스로 «통과»로 읽지 않고 «미도착»으로 상신만 했다 —
+            최종 판정은 대표가 새 상시 규칙으로 확정했다.<sup><a href="#f22">[22]</a></sup><sup><a href="#f31">[31]</a></sup></td>
+        </tr>
+        <tr>
+          <td>통치자 자신의 대조군</td>
+          <td>PR#81 표본 4개짜리 대조군을 그대로 안 두고, 21회차 전수에서 뒤집힌 것을 스스로
+            적어 남겼다 — 「대조군도 모집단 경계가 필요하다」.<sup><a href="#f23">[23]</a></sup><sup><a href="#f24">[24]</a></sup></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>질문 6 · 다음 담당에게 무엇을 위임하나</h2>
+  <p>
+    구현자에게 이슈 #45(base <code>17c8be2b</code>, 받는 즉시 재측)와 CHANGELOG #51 항목
+    승계가 넘어갔다.<sup><a href="#f32">[32]</a></sup> README 실측 빚(5회차 연속 이월)은
+    다음 릴리스 태그 작업으로, 큐가 이미 그렇게 정해 두었다. <b>claude-review 두 모드를
+    가르는 원인 특정은 넘어가지 않았다</b> — 대표가 Q/R을 「해소됐으므로 폐기」로 접어
+    조사 자체가 다음 담당을 갖지 않는다.<sup><a href="#f31">[31]</a></sup>
+  </p>
+
+  <h2>질문 7 · 왜 그 담당에게 맡기나</h2>
+  <p>
+    #45는 대표 결정 K가 이미 세운 큐(#51 → #45 → 릴리스 태그)의 다음 자리이므로, CHANGELOG
+    승계를 그 안에서 처리하는 것이 새 PR을 하나 더 여는 것보다 절차가 가볍다 — 관례 ②를
+    지키는 가장 싼 경로다. claude-review 모드 조사가 넘어가지 않은 이유는 담당의 문제가
+    아니라, 대표가 그 질문 자체를 폐기했기 때문이다.
+  </p>
+
+  <h2>질문 8 · 왜 이걸 제안했나</h2>
+  <p>
+    통치자가 직접 병합이 건너뛴 관례 셋(CHANGELOG·트레일러·재검증 스위트)을 스스로 찾아
+    승계 경로를 제안했다 — 대표의 「이미 했다」 통보 뒤에 남은 절차 공백을 통치자가
+    메운 것이다.<sup><a href="#f32">[32]</a></sup>
+  </p>
+
+  <h2>질문 9 · 왜 이런 오류가 나왔나</h2>
+  <p>
+    좁은 표본이 대조군으로 굳는 과정은 두 자리를 거쳤다. 먼저 완결자 자신이 PR#81 레그에서
+    「소형 실행 = 이상」이라고 적었다.<sup><a href="#f24">[24]</a></sup> 그 판단이 통치자의
+    <code>ORD-CLS-PR-82-observe</code> 4번 항목에 대조군 값(완주 26/59 대 소형 4/3)으로
+    <b>그대로 옮겨져</b> 다음 관측의 전제가 됐다.<sup><a href="#f23">[23]</a></sup> 두 자리 모두
+    같은 근본에서 나온다 — <b>표본이 하나의 PR에서만 왔는데, 그 PR 하나가 이미 모집단 전체를
+    대표한다고 취급한 것.</b> 완결자가 21회차로 넓혀 세기 전까지 이 전제는 두 문서(완결자의
+    레그 기록·통치자의 ORD)를 옮겨 다니며 한 번도 다시 검증되지 않았다.
+  </p>
+
+  <h2>질문 10 · 무엇이 있었으면 이걸 막았을까</h2>
+  <p>
+    이 저장소는 이미 비슷한 모양의 함정을 한 번 겪었다 — 봇 코멘트의 대조 앵커를 지시에 값으로
+    박았다가 죽은 통제였음이 드러난 뒤로, 「값을 지시에 박지 말고 전수 분포에서 살아 있는
+    앵커를 매번 다시 골라라」는 교훈이 이미 이 저장소의 관례로 자리 잡았다(제22편). 이번 대조군도
+    같은 모양이었다 — <b>「완주 26/59 대 소형 4/3」이라는 값이 지시에 박혀 다음 관측까지
+    그대로 실려 갔다.</b> 대조군을 지시에 박는 대신 「매 관측마다 전수 census에서 다시
+    집계하라」로 처음부터 정해 두었다면, 21회차로 넓히는 교정 라운드 자체가 필요 없었을
+    것이다.
+  </p>
+
+  <h2>질문 11 · 원점에 비춰, 이번 걸음이 그쪽으로 갔나</h2>
+  <p>
+    <b>그쪽으로 갔다.</b> 완결자는 0건을 곧장 「통과」로 삼지 않고 「미도착」으로 남겨 반대
+    가능성을 지우지 않았고,<sup><a href="#f22">[22]</a></sup> 통치자는 자기 자신이 발행한 ORD의
+    전제가 좁았다는 사실을 감추지 않고 원장에 그대로 적었다.<sup><a href="#f23">[23]</a></sup>
+    다중 에이전트 합성이 반대 의견과 근거를 조용히 지우지 않게 한다는 원점편의 규율이, 이번엔
+    「완결자 대 통치자」의 자기 정정 두 겹으로 재현됐다.
+  </p>
+  <p class="note">
+    내 이해를 덧붙이면 — 원점편이 재는 것은 <b>여러 AI가 협업할 때</b> 반대 의견이 사라지는
+    것을 막는 규율이고, 대표가 BRF의 N/P·Q/R 선택지를 실제로 고르지 않고 직접 행동한 것은
+    그 규율이 재는 대상이 아니다. 「최종 확정 행위는 사용자만」은 이 저장소가 처음부터
+    사용자에게 준 자리이지, 이 편이 판정할 자리가 아니다 — <b>그래서 이 편은 그 사실을
+    기록하되 좋다·나쁘다로 채점하지 않는다.</b>
+  </p>
+
+  <h2>질문 12 · 처음 범위에서 새로 늘어난 것이 있나</h2>
+  <p>
+    <b>없다.</b> 갈래 A는 이슈 #51이 발행 시점부터 제시한 두 선택지 중 하나였고, 매핑 판단은
+    항목 하나(<code>collab_tool_call</code>)를 닫힌 집합에 추가하는 것으로 끝났다. 새 상시
+    규칙(«0건=통과»)은 이 저장소의 판정 절차를 바꾼 것이지, 원점편의 「범위 밖」 14항목 어느
+    것도 건드리지 않는다 — API·remote 구조도, AI 직접 편집 worktree도, delegation depth
+    확장도 이 사이클에 없었다.
+  </p>
+
+  <hr>
+  <p class="note">
+    여기서 멈춘다 — 기록과 PR, 보고까지. 판정하지 않는다. 질문 11·12 모두 「그쪽으로
+    갔다·없음」이라 통치자 에스컬레이션 의무는 발생하지 않았다. claude-review 두 모드를 가르는
+    원인은 대표 결정으로 폐기됐고, 이 편은 그 폐기 사실만 기록한다.
+  </p>
+
+  <h2>각주</h2>
+  <ol class="fnotes">
+    <li id="f1"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «ORD-EDU-cycle-51(`23a75667`, 새 톱레벨) — 제23편 기편(600759a9 충족: 사이클 병합 완료), 「하지 않기로 한 것」 4갈래 지목, 사료 실물 지시.» · 같은 절 «발행 둘: ORD-IMP-45(`69596d5d`, 새 톱레벨) … CHANGELOG 승계 1건.»</li>
+    <li id="f2"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «이슈 #51 「Finish a Codex turn that uses the collaboration capability we enable on every turn」 착수.»</li>
+    <li id="f3"><span class="path">WORK_LOGS/whole-life/IMP_feat-51-collab-tool-call__ORD-IMP-51.md</span> — 변경 규모 「4파일 +267 −33」· 최종 검증 절 참조([14]·[18]).</li>
+    <li id="f4"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «내가 ORD-CLS-PR-82-observe 4번에 준 대조군(완주 26/59 vs 소형 4/3)은 전부 PR#81 한 PR의 4표본 — 좁은 모집단이었고, 21회차 전수에서 **소형(opus 없음)이 다수 모드(13/21, 08-26부터)**로 뒤집혔다.»</li>
+    <li id="f5"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «**새 상시 규칙 확정: 관측 ORD는 토큰 소비량(작업량) 기록은 유지하되, 리뷰 지적 0건이면 실행 모드와 무관하게 «통과»로 판정하고 진행**»</li>
+    <li id="f6"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — 「19:5x — RPT-ORD-CLS-PR-82-observe 통과 · BRF(N/P·Q/R) 상정」 절과 「19:5x — 대표 결정 N 이행」 절이 모두 같은 시간대(`19:5x`) 표기이고, 대표 답신은 19:52로 명기됨.</li>
+    <li id="f7"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «대표 답신 19:52 (`c04ad159`, 대표 키 37215881 — 되돌릴 수 없는 조작이나 이번은 지시가 아니라 «이미 했다» 통보).» · «**N 확정·이행 실측**: PR#82 **MERGED** — squash `17c8be2b`, 2026-08-28T10:52:30Z, 병합자 nowwcastle-sudo(대표 직접).»</li>
+    <li id="f8"><span class="path">WORK_LOGS/whole-life/IMP_feat-51-collab-tool-call__ORD-IMP-51.md</span> — «blocker #35: `gh issue view 35` → CLOSED · 녹화물 `tests/recordings/codex-0.149.0-agents-enabled-turn.jsonl` origin/main `ls-tree` 실재 확인»</li>
+    <li id="f9"><span class="path">WORK_LOGS/whole-life/IMP_feat-51-collab-tool-call__ORD-IMP-51.md</span> — «스펙 118행이 「Codex participant에는 current release의 subagent workflow를 **활성화하고** `agents.max_concurrent_threads_per_session = 3`을 inline config로 고정한다」고 **요구**한다. 124행은 「native delegation capability가 확인되지 않으면 … 조용히 single-agent로 낮추지 않는다」.»</li>
+    <li id="f10"><span class="path">WORK_LOGS/whole-life/IMP_feat-51-collab-tool-call__ORD-IMP-51.md</span> — «B는 스펙 개정(ADR — `docs/adr/` 쓰기 주인은 기획자) 없이는 선택지가 아니다.»</li>
+    <li id="f11"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «**방향 선택: 갈래 A(item type 인식·매핑)** — 구현자 선택(ORD대로 내가 안 정함).»</li>
+    <li id="f12"><span class="path">WORK_LOGS/whole-life/IMP_feat-51-collab-tool-call__ORD-IMP-51.md</span> — «**주장 범위를 측정 범위로 한정(트레이드오프)**: 공집합이 「위임 아님」 판독의 근거이므로 검증기가 공집합을 강제한다. receivers/agents_states가 비어 있지 않은 collab 호출은 이 빌드가 측정한 적 없는 형상 → `StdoutSchemaMismatch`로 턴 실패.»</li>
+    <li id="f13"><span class="path">WORK_LOGS/whole-life/IMP_feat-51-collab-tool-call__ORD-IMP-51.md</span> — «측정된 4개 호출 전부 `receiver_thread_ids=[]`·`agents_states={}` — 스트림이 worker를 하나도 명명하지 않았으므로 delegated worker로 읽으면 스트림이 보고한 적 없는 위임을 발명하게 된다(스펙 121).»</li>
+    <li id="f14"><span class="path">WORK_LOGS/whole-life/IMP_feat-51-collab-tool-call__ORD-IMP-51.md</span> — «Ran 79 tests → FAILED (failures=11, errors=9) / RED_EXIT=1»</li>
+    <li id="f15"><span class="path">WORK_LOGS/whole-life/IMP_feat-51-collab-tool-call__ORD-IMP-51.md</span> — «1차: `StreamFailure: StdoutNotUtf8`로 죽음 — **잘못된 이유**. 원인 실측: 녹화물 3행에 비ASCII 177바이트(모델의 한국어 산문), 공유 헬퍼 `child_script`의 `sys.stdout.write`가 Windows 자식 기본 인코딩으로 찍음. **테스트 결함으로 판정**하고 테스트를 수리(`sys.stdout.buffer.write`로 녹화물 UTF-8 바이트를 그대로 출력) — 코드/테스트 결함 판별: 코드는 무죄, 재생 장치가 유죄.» · «2차: `StreamFailure: UnknownProviderEvent` / ASM_RED2_EXIT=1 — **티켓의 증상 그대로, 올바른 이유의 RED.**»</li>
+    <li id="f16"><span class="path">WORK_LOGS/whole-life/IMP_feat-51-collab-tool-call__ORD-IMP-51.md</span> — «각 변이는 backup-diff로 적용 확인, 복원은 `cmp` 동일성 + 판별 토큰 grep=1로 잔류 없음 실측.» · <span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> «**변이(AC6)**: 3종 전부 정확 계수(제거→20 red · 전면수용→정확히 2 red · 공집합 가드 제거→정확히 2 red) + 복원 cmp 동일성 + 판별 토큰 grep=1 — 잔류변이·복원 교훈 반영됨.»</li>
+    <li id="f17"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «**「다음 미지 item type」**: 소리 내어 답함(똑같이 UnknownProviderEvent로 죽음 — 의도된 동작, normalize.py 주석에 기재) — ORD 요구 이행.»</li>
+    <li id="f18"><span class="path">WORK_LOGS/whole-life/IMP_feat-51-collab-tool-call__ORD-IMP-51.md</span> — «Ran 415 tests in 229.552s / OK / SUITE_EXIT=0     (408 + 신규 7 = 415, 계수 일치)»</li>
+    <li id="f19"><span class="path">WORK_LOGS/whole-life/IMP_feat-51-collab-tool-call__ORD-IMP-51.md</span> — «**편차 1**: ORD의 「PR 열 때 `--channel` 부착」 — `--channel`은 `buzz pr open`(NIP-34) 플래그인데 `buzz repos list`가 `[]`(이 저장소의 buzz 레코드 없음)이고 팀의 PR·봇 리뷰 축은 GitHub이므로 `gh pr create`로 열고 **PR 본문 첫머리에 채널 UUID를 명기**해 역링크 의도를 보존했다.»</li>
+    <li id="f20"><span class="path">WORK_LOGS/whole-life/IMP_feat-51-collab-tool-call__ORD-IMP-51.md</span> — «**편차 2**: #35의 고정 테스트 `TheStreamStillFailsClosedTests`(「오늘의 동작」 핀)를 교체 — 그 docstring 자체가 「인식 여부는 다른 티켓의 몫, 변경은 의도적이어야 한다」고 예고한 자리이며, 이 티켓이 그 의도적 변경이다.»</li>
+    <li id="f21"><span class="path">WORK_LOGS/whole-life/CLS_feat-51-collab-tool-call__ORD-CLS-PR-82-observe.md</span> — «**판정: Codex = 👍 리액션 = 「지적 없음」.** 첫 push이므로 ORD의 기대값에 부합한다.»</li>
+    <li id="f22"><span class="path">WORK_LOGS/whole-life/CLS_feat-51-collab-tool-call__ORD-CLS-PR-82-observe.md</span> — «`pulls/82/reviews` · `pulls/82/comments` 모두 빈 출력(§2에 명령·대조 첨부). `original_commit_id` 로 거를 대상 자체가 없다.» · «**따라서 PR#82 의 「claude[bot] 0건」은 「지적 없음」의 증거가 아니다.**» · «그 0 을 낸 종류의 실행이 이 저장소에서 지적을 산출한 전례가 0/13 이므로, 그 실행이 지적을 낼 수 있는지 자체가 미증명이다. 기록은 **「미도착」**이다.»</li>
+    <li id="f23"><span class="path">WORK_LOGS/whole-life/CLS_feat-51-collab-tool-call__ORD-CLS-PR-82-observe.md</span> — «**opus 있음 8회 · 없음 13회.**» · «**시간에 따른 체제 전환이 아니다** — 같은 브랜치 안에서 두 모드가 섞인다.» · <span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> «내가 ORD-CLS-PR-82-observe 4번에 준 대조군(완주 26/59 vs 소형 4/3)은 전부 PR#81 한 PR의 4표본 — 좁은 모집단이었고, 21회차 전수에서 **소형(opus 없음)이 다수 모드(13/21, 08-26부터)**로 뒤집혔다.»</li>
+    <li id="f24"><span class="path">WORK_LOGS/whole-life/CLS_feat-51-collab-tool-call__ORD-CLS-PR-82-observe.md</span> — «즉 **내가 PR#81 레그에서 「소형은 이상」이라고 적은 것이 좁은 모집단에서 나온 오판**이었다.»</li>
+    <li id="f25"><span class="path">WORK_LOGS/whole-life/CLS_feat-51-collab-tool-call__ORD-CLS-PR-82-observe.md</span> — «지적을 낸 head 넷(`ada500d3`·`9a45fc16`·`bb1f5a49`·`f43440a8`)은 **전부 opus 있음** 회차다.»</li>
+    <li id="f26"><span class="path">WORK_LOGS/whole-life/CLS_feat-51-collab-tool-call__ORD-CLS-PR-82-observe.md</span> — «**따라서 PR#82 의 「claude[bot] 0건」은 「지적 없음」의 증거가 아니다.**» · «그 0 을 낸 종류의 실행이 이 저장소에서 지적을 산출한 전례가 0/13 이므로, 그 실행이 지적을 낼 수 있는지 자체가 미증명이다. 기록은 **「미도착」**이다.»</li>
+    <li id="f27"><span class="path">WORK_LOGS/whole-life/CLS_feat-51-collab-tool-call__ORD-CLS-PR-82-observe.md</span> — «**과발화 통제(0 이 판별력을 갖는가)**: 같은 100행 창의 `results_count` 분포는 `0`×81 · `2`×19 다. 값이 2인 행은 `refs/heads/main` `/language:actions` 로 실재한다 → 필드가 죽어서 0 이 나온 것이 아니다.»</li>
+    <li id="f28"><span class="path">WORK_LOGS/whole-life/CLS_feat-51-collab-tool-call__ORD-CLS-PR-82-observe.md</span> — «**20표본 · 성공 13 · 실패 7.** PR#82 는 **success**.»</li>
+    <li id="f29"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «**BRF `2586f18a` 상정**: 결정 1(병합) N=현 증거로 병합 / P=재실행 후 재관측 · 결정 2(조사) Q=두 모드 원인 조사 배정(이슈 없이 ORD로) / R=보류. 두 결정은 독립 — 병합 결정만 착지·기편·#45 을 막는다.»</li>
+    <li id="f30"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «**N 확정·이행 실측**: PR#82 **MERGED** — squash `17c8be2b`, 2026-08-28T10:52:30Z, 병합자 nowwcastle-sudo(대표 직접). `git ls-remote origin main` = `17c8be2b` 일치. 「이미 했다」를 객관 증거로 확인 후 진행.»</li>
+    <li id="f31"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «**Q/R 해소(대표)**: 「해소됐으므로 보류 기록 폐기」 — 조사 방아쇠(claude-review 두 모드)·«미도착» 보류 틀 폐기. **새 상시 규칙 확정: 관측 ORD는 토큰 소비량(작업량) 기록은 유지하되, 리뷰 지적 0건이면 실행 모드와 무관하게 «통과»로 판정하고 진행**(`c04ad159`). 점검표 10의 «소형이면 판정 없이 상신» 분기는 이 규칙으로 대체된다.»</li>
+    <li id="f32"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «**직접 병합이 건너뛴 관례 기록**: ① CHANGELOG(관례 ②) — PR#82(feat)에 항목 없음 → **ORD-IMP-45에 #51 항목 동반 추가로 승계**(사유 명기). ② 트레일러 — 웹 병합은 Co-authored-by가 떨어지는 기지 사실, 착지 후 재작성 없이 못 고침 → 기록만. ③ 병합 후 스위트 — ORD-IMP-45의 착수 기준선 스위트(새 main, 기대 415)가 겸하도록 명기.»</li>
+  </ol>
+
+</div>
+</body>
+</html>
