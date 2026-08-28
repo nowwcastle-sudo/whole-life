@@ -99,6 +99,62 @@ OFFICIAL_SUCCESS_STREAM = (
 )
 
 
+class RecordedCollaborationTurnTests(unittest.IsolatedAsyncioTestCase):
+    """#51: the recorded collaboration turn survives the assembled path.
+
+    The committed #35 recording, printed verbatim by a real child and consumed
+    through `start_turn` and `events` — not fed to the normalizer directly.
+    Hand-written stream lines are what let the previous defect of this family
+    live: every synthetic line was one someone already knew about.
+    """
+
+    RECORDING = (
+        Path(__file__).resolve().parent.parent
+        / "recordings"
+        / "codex-0.149.0-agents-enabled-turn.jsonl"
+    )
+
+    async def test_the_recorded_collaboration_turn_reaches_its_end(self):
+        lines = [
+            line
+            for line in self.RECORDING.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
+        # Written through the buffer, not `sys.stdout.write`: the recording
+        # carries the model's non-ASCII prose, and a Windows child's default
+        # stdout encoding is not UTF-8 — the shared `child_script` would turn
+        # a replay of real provider bytes into `StdoutNotUtf8`, which was
+        # watched happening before this shape was chosen.
+        payload = ("\n".join(lines) + "\n").encode("utf-8")
+        body = (
+            "import sys\n"
+            f"sys.stdout.buffer.write({payload!r})\n"
+            "sys.stdout.flush()\n"
+            "sys.exit(0)\n"
+        )
+        adapter = await adapter_running(())
+        adapter.turn_args_override = ("-c", body)
+
+        handle = await adapter.start_turn(turn_request())
+        kinds = [event.kind async for event in adapter.events(handle)]
+        outcome = await adapter.wait(handle)
+
+        self.assertEqual(
+            [
+                "turn.started",
+                "message.committed",
+                "runtime.activity.started",
+                "runtime.activity.finished",
+                "runtime.activity.started",
+                "runtime.activity.finished",
+                "message.committed",
+                "turn.completed",
+            ],
+            kinds,
+        )
+        self.assertEqual(RunStatus.COMPLETED, outcome.status)
+
+
 class OfficialStreamTests(unittest.IsolatedAsyncioTestCase):
     """AC 2 against the documented shape, through the assembled path."""
 

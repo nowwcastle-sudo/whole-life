@@ -64,6 +64,13 @@ COMMAND_EXECUTION_STATUS = frozenset({"in_progress", "completed", "failed"})
 PATCH_APPLY_STATUS = frozenset({"completed", "failed"})
 PATCH_CHANGE_KIND = frozenset({"add", "delete", "update"})
 MCP_TOOL_CALL_STATUS = frozenset({"in_progress", "completed", "failed"})
+COLLAB_TOOL_CALL_STATUS = frozenset({"in_progress", "completed", "failed"})
+#: `CollabTool`, verbatim from the pinned tag — but from
+#: `codex-rs/exec/src/exec_events.rs`, not the SDK typings: 0.149.0 emits
+#: `collab_tool_call` on the wire while `sdk/typescript/src/items.ts` never
+#: mentions it. That gap is how the item stayed off this allowlist while the
+#: argument vector asked for the capability on every turn (#51).
+COLLAB_TOOLS = frozenset({"spawn_agent", "send_input", "wait", "close_agent"})
 
 #: What each Codex item subtype means in section 7's vocabulary, decided one by
 #: one. There is no generic fallback: mapping "everything else" to a tool
@@ -89,6 +96,25 @@ CODEX_ITEM_MAPPING = {
     "file_change": CODEX_ITEM_ACTIVITY,
     "mcp_tool_call": CODEX_ITEM_ACTIVITY,
     "web_search": CODEX_ITEM_ACTIVITY,
+    # #51. The argument vector enables the collaboration capability on every
+    # turn, and until this entry existed a turn that used it died as
+    # `UnknownProviderEvent` — we asked for a capability we could not survive.
+    # Treated as tool activity for the same reason `mcp_tool_call` is: a tool
+    # call is a tool call, and the recorded turn's calls named no receivers
+    # and carried no agent states, so calling one a delegated worker would
+    # invent a delegation the stream never reported. That emptiness is
+    # enforced in `_validate_codex_item`, because it is the measurement this
+    # entry rests on. What was traded away: a future collab call that *does*
+    # name receivers still fails the run until someone records one and
+    # decides its meaning — visible failure over an uncounted worker.
+    #
+    # And the next time the provider adds an item type we have not seen, the
+    # same thing happens again, on purpose: the turn fails as
+    # `UnknownProviderEvent`, and the way in is what this entry did — a
+    # recorded turn, a one-by-one decision here, and the closed set stays
+    # closed. This is the second time an unrecognised shape decided a turn's
+    # outcome on this provider; the rule is the constant, the enum grows.
+    "collab_tool_call": CODEX_ITEM_ACTIVITY,
 }
 
 #: Content block types an assistant message may carry. `tool_result` is
@@ -298,6 +324,26 @@ def _validate_codex_item(item: dict, item_type: str) -> None:
                 raise StreamFailure("StdoutSchemaMismatch")
         if "error" in item and item["error"] is not None:
             _require(_typed(item["error"], dict), "message", lambda v: _typed(v, str))
+    elif item_type == "collab_tool_call":
+        # `CollabToolCallItem` in the pinned tag's exec_events.rs. Every field
+        # is required there, `prompt` as an Option — present, string or null.
+        _require(item, "tool", lambda v: _enum(v, COLLAB_TOOLS))
+        _require(item, "sender_thread_id", lambda v: _typed(v, str))
+        receivers = _require(item, "receiver_thread_ids", lambda v: _typed(v, list))
+        states = _require(item, "agents_states", lambda v: _typed(v, dict))
+        if "prompt" not in item:
+            raise StreamFailure("StdoutSchemaMismatch")
+        if item["prompt"] is not None:
+            _typed(item["prompt"], str)
+        _require(item, "status", lambda v: _enum(v, COLLAB_TOOL_CALL_STATUS))
+        if receivers or states:
+            # The mapping above reads this item as plain tool use *because*
+            # the measured calls named no worker. A call that does name
+            # receivers or agent states is a shape this build has never
+            # evaluated — and the enforcement row's basis (the stream gives
+            # the counter nothing to count) moves the moment one arrives.
+            # Filing it as tool use would hide that, so the run fails instead.
+            raise StreamFailure("StdoutSchemaMismatch")
 
 
 def normalize_codex_line(line: str, *, run_id: str) -> list[NormalizedEvent]:
