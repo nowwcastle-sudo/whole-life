@@ -89,7 +89,7 @@
     이슈 #72(문서 기록 정비 여섯 항목)는 리뷰가 두 번 차단(§1 인용 5자리, 그리고 그물이 놓친
     한 자리 더)하고, 첫 착지 시도가 정지(롤업은 초록인데 Codex 새 코멘트 3건이 실재)한 뒤,
     구현이 셋 되돌아가고 리뷰가 다섯 번(원본·d1·d2·d3·d4) 걸리는 동안, 아직 발화하지 않는
-    의존성 감사 게이트의 문안이 반영할수록 새 판단을 냈다.<sup><a href="#f3">[3]</a></sup>
+    의존성 감사 게이트의 문안이 반영할수록 새 판단을 냈다.<sup><a href="#f4">[4]</a></sup>
     대표는 그 판단 넷(ST-1~4)을 먼저 반영하는 길(결정 B)을 골랐지만 반영 직후 재검이 새 판단
     셋(ST-5~7)을 또 냈고,<sup><a href="#f4">[4]</a></sup> 통치자는 게이트 규약대로 다시 대표를
     불렀다 — 이번엔 <b>착지하고 나머지를 다음 방아쇠(첫 매니페스트 착지 커밋)로 넘기는 길(결정 A)</b>을
@@ -201,7 +201,7 @@
     <figcaption>
       리뷰가 초록(「병합 가능」)을 냈다고 흐름이 끝나지 않는다 — <b>d2·d3·d4 세 번 모두 「병합
       가능」이면서 동시에 새 판단을 남겼다.</b> 착지로 이어진 것은 초록이 쌓여서가 아니라,
-      대표가 「더 고쳐도 수렴이 보장되지 않는다」는 관찰을 받아 <b>착지 쪽으로 판단을 옮긴 것</b>이다.<sup><a href="#f5">[5]</a></sup>
+      대표가 「더 고쳐도 수렴이 보장되지 않는다」는 관찰을 받아 <b>착지 쪽으로 판단을 옮긴 것</b>이다.<sup><a href="#f22">[22]</a></sup><sup><a href="#f5">[5]</a></sup>
     </figcaption>
   </figure>
 
@@ -231,7 +231,7 @@
     N」류 인용을 재번호하는 작업이었다. 구현자의 첫 스윕은 <b>같은 줄에 「spec」이라는
     낱말이 있는 토큰만</b> 잡는 질의였고, 원 리뷰가 그 그물이 놓친 자리 다섯을 찾았다 —
     <code>(line 282)</code>·<code># Line 282</code>류처럼 앞선 줄의 「spec」에 기대는 이어진
-    인용은 그물 밖이었다. <b>더 나쁜 것은 방향이었다</b> — 그 다섯 자리는 「못 고친 것」이
+    인용은 그물 밖이었다. <b>더 나쁜 것은 방향이었다</b> — 그 다섯 자리 중 세 자리는 「못 고친 것」이
     아니라 <b>「이 브랜치가 새로 깨뜨린 것」</b>이었다. base에서는 파일마다 내부적으로 일관돼
     있었는데, 재번호가 절반만 닿아 같은 번호(282)가 한 파일 안에서 서로 다른 두 조항을
     가리키게 됐다.<sup><a href="#f8">[8]</a></sup>
@@ -263,7 +263,7 @@
   </table>
   <p class="note">
     세 형태 모두 「같은 조항을 찾는 검사가 검사 자신의 사각지대를 갖는다」는 같은 모양이다.
-    d2는 이 자리에서 「검사기를 먼저 의심한다」는 점검표를 그대로 이행했다고 적었다 — 구현자
+    d3는 이 자리에서 「검사기를 먼저 의심한다」는 점검표를 그대로 이행했다고 적었다 — 구현자
     「2건」과 자신의 「1건」이 다른 이유도 서로 다른 정규식이 「private」의 부분어
     「privately」를 잡느냐 마느냐였다고 규명했다.<sup><a href="#f11">[11]</a></sup>
   </p>
@@ -328,8 +328,8 @@
   <p>
     <b>재앵커 함정.</b> 봇 코멘트 하나가 원래 남긴 커밋(<code>original_commit_id</code>)은
     옛 head인데, GitHub가 그 코멘트의 <code>commit_id</code> 필드를 최신 push 시점의
-    head로 조용히 갈아 둔 사례가 <b>두 번 실물로 나왔다</b>(08-28 08:19 관측, 그리고
-    최종 착지 직전).<sup><a href="#f18">[18]</a></sup> 신규 판별을 <code>commit_id</code>로
+    head로 조용히 갈아 둔 사례가 <b>이 사이클 안에서 두 번 실물로 나왔다</b> — 한 번은
+    <code>0063d376</code>으로, 또 한 번은 최종 착지 직전 <code>851f31a7</code>로.<sup><a href="#f18">[18]</a></sup> 신규 판별을 <code>commit_id</code>로
     걸었다면 옛 지적이 새 지적으로 보여, <b>이미 준비된 착지를 잘못 막았을 자리</b>다.
     저장소 관례가 처음부터 <code>original_commit_id</code>를 쓰도록 정해 둔 것이 이번에
     그대로 값을 했다.
@@ -366,11 +366,13 @@
 
   <h2>경계 — 착지가 남긴 것, 조용히 빼지 않는다</h2>
   <p>
-    착지 보고 스스로 다섯 가지를 「못 한 것」으로 적었다: README를 깨끗한 자리에 새로 clone해
+    착지 보고 스스로 일곱 가지를 「못 한 것」으로 적었다: README를 깨끗한 자리에 새로 clone해
     명령을 실제로 따라 해보는 실측은 하지 않았고(설치법 자체는 이 브랜치가 바꾸지 않았다),
     의존성 감사 게이트는 매니페스트가 없어 여전히 미발화이며, GHAS의 AI findings는
-    GitHub 쪽 400 오류로 미실행이고, ST-5~7은 지시대로 반영하지 않았고, semver 태그는
-    이 발주 범위 밖이라 달지 않았다.<sup><a href="#f24">[24]</a></sup>
+    GitHub 쪽 400 오류로 미실행이고, ST-5~7은 지시대로 반영하지 않았고, CodeQL에서 브랜치가
+    늘리지 않은 별건 관측 하나(main 쪽에 이미 있던 <code>/language:actions</code> results=2,
+    정체는 이 질의로 확정하지 못했다)가 남았고, CHANGELOG는 이미 브랜치 내용과 en/ko 대칭이라는
+    사유로 별도 반영하지 않았고, semver 태그는 이 발주 범위 밖이라 달지 않았다.<sup><a href="#f24">[24]</a></sup>
   </p>
   <p>
     그날 8시간 05분 앞서 착지한 PR#79(제21편 자신의 착지)에서도 비차단 잔여 둘이 남았다 —<sup><a href="#f28">[28]</a></sup>
@@ -421,6 +423,15 @@
     독해로만 판단해야 한다.</b> 독해로 잡을 수 있는 것(면제의 비대칭·문자 불일치)은
     라운드마다 새로 보였고, 실행으로만 잡을 수 있는 것(<code>--strict</code>×<code>--no-deps</code>
     상호작용)은 이 사이클 안에서 끝내 확인되지 못했다.<sup><a href="#f14">[14]</a></sup>
+  </p>
+  <p>
+    이 편 자신도 같은 모양을 두 겹으로 반복했다 — 각주 «해소»(링크가 걸리는가)는 매 라운드
+    게이트가 확인했지만, 각주 «부합»(그 각주가 그 문장을 실제로 뒷받침하는가)은 어떤 게이트도
+    보지 않았다. 봇 리뷰가 두 차례에 걸쳐 각주 오귀속·수량 확대를 각각 다섯 건(1차 B~F)과
+    네 건(2차 G1~G4) 찾아냈고, 그중 「못 한 것 다섯 가지」라는 착오(G4)는 완결자 자신의 채널
+    요약이 원문 일곱을 다섯으로 줄인 것이 통치자 보고를 거쳐 이 편까지 그대로 흘러든 것이었다
+    — 좁은 관측이 남을 거쳐 전칭으로 굳어지는 같은 경로가, 이번엔 저자인 이 편 자신에게서
+    재현됐다.<sup><a href="#f29">[29]</a></sup>
   </p>
 
   <h2>질문 10 · 무엇이 있었으면 이걸 막았을까</h2>
@@ -488,20 +499,21 @@
     <li id="f12"><span class="path">WORK_LOGS/whole-life/REV_feat-72-repair-doc-records__ORD-REV-feat-72.md</span> — «저장소 자신의 게이트 규정(이 브랜치가 §5로 추가한 바로 그 문단)이 발화 조건을 이렇게 정한다: 「The gate fires the moment the first manifest lands.」 … **따라서 이 항목은 「검사해서 0건」이 아니라 「검사 범위 밖이라 미실행」이다.**»</li>
     <li id="f13"><span class="path">WORK_LOGS/whole-life/REV_feat-72-repair-doc-records__ORD-REV-feat-72-d2.md</span> — «### ST5 (신규 · **판단** · 비차단) `docs/project-context.md:31` 의 `must be regenerated` 는, 그 표가 실제로는 **개정마다 행을 덧붙이는 이력 표**라는 점과 살짝 어긋난다. 「행이 재생성된다」보다 「새 행을 덧붙인다」가 관측에 가깝다. … **차단하지 않는다.**» · d3/d4 회귀표에서 「ST5 유지」로 재확인(예: <span class="path">REV_feat-72-repair-doc-records__ORD-REV-feat-72-d4.md</span> «ST5 유지 | `git grep -nI 'must be regenerated' 851f31a7` | `docs/project-context.md:31` 1건 생존»).</li>
     <li id="f14"><span class="path">WORK_LOGS/whole-life/REV_feat-72-repair-doc-records__ORD-REV-feat-72-d4.md</span> — «### ST-1 「한 절 안에 같은 위험의 두 처방」 — **해소** … 구현자는 「면제 정당화」가 아니라 **비대칭 제거**를 골랐다. 주 게이트 명령이 바뀌었다 … `+ --no-deps` … **한 조항이 한 파일 안에서 두 이름을 갖는 상태가 사라졌다.**» · 사각지대: 「`--strict` 와 `--no-deps` 의 상호작용은 README 가 어느 쪽으로도 진술하지 않는다. 나도 실행으로 확인하지 못했다.」</li>
-    <li id="f15"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «⚠️ **롤업 MERGEABLE·CLEAN·6/7 success 인 채 P1 실재** — PR#79 사각지대 재현, 관례 ① 이 잡았다.»</li>
+    <li id="f15"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «⚠️ **롤업 MERGEABLE·CLEAN·6/7 success 인 채 P1 실재** — PR#79 사각지대 재현, 관례 ① 이 잡았다.» · «Codex 3건 완결자 재확인: **① P1** safety.md §5 「pyproject 설치가 build backend 실행 = 심사 대상 코드가 감사 전에 돈다」 **② P2** 「extras·PEP 735 group 미설치 …」 **③ P2** 「project-context 만 고쳐 SECURITY.md·CONTRIBUTING en/ko 와 모순 확정」»</li>
     <li id="f16"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «### ⚠️ 내 정정 — ORD 가 지정한 양성 대조 앵커가 «죽은 통제»였다 … 이 PR 의 봇 코멘트는 **전부 `6aa0fe64` 한 커밋에만** 앵커돼 있어 지시대로 걸면 0 — 술어 생존을 증명하지 못하는 통제였다. 완결자가 `original_commit_id` 전수 분포(`sort | uniq -c` → `3 6aa0fe64…`)로 규명하고 살아 있는 앵커로 대체해 3건 확인.»</li>
     <li id="f17"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «교훈: 대조 앵커 값을 지시에 박지 말고 **「전수 분포에서 살아 있는 앵커를 골라 대조하라」** 로 지시한다(분포 명령이 곧 앵커 검증이다).»</li>
     <li id="f18"><span class="path">WORK_LOGS/whole-life/CLS_feat-72-repair-doc-records__ORD-CLS-PR-80-착지.md</span> — «⚠️ **재앵커 함정이 이번에 실물로 나왔다.** 세 번째 코멘트는 `original_commit_id=6aa0fe64` 인데 `commit_id=851f31a7` 이다. … **`commit_id` 로 걸렀다면 옛 지적 1건이 신규로 보여 준비된 착지를 막았을 것이다.**» — 첫 관측은 <span class="path">WORK_LOGS/whole-life/CLS_feat-72-repair-doc-records__ORD-CLS-PR-80-observe.md</span> «옛 지적 3건 중 1건(`docs/project-context.md` P2, id 3874780471)이 **새 head 로 재앵커**돼 `commit_id` 가 `0063d376…` 로 바뀌어 있다.»</li>
-    <li id="f19"><span class="path">WORK_LOGS/whole-life/CLS_feat-72-repair-doc-records__ORD-CLS-PR-80-착지.md</span> — «⚠️ **`alerts?ref=` 가 fail-open 임을 이번에 직접 실측했다** — `refs/heads/main` 도 0, **없는 ref `refs/heads/no-such-branch-xyz` 도 0**. 둘이 구별되지 않으므로 판정에 쓰지 않았다.»</li>
+    <li id="f19"><span class="path">WORK_LOGS/whole-life/CLS_feat-72-repair-doc-records__ORD-CLS-PR-80-착지.md</span> — «CodeQL 은 `analyses` 의 `results_count`+`commit_sha` 로 읽었다(지시대로 `alerts?ref=` 를 쓰지 않았다).» · «⚠️ **`alerts?ref=` 가 fail-open 임을 이번에 직접 실측했다** — `refs/heads/main` 도 0, **없는 ref `refs/heads/no-such-branch-xyz` 도 0**. 둘이 구별되지 않으므로 판정에 쓰지 않았다.»</li>
     <li id="f20"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «대표 결정: **B** (event `bbb6e39a`, 07:52) — 리뷰어 d3 비차단 판단 4건(ST-1~4)을 먼저 반영한 뒤 병합. … B = «반영 후 병합» 이므로 d4 재검 + push 후 봇 관측(10분/양 봇 준용) 통과 시 **추가 의논 없이 착지 ORD 발행**.»</li>
     <li id="f21"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «근거: **G4 규약 「지적이 남아 있으면 대표가 연다」** — 「추가 의논 없이 착지」 고지(ce9a6d52)는 «새 지적 없음» 전제의 내 연장이었고, ST-5~7 이 새로 남았으므로 착지 ORD 를 내지 않고 대표께 올림.»</li>
     <li id="f22"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «동봉: 리뷰어 끝줄 원문 · **수렴 관찰**(제 관찰 이름표 — d3 판단 4건 반영 → d4 새 판단 3건, 미발화 게이트 문안은 재검마다 새 판단이 나올 수 있어 선반영 경로 수렴 보장 없음) · 선택지 A(착지+승계)/B(선반영+d5)/C(보류).»</li>
     <li id="f23"><span class="path">WORK_LOGS/whole-life/CLS_feat-72-repair-doc-records__ORD-CLS-PR-80-착지.md</span> — «4. **ST-5~7 은 미반영** — 지시대로. 통치자 원장이 「매니페스트 유입 커밋」으로 승계.»</li>
-    <li id="f24"><span class="path">WORK_LOGS/whole-life/CLS_feat-72-repair-doc-records__ORD-CLS-PR-80-착지.md</span> — «## 못 한 것 · 남는 것 (조용히 빼지 않는다) 1. **README 실측 … 하지 않았다.** … 다음 릴리스 태그 작업에서 갚아야 할 항목이다. 2. **의존성 감사 게이트는 발화하지 않는다** … 3. **GHAS AI findings 미실행** … 4. **ST-5~7 은 미반영** … 7. **semver 태그는 달지 않았다** — 대표 승인 항목이고 이 ORD 범위 밖.»</li>
-    <li id="f25"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-log-77__ORD-CLS-PR-79.md</span> — «## R4-8. 착지시켰지만 남겨 두는 것 — 조용히 빼지 않는다 … 1. 「확립 전 표본(#69·#70·#73)까지 넣은 라이브 전수는 여섯」 — … **시작 경계가 문장에 없다.** … 2. 「#59 부터 전수는 열일곱(성공 11·실패 6)」 — **끝 경계가 없다.** … 둘 다 **다음 편 각주·정정으로 되돌릴 수 있는 경로**가 이미 있다(연대기의 자기정정 관례).»</li>
+    <li id="f24"><span class="path">WORK_LOGS/whole-life/CLS_feat-72-repair-doc-records__ORD-CLS-PR-80-착지.md</span> — «## 못 한 것 · 남는 것 (조용히 빼지 않는다) 1. **README 실측 … 하지 않았다.** … 다음 릴리스 태그 작업에서 갚아야 할 항목이다. 2. **의존성 감사 게이트는 발화하지 않는다** … 3. **GHAS AI findings 미실행** … 4. **ST-5~7 은 미반영** … 5. **관측 1건(비차단, 이번 병합과 무관)** — CodeQL `analyses` 에서 **main@40118b4e 의 `/language:actions` 가 `results=2`** 인데 브랜치 head 는 0 이었다. **착지할 base 쪽에 이미 있던 값**이고 브랜치가 늘린 것이 아니다. `alerts?ref=` 가 fail-open 임을 실측했으므로 그 2건의 정체는 이 질의로 확정하지 못했다 — **별건**. 6. **CHANGELOG 는 별도 반영하지 않았다** — 사유는 §6(이미 브랜치 내용이고 en/ko 대칭). 7. **semver 태그는 달지 않았다** — 대표 승인 항목이고 이 ORD 범위 밖.»</li>
+    <li id="f25"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-log-77__ORD-CLS-PR-79.md</span> — «## R4-8. 착지시켰지만 남겨 두는 것 — 조용히 빼지 않는다 … 1. 「확립 전 표본(#69·#70·#73)까지 넣은 라이브 전수는 여섯」 — … **시작 경계가 문장에 없다.** … 2. 「#59 부터 전수는 열일곱(성공 11·실패 6)」 — **끝 경계가 없다.** 항목 날짜(08-27) 기준으로는 정확하지만, #80 의 GHAS 실패가 **이 커밋이 쓰이기 41분 전**(08-28 03:27 KST) 반영됐다 … 둘 다 **다음 편 각주·정정으로 되돌릴 수 있는 경로**가 이미 있다(연대기의 자기정정 관례).»</li>
     <li id="f26"><span class="path">WORK_LOGS/whole-life/IMP_feat-72-repair-doc-records__ORD-IMP-72.md</span> — «**확대분 자격 판정(리뷰어 판정 ③의 다섯 후보 전수)**: … **#46 자격 있음** … **#33 자격 있음** … **#34 자격 있음** … **#35 부적격** … **#38 부적격** …»</li>
     <li id="f27"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «**ORD-EDU-cycle-72** (교육자, 12:5x `18635165`) — #72 사이클 기편(일지편 뭉치 포함).» — PR#81 봇 리뷰가 이전 각주 `[1]`(이슈 «발행» 기록)이 이 편의 기편 지정 근거로는 오귀속임을 지적해 정정한 자리.</li>
     <li id="f28"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-log-80__ORD-CLS-PR-81-observe.md</span> — «→ 간격 8시간 05분 21초» (PR#79 착지 `40118b4e` 04:34:32 KST ↔ PR#80 착지 `4fd92a37` 12:39:53 KST). PR#81 봇 리뷰가 이 편의 「같은 시각」 표현이 실제로는 8시간 넘게 벌어진 두 착지를 뭉갠다고 지적해 정정한 자리 — 간격은 재확인 시 <code>git log -1 --format='%ad' --date=iso-local 40118b4e</code> / <code>4fd92a37</code> 로 직접 재산정했다.</li>
+    <li id="f29"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-log-80__ORD-CLS-PR-81-reobserve.md</span> — «각주 «해소»(링크가 걸리는가)는 게이트가 보지만 각주 «부합»(그 각주가 그 문장을 실제로 뒷받침하는가)은 어떤 게이트도 보지 않는다.» · «⚠️ 내 잘못이 흘러간 경로: 파일에는 일곱으로 적었으면서 채널 RPT 에는 「못 한 것 5건」으로 줄여 올렸다. 통치자 BRF 가 그 5건을 옮겨 적었고 교육자가 그 수를 따랐다. … 내가 스스로 축소한 값으로 재현됐다.»</li>
   </ol>
 
 </div>
