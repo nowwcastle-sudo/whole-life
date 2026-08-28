@@ -249,6 +249,11 @@ class CodexSubtypeMappingTests(unittest.TestCase):
             '{"id":"i","type":"mcp_tool_call","server":"s","tool":"t",'
             '"arguments":{},"status":"completed"}'
         ),
+        "collab_tool_call": (
+            '{"id":"i","type":"collab_tool_call","tool":"wait",'
+            '"sender_thread_id":"s","receiver_thread_ids":[],"prompt":null,'
+            '"agents_states":{},"status":"completed"}'
+        ),
     }
 
     def kinds(self, item_type):
@@ -284,6 +289,7 @@ class CodexSubtypeMappingTests(unittest.TestCase):
             "file_change",
             "mcp_tool_call",
             "web_search",
+            "collab_tool_call",
         ):
             with self.subTest(item_type=item_type):
                 self.assertEqual(
@@ -522,6 +528,14 @@ class ClosedValueTests(unittest.TestCase):
         # mcp_tool_call.status: in_progress | completed | failed
         '{"type":"item.completed","item":{"id":"i","type":"mcp_tool_call",'
         '"server":"s","tool":"t","arguments":{},"status":"queued"}}',
+        # collab_tool_call.status: in_progress | completed | failed
+        '{"type":"item.completed","item":{"id":"i","type":"collab_tool_call",'
+        '"tool":"wait","sender_thread_id":"s","receiver_thread_ids":[],'
+        '"prompt":null,"agents_states":{},"status":"queued"}}',
+        # collab_tool_call.tool: spawn_agent | send_input | wait | close_agent
+        '{"type":"item.completed","item":{"id":"i","type":"collab_tool_call",'
+        '"tool":"telepathy","sender_thread_id":"s","receiver_thread_ids":[],'
+        '"prompt":null,"agents_states":{},"status":"completed"}}',
     )
 
     CLAUDE_OUT_OF_RANGE = (
@@ -542,6 +556,96 @@ class ClosedValueTests(unittest.TestCase):
             with self.subTest(line=line):
                 with self.assertRaises(StreamFailure):
                     normalize_claude_line(line, run_id=RUN_ID)
+
+
+class CollabToolCallScopeTests(unittest.TestCase):
+    """#51: the collaboration item is accepted exactly as far as it was measured.
+
+    The recorded 0.149.0 turn is the only evidence this build holds about
+    `collab_tool_call` — the pinned SDK typings never define it — and every
+    call in it named no receivers and carried no agent states. That emptiness
+    is what lets the mapping say "a tool call, not a delegation" without
+    inventing one. A collab call that *does* name receivers or agent states is
+    a shape this build has never evaluated, and the moment one arrives, the
+    fact the enforcement row rests on — the stream gives the counter nothing
+    to count — has moved. Filing such a call as ordinary tool use would hide
+    exactly that, so it fails the run instead.
+    """
+
+    def line(self, **overrides):
+        item = {
+            "id": "i",
+            "type": "collab_tool_call",
+            "tool": "wait",
+            "sender_thread_id": "s",
+            "receiver_thread_ids": [],
+            "prompt": None,
+            "agents_states": {},
+            "status": "completed",
+        }
+        item.update(overrides)
+        return json.dumps({"type": "item.completed", "item": item})
+
+    def test_the_measured_shape_is_accepted(self):
+        """The control for every refusal below: with nothing overridden the
+        line passes, so a refusal can only be about the overridden field."""
+        events = normalize_codex_line(self.line(), run_id=RUN_ID)
+
+        self.assertEqual(
+            ["runtime.activity.finished"], [event.kind for event in events]
+        )
+
+    def test_a_call_naming_receivers_is_refused_not_filed_as_tool_use(self):
+        with self.assertRaises(StreamFailure) as caught:
+            normalize_codex_line(
+                self.line(receiver_thread_ids=["t-1"]), run_id=RUN_ID
+            )
+
+        self.assertEqual("StdoutSchemaMismatch", caught.exception.diagnostic)
+
+    def test_a_call_carrying_agent_states_is_refused(self):
+        states = {"t-1": {"status": "running", "message": None}}
+
+        with self.assertRaises(StreamFailure) as caught:
+            normalize_codex_line(self.line(agents_states=states), run_id=RUN_ID)
+
+        self.assertEqual("StdoutSchemaMismatch", caught.exception.diagnostic)
+
+    def test_every_required_field_is_required(self):
+        for field in (
+            "tool",
+            "sender_thread_id",
+            "receiver_thread_ids",
+            "prompt",
+            "agents_states",
+            "status",
+        ):
+            with self.subTest(field=field):
+                item = json.loads(self.line())["item"]
+                del item[field]
+                line = json.dumps({"type": "item.completed", "item": item})
+
+                with self.assertRaises(StreamFailure) as caught:
+                    normalize_codex_line(line, run_id=RUN_ID)
+
+                self.assertEqual(
+                    "StdoutSchemaMismatch", caught.exception.diagnostic
+                )
+
+    def test_the_item_is_never_read_as_a_native_worker(self):
+        """#51 AC: nothing may read this item as evidence of a native worker.
+
+        `activity_kind=native_worker` stays reserved for a provider that
+        announces worker lifecycle, which this stream did not.
+        """
+        for envelope in ("item.started", "item.completed"):
+            with self.subTest(envelope=envelope):
+                line = self.line().replace('"item.completed"', f'"{envelope}"')
+                (event,) = normalize_codex_line(line, run_id=RUN_ID)
+
+                self.assertEqual("tool_use", event.data["activity_kind"])
+                self.assertIsNone(event.worker_depth)
+                self.assertNotIn("native_child_id", event.data)
 
 
 class UsageAccountingTests(unittest.TestCase):

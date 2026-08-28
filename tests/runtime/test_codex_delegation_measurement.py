@@ -132,47 +132,75 @@ class WhatTheStreamShowedTests(unittest.TestCase):
         )
 
 
-class TheStreamStillFailsClosedTests(unittest.TestCase):
-    """What the measurement also showed, pinned so it cannot change silently.
+class TheCollaborationTurnNowCompletesTests(unittest.TestCase):
+    """Ticket #51. The predecessor of this class pinned the opposite — that
+    every `collab_tool_call` line was refused as `UnknownProviderEvent` — and
+    said a change to it had to be deliberate. This is that deliberate change.
 
-    `collab_tool_call` is not in the normalizer's closed item enum, so a turn
-    that uses it fails rather than being partly understood. That is section 7's
-    rule working — an unknown event is not guessed at — and it is recorded here
-    because the production argument vector carries `agents.enabled=true` on
-    every turn, so this is reachable rather than hypothetical.
-
-    Whether the item should be recognised is a different question and a
-    different ticket. This test says what today does, so that a change to it
-    has to be deliberate.
+    The production argument vector asks for the collaboration capability on
+    every turn, so a turn that used it must reach its end. Replayed against
+    the committed recording rather than hand-written lines: every synthetic
+    line is one someone already knew about, which is how the previous defect
+    of this family lived.
     """
 
-    def test_the_collaboration_item_is_refused_rather_than_guessed(self):
-        refused = []
+    def test_the_whole_recording_replays_without_failing_the_run(self):
+        """#51 AC1, on the recording. Ordering asserted too: the two
+        collaboration calls surface as tool activity between the model's two
+        messages, exactly where the provider put them."""
+        kinds = []
         for line in recorded_lines():
-            if json.loads(line).get("item", {}).get("type") != "collab_tool_call":
-                continue
-            with self.assertRaises(StreamFailure) as caught:
-                normalize_codex_line(line, run_id=RUN_ID)
-            refused.append(caught.exception.diagnostic)
-
-        self.assertEqual(["UnknownProviderEvent"] * 4, refused)
-
-    def test_the_rest_of_the_stream_normalizes(self):
-        """The control. If everything raised, the assertion above would hold
-        for a normalizer that simply rejects every line."""
-        understood = []
-        for line in recorded_lines():
-            if json.loads(line).get("item", {}).get("type") == "collab_tool_call":
-                continue
-            understood.extend(
+            kinds.extend(
                 event.kind for event in normalize_codex_line(line, run_id=RUN_ID)
             )
 
         self.assertEqual(
-            ["turn.started", "message.committed", "message.committed",
-             "turn.completed"],
-            understood,
+            [
+                "turn.started",
+                "message.committed",
+                "runtime.activity.started",
+                "runtime.activity.finished",
+                "runtime.activity.started",
+                "runtime.activity.finished",
+                "message.committed",
+                "turn.completed",
+            ],
+            kinds,
         )
+
+    def test_the_collaboration_item_is_a_tool_call_not_a_worker(self):
+        """#51 AC2. The stream reported no worker — the receiving-thread list
+        and agent-state map are empty on every call — so the event says
+        `tool_use`, carries no worker identity and no depth."""
+        events = []
+        for line in recorded_lines():
+            if json.loads(line).get("item", {}).get("type") != "collab_tool_call":
+                continue
+            events.extend(normalize_codex_line(line, run_id=RUN_ID))
+
+        self.assertEqual(4, len(events), "the recording carries four calls")
+        for event in events:
+            self.assertEqual("tool_use", event.data["activity_kind"])
+            self.assertNotIn("native_child_id", event.data)
+            self.assertIsNone(event.worker_depth)
+
+    def test_a_fabricated_item_type_still_fails_the_same_way(self):
+        """#51 AC4, as a positive control on the same recorded bytes: swap the
+        one recognised discriminator for one nobody has seen and the line must
+        die. A normalizer that started accepting whatever arrives would pass
+        the replay above and fail here."""
+        line = next(
+            line
+            for line in recorded_lines()
+            if json.loads(line).get("item", {}).get("type") == "collab_tool_call"
+        )
+        fabricated = line.replace('"collab_tool_call"', '"collab_tool_call_v2"')
+        assert fabricated != line
+
+        with self.assertRaises(StreamFailure) as caught:
+            normalize_codex_line(fabricated, run_id=RUN_ID)
+
+        self.assertEqual("UnknownProviderEvent", caught.exception.diagnostic)
 
 
 if __name__ == "__main__":
