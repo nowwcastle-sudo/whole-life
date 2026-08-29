@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>제24편 — 먼저 온 것을, 나중 것이 지우지 못했다</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:       #282828;
+    --paper-2:     #32302f;
+    --zone:        #302e2c;
+    --ink:         #ebdbb2;
+    --muted:       #a89984;
+    --soft:        #928374;
+    --rule:        rgba(235,219,178,0.12);
+    --rule-solid:  #504945;
+    --accent:      #fe8019;
+    --accent-tint: rgba(254,128,25,0.12);
+    --link:        #83a598;
+    --green:       #b8bb26;
+    --red:         #fb4934;
+    --yellow:      #fabd2f;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--paper); color:var(--ink);
+       font-family:"Geist","Pretendard","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;
+       line-height:1.75; -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:880px; margin:0 auto; padding:64px 28px 120px}
+  .kicker{font-size:13px; letter-spacing:.14em; color:var(--soft); text-transform:uppercase;
+          font-family:"Geist Mono",ui-monospace,"Consolas",monospace}
+  h1{font-family:"Instrument Serif","Malgun Gothic",serif;
+     font-size:46px; line-height:1.22; margin:14px 0 10px; letter-spacing:-.01em; font-weight:400}
+  .sub{font-size:18px; color:var(--muted); margin:0 0 8px}
+  h2{font-family:"Instrument Serif","Malgun Gothic",serif;
+     font-size:30px; line-height:1.32; margin:56px 0 14px; font-weight:400; letter-spacing:-.01em}
+  h3{font-size:16px; letter-spacing:.06em; color:var(--ink); margin:34px 0 12px; font-weight:600}
+  p{font-size:17px; margin:0 0 18px}
+  .note{font-size:15px; color:var(--muted)}
+  hr{border:0; border-top:1px solid var(--rule); margin:44px 0}
+  code{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; font-size:.9em;
+       background:var(--zone); color:var(--ink); padding:1px 6px; border-radius:4px}
+  .card{background:var(--paper-2); border:1px solid var(--rule-solid); border-radius:8px;
+        padding:26px 28px; margin:26px 0}
+  .warn{border-color:var(--yellow)}
+  .warn .tag{color:var(--yellow); font-weight:600; font-size:13px; letter-spacing:.1em;
+             font-family:"Geist Mono",ui-monospace,monospace}
+  .rule-card{border-color:var(--accent)}
+  .rule-card .tag{color:var(--accent); font-weight:600; font-size:13px; letter-spacing:.1em;
+                  font-family:"Geist Mono",ui-monospace,monospace}
+  .tbl{width:100%; border-collapse:collapse; font-size:14.5px}
+  .tbl th{text-align:left; font-size:11.5px; letter-spacing:.08em; text-transform:uppercase;
+          color:var(--soft); font-weight:500; padding:0 12px 10px 0; border-bottom:1px solid var(--rule-solid);
+          font-family:"Geist Mono",ui-monospace,monospace}
+  .tbl td{padding:12px 12px 12px 0; border-bottom:1px solid var(--rule); vertical-align:top; line-height:1.6}
+  .tbl tr:last-child td{border-bottom:0}
+  .tbl td:first-child{white-space:nowrap; font-family:"Geist Mono",ui-monospace,"Consolas",monospace;
+       font-size:13px; color:var(--soft)}
+  figure{margin:34px 0; overflow-x:auto}
+  figcaption{font-size:14px; color:var(--muted); margin-top:12px; text-align:center; line-height:1.6}
+  svg{display:block; width:100%; height:auto; min-width:760px}
+  sup a{color:var(--link); text-decoration:none; font-size:12px; font-weight:600; padding:0 1px}
+  a{color:var(--link); text-underline-offset:3px; text-decoration-thickness:1px}
+  .fnotes{margin-top:64px; border-top:1px solid var(--rule-solid); padding-top:26px;
+          list-style:none; padding-left:0}
+  .fnotes li{font-size:14px; color:var(--muted); margin-bottom:11px; line-height:1.65}
+  .fnotes .path{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; color:var(--ink); font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kicker">제 24 편 · 기편 · PR#84(#45)·PR#83(제23편 착지) 종료 게이트 · 당대에 씀</div>
+  <h1>먼저 온 것을, 나중 것이 지우지 못했다</h1>
+  <p class="sub">PR#84는 게이트 2가 한 번 적색을 냈다. 재실행이 초록을 냈지만, 그 초록은 앞선 적색을
+    지우지 않았다 — 대신 대표가 적색을 병합 커밋 본문에 그대로 새기기로 했다. PR#83은 게이트 7이
+    다 끝난 뒤에 대표의 재부팅 정지 지시가 도착했다. 완결자는 그 실행을 다시 돌리는 대신, 산출물과
+    독립된 신호 둘로 「끊긴 실행이 아니다」를 증명했다.</p>
+
+  <div class="card rule-card">
+    <div class="tag">읽기 전에 — 이 편이 묶는 범위</div>
+    <p style="margin:8px 0 12px">
+      통치자 지시가 이 편을 「직전 사이클 — PR#84(#45 종결)·PR#83(제23편 기편 착지)」의 기편으로
+      명시했다. 발행 조건은 대표 상시 규칙 <code>600759a9</code> — 「교육자 자료 작성 지시는
+      실제 PR 병합까지 모두 완료된 뒤에만 발행」<sup><a href="#f2">[2]</a></sup> — 이고, 통치자가
+      <code>git ls-remote origin main</code>과 <code>gh pr list --state open</code>으로 두 병합의
+      완료를 재실측한 뒤에 이 ORD를 발행했다.<sup><a href="#f1">[1]</a></sup> 기편이 일지편을
+      포함하므로, 이 편이 두 착지 레그를 모두 다룬다.</p>
+    <p style="margin:0" class="note">
+      각주는 문구의 «존재»만 보증한다. 줄 번호는 쓰지 않는다 — 파일이 바뀌면 조용히 다른 곳을
+      가리키므로, 인용문은 <code>grep</code>으로 대조한다.</p>
+  </div>
+
+  <h2>질문 1 · 무슨 일이</h2>
+  <p>
+    이슈 #45 — 「run이 두 가지 이유로 unknown이 됐을 때, 처음 발견된 하나가 아니라 둘 다
+    말한다」<sup><a href="#f19">[19]</a></sup> — 를 착지시키던 PR#84가 로컬 전체 스위트에서
+    한 번 적색을 냈다. 완결자는 그 적색을 base 브랜치에 대한 통제 실행으로 「PR#84의 diff와
+    무관하다」고 확정했지만, 게이트 2 문구 자체는 <b>글자 그대로 미충족</b>이었기 때문에 스스로
+    판정하지 않고 대표에게 올렸다.<sup><a href="#f4">[4]</a></sup> 대표는 「지금 착지하되 적색을
+    병합 커밋 본문에 명기한다」(결정 X)와 「제23편의 착지도 지금 한다」(결정 AA)를 함께
+    확정했고,<sup><a href="#f7">[7]</a></sup> PR#84가 <code>d31ce912</code>로, 이어 PR#83이
+    <code>bfaac895</code>로 착지했다. PR#83의 착지 마지막 게이트(새 main 전체 스위트)가 끝난
+    직후 대표의 PC 재부팅 정지 지시가 도착했는데, 완결자는 그 실행을 「끊긴 실행」으로 버리고
+    다시 돌리는 대신 <b>산출물과 독립된 성공 신호 둘</b>로 이미 끝난 실행이 유효함을
+    증명했고, 통치자는 이 논리를 그대로 받아들였다.<sup><a href="#f15">[15]</a></sup><sup><a href="#f16">[16]</a></sup>
+    두 착지 모두 완료 보고가 7개 게이트 전항 통과로 종결됐다.
+  </p>
+
+  <h2>질문 2 · 어떤 흐름으로 진행됐나</h2>
+  <figure>
+    <svg viewBox="0 0 1000 600" role="img" aria-labelledby="ep24-timeline-title ep24-timeline-desc">
+      <title id="ep24-timeline-title">PR#84 게이트 2 적색부터 PR#83 게이트 7의 정지-이후-판정까지</title>
+      <desc id="ep24-timeline-desc">2026-08-28 21시 10분대 PR#84 착지 게이트 발행부터, 게이트 2 적색, base 통제로 브랜치 무관 확정, 대표에게 올라간 BRF, 다음날 09시 대표의 결정 X·AA, PR#84 병합과 게이트 7 초록, PR#83의 예측 트리 병합, 그리고 대표의 재부팅 정지 지시가 게이트 7 종료 직후 도착해 완결자가 독립 신호 둘로 끊긴 실행이 아님을 증명하기까지 여덟 사건을 순서대로 배치한 다이어그램. 가로축은 사건 순서이며 실제 경과 시간에 비례하지 않는다.</desc>
+      <defs>
+        <marker id="ep24-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="var(--muted)"/>
+        </marker>
+      </defs>
+      <rect width="100%" height="100%" fill="var(--paper)"/>
+
+      <text x="24" y="30" font-size="12" fill="var(--soft)" letter-spacing="0.08em"
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">2026-08-28 21:1x → 2026-08-29 10:4x KST · 가로축 = 순서(시간 비례 아님)</text>
+
+      <line x1="60" y1="380" x2="940" y2="380" stroke="var(--rule-solid)" stroke-width="1"/>
+
+      <!-- N0 above -->
+      <circle cx="90" cy="380" r="5" fill="var(--paper)" stroke="var(--muted)" stroke-width="1"/>
+      <line x1="90" y1="344" x2="90" y2="374" stroke="var(--muted)" stroke-width="1"/>
+      <text x="90" y="296" font-size="10" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">08-28 21:1x</text>
+      <text x="90" y="316" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">착지 ORD 발행</text>
+      <text x="90" y="332" font-size="9" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">e67947ab · PR#84 게이트 7항</text>
+
+      <!-- N1 below -->
+      <circle cx="210" cy="380" r="6" fill="var(--red)"/>
+      <line x1="210" y1="386" x2="210" y2="416" stroke="var(--red)" stroke-width="1"/>
+      <text x="210" y="440" font-size="10" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">22:0x</text>
+      <text x="210" y="424" font-size="12" font-weight="700" fill="var(--ink)" text-anchor="middle" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">게이트 2 적색</text>
+      <text x="210" y="408" font-size="9" fill="var(--red)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">test_close_ends_every_active_run · 40s 만료</text>
+
+      <!-- N2 above -->
+      <circle cx="330" cy="380" r="6" fill="var(--link)"/>
+      <line x1="330" y1="344" x2="330" y2="374" stroke="var(--link)" stroke-width="1"/>
+      <text x="330" y="296" font-size="10" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">22:1x</text>
+      <text x="330" y="316" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">base 통제</text>
+      <text x="330" y="332" font-size="9" fill="var(--link)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">같은 바깥 게이트 적색 · S9 셋째 표본</text>
+
+      <!-- N3 below -->
+      <circle cx="450" cy="380" r="6" fill="var(--link)"/>
+      <line x1="450" y1="386" x2="450" y2="416" stroke="var(--link)" stroke-width="1"/>
+      <text x="450" y="440" font-size="10" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">22:2x</text>
+      <text x="450" y="424" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">대표 상신 BRF</text>
+      <text x="450" y="408" font-size="9" fill="var(--link)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">23aba0ce · X/Y · Z</text>
+
+      <!-- N4 above, pivotal -->
+      <circle cx="580" cy="380" r="9" fill="var(--accent)"/>
+      <line x1="580" y1="344" x2="580" y2="371" stroke="var(--accent)" stroke-width="1.4"/>
+      <text x="580" y="292" font-size="10" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">08-29 09:02</text>
+      <text x="580" y="312" font-size="12" font-weight="700" fill="var(--ink)" text-anchor="middle" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">대표 결정 X·AA</text>
+      <text x="580" y="328" font-size="9" fill="var(--accent)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">aef75e4a · 적색 명기하고 지금 착지 · Z는 후보 유지</text>
+
+      <!-- N5 below -->
+      <circle cx="700" cy="380" r="6" fill="var(--green)"/>
+      <line x1="700" y1="386" x2="700" y2="416" stroke="var(--green)" stroke-width="1"/>
+      <text x="700" y="440" font-size="10" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">10:16</text>
+      <text x="700" y="424" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">PR#84 병합·게이트 7 초록</text>
+      <text x="700" y="408" font-size="9" fill="var(--green)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">d31ce912 · RPT 통과 7/7</text>
+
+      <!-- N6 above -->
+      <circle cx="820" cy="380" r="6" fill="var(--green)"/>
+      <line x1="820" y1="344" x2="820" y2="374" stroke="var(--green)" stroke-width="1"/>
+      <text x="820" y="296" font-size="10" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">10:2x-10:30</text>
+      <text x="820" y="316" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">PR#83 예측 트리 병합</text>
+      <text x="820" y="332" font-size="9" fill="var(--green)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">bfaac895 · #84 완료 뒤 착수</text>
+
+      <!-- N7 below -->
+      <circle cx="920" cy="380" r="6" fill="var(--yellow)"/>
+      <line x1="920" y1="386" x2="920" y2="416" stroke="var(--yellow)" stroke-width="1"/>
+      <text x="920" y="446" font-size="10" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">10:3x-10:4x</text>
+      <text x="920" y="424" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">정지 도착(게이트 7은 이미 끝)</text>
+      <text x="920" y="408" font-size="9" fill="var(--yellow)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">독립 신호 둘 → RPT 통과 7/7</text>
+
+      <!-- connecting arrows -->
+      <line x1="97" y1="380" x2="203" y2="380" stroke="var(--muted)" stroke-width="1" marker-end="url(#ep24-arrow)"/>
+      <line x1="217" y1="380" x2="323" y2="380" stroke="var(--muted)" stroke-width="1" marker-end="url(#ep24-arrow)"/>
+      <line x1="337" y1="380" x2="443" y2="380" stroke="var(--muted)" stroke-width="1" marker-end="url(#ep24-arrow)"/>
+      <line x1="457" y1="380" x2="570" y2="380" stroke="var(--muted)" stroke-width="1" marker-end="url(#ep24-arrow)"/>
+      <line x1="590" y1="380" x2="693" y2="380" stroke="var(--muted)" stroke-width="1" marker-end="url(#ep24-arrow)"/>
+      <line x1="707" y1="380" x2="813" y2="380" stroke="var(--muted)" stroke-width="1" marker-end="url(#ep24-arrow)"/>
+      <line x1="827" y1="380" x2="913" y2="380" stroke="var(--muted)" stroke-width="1" marker-end="url(#ep24-arrow)"/>
+
+      <!-- legend -->
+      <line x1="24" y1="486" x2="940" y2="486" stroke="var(--rule)" stroke-width="1"/>
+      <text x="24" y="514" font-size="12" fill="var(--soft)" letter-spacing="0.14em"
+            font-family="'Geist Mono',ui-monospace,monospace">범례</text>
+      <circle cx="108" cy="542" r="5" fill="var(--paper)" stroke="var(--muted)" stroke-width="1"/>
+      <text x="124" y="546" font-size="11" fill="var(--muted)" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">절차성 사건</text>
+      <circle cx="248" cy="542" r="6" fill="var(--red)"/>
+      <text x="260" y="546" font-size="11" fill="var(--muted)" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">게이트 미충족</text>
+      <circle cx="388" cy="542" r="6" fill="var(--link)"/>
+      <text x="400" y="546" font-size="11" fill="var(--muted)" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">조사·판단 또는 결정 요청</text>
+      <circle cx="588" cy="542" r="6" fill="var(--yellow)"/>
+      <text x="600" y="546" font-size="11" fill="var(--muted)" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">특이사항 발생 → 해소</text>
+      <circle cx="748" cy="542" r="6" fill="var(--green)"/>
+      <text x="760" y="546" font-size="11" fill="var(--muted)" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">게이트 통과·착지 완료</text>
+      <circle cx="888" cy="542" r="9" fill="var(--accent)"/>
+      <text x="904" y="546" font-size="11" fill="var(--muted)" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">이 편의 초점</text>
+    </svg>
+    <figcaption>
+      <b>N4가 이 편의 유일한 되돌릴 수 없는 결정이다</b> — 병합은 대표만 확정하고, 병합 뒤 삭제되는
+      브랜치·squash 트리는 되돌리기 비용이 비대칭적으로 크다. N1(적색)은 N5(초록)로 지워지지
+      않았다 — 병합 커밋 본문에 그대로 남았다.<sup><a href="#f8">[8]</a></sup> N7(정지 도착)도
+      게이트 7 자체를 무효화하지 못했다 — 완결자가 산출물과 독립된 신호로 증명했다.<sup><a href="#f15">[15]</a></sup>
+    </figcaption>
+  </figure>
+
+  <h2>대상 1 — PR#84, 적색을 지우지 않고 새겼다</h2>
+  <p>
+    통치자 ORD(<code>e67947ab</code>)는 착지 게이트 7항 — 브랜치 사용자 확인·전체 스위트·비밀
+    스캔·CLI squash와 트레일러 직접 삽입·<code>--match-head-commit</code> 전체 SHA 핀·트리
+    실측·병합 후 스위트+CHANGELOG — 을 요구했다.<sup><a href="#f1">[1]</a></sup> 게이트 1·3·봇
+    재관측은 통과했지만, 게이트 2 — 브랜치 head 전체 스위트 — 가 420건 중 1건을 냈다.
+    <code>test_close_ends_every_active_run</code>이 <code>close_all_runs</code>의 자식 종료
+    대기에서 <code>asyncio.wait_for(..., timeout=40)</code>를 넘겨 <code>TimeoutError</code>로
+    죽었다.<sup><a href="#f3">[3]</a></sup>
+  </p>
+  <p>
+    완결자는 이 지점이 원장에 이미 등록된 간헐(S9 계열)임을 알고 있었지만, <b>「알려진 간헐이니
+    넘어간다」는 근거가 아니라고 판단</b>해 통제를 세웠다 — 이미 착지해 CI 초록을 받은 base
+    트리(PR#82 squash)를 별도 워크트리에서 같은 명령으로 돌렸다. base도 같은 바깥 게이트에서
+    적색을 냈다(415건 중 1건, 다른 안쪽 지점 — <code>test_a_cancelled_handover_does_not_leave_the_child_running</code>,
+    프로브 자식이 pid를 못 남긴 것으로 S9의 <b>셋째 표본</b>이 됐다). 같은 head를 CI(GitHub
+    windows-latest)에서 돌리면 420건 전부 초록(47.9초)이었다 — 로컬(642.4초)의 13.4배
+    차이였다.<sup><a href="#f4">[4]</a></sup> 판정은 「적색이 PR#84의 diff에 귀속되지 않는다」였다.
+  </p>
+  <p>
+    이 저장소는 이미 이 자리에 판정을 갖고 있었다. 다른 이슈(#63)의 리뷰가 같은 모양의 40초
+    상한을 두고 이렇게 적어 두었다 — <b>「이 테스트의 단언은 «close가 40초 안에 끝난다»이다.
+    부하 아래에서 40초를 넘겼다면 그 단언은 실제로 거짓이었다. 적색이 가짜인 게 아니라, 벽시계
+    상한이 코드만의 속성이 아닌 것이다.」</b><sup><a href="#f5">[5]</a></sup> 완결자는 그래서
+    「초록」이라는 말을 함부로 쓰지 않았다 — 이 문서가 확보한 것은 정확히 이만큼이다:
+    게이트 2가 요구한 「브랜치 head에서 420 OK」를 이 PC에서 얻지 못했다(1회차), 그 적색은
+    PR#84에 귀속되지 않는다(base 통제), 같은 head의 420 OK는 CI가 냈지 로컬이 아니다.
+  </p>
+  <p>
+    이 상태로 완결자는 스스로 병합하지 않고 대표에게 올렸다 — 결정 X(지금 착지, 로컬 적색을
+    착지 보고·병합 커밋 본문에 명기) · Y(로컬 420 OK까지 병합을 미룸) · Z(S9 「부하 아래 유한
+    대기 만료」를 별건 이슈로 발행, 무응답이면 발행 없이 후보 등재 유지).<sup><a href="#f6">[6]</a></sup>
+    대표는 이튿날 09:02 「AA, X로 할게」로 답했다 — <b>X를 골랐다</b>. Z는 답이 없었고, 그 침묵은
+    「발행 안 함」이 아니라 사전에 예고된 「후보 등재 유지」로 처리됐다.<sup><a href="#f7">[7]</a></sup>
+  </p>
+  <p>
+    완결자는 병합을 재개하기 전 <b>브랜치 head를 3회차 로컬 스위트로 다시 돌려 420 OK를
+    한 번 더 얻었지만</b>, 그 초록을 「1회차 적색이 없던 일이 됐다」는 근거로 쓰지 않았다 —
+    「초록 재실행은 앞선 적색을 해소하지 않는다. 간헐이 초록으로 나오는 것은 간헐의 정의
+    그 자체다」라고 스스로 못박았다.<sup><a href="#f4">[4]</a></sup> 병합 커밋(<code>d31ce912</code>)
+    본문의 <code>Landing note</code> 문단에는 완결자 정본의 §7~§8 실측 문장이 그대로 옮겨졌다
+    — 1회차 적색·base 통제 무관·CI 초록·2회차 로컬 초록과, 「초록 재실행이 적색을 지우지
+    않는다」·「562.5초는 CI의 11.7배라 부하 가설도 확증되지 않는다」는 두 한계 문장까지
+    포함해서였다.<sup><a href="#f8">[8]</a></sup> 통치자는 이 옮김을 완결자의 주장으로만
+    남겨 두지 않고, 커밋이 불변 객체라는 점을 이용해 <b>직접 <code>git log -1 --format=%B
+    d31ce912</code>를 열람해 문장 하나하나가 실재함을 독립적으로 확인했다.</b><sup><a href="#f9">[9]</a></sup>
+  </p>
+  <p>
+    이 저장소는 squash만 허용한다. 검증한 커밋 SHA는 결코 main의 조상이 되지 않으므로,
+    「내 SHA가 히스토리에 있나」는 애초에 답할 수 없는 질문이다. 완결자는 병합 전에 검증한
+    head의 트리 해시를 미리 적어 두고, 병합 후 <code>origin/main^{tree}</code>와 대조해
+    <b>바이트 단위로 같음</b>을 확인했다.<sup><a href="#f10">[10]</a></sup> CHANGELOG 두 파일도
+    커밋의 트리에서 직접 읽어 「#45」를 실제로 말하는 줄까지 인용했다.<sup><a href="#f11">[11]</a></sup>
+  </p>
+
+  <table class="tbl">
+    <thead><tr><th>게이트</th><th>결과</th></tr></thead>
+    <tbody>
+      <tr><td>1 브랜치 사용자 확인</td><td>통과 (0명)</td></tr>
+      <tr><td>2 로컬 스위트</td><td><b>적색 1회 → 초록 1회</b> — 브랜치 무관은 base 통제로 갈림</td></tr>
+      <tr><td>3 비밀 스캔</td><td>통과 (0건, 발화·과발화 따로 증명)</td></tr>
+      <tr><td>4 CLI squash + 트레일러 직접 삽입</td><td>통과 (trailer_count=2)</td></tr>
+      <tr><td>5 <code>--match-head-commit</code> 전체 SHA 핀</td><td>통과</td></tr>
+      <tr><td>6 병합 성공 = 트리 실측</td><td>통과 (TREE_MATCH=YES)</td></tr>
+      <tr><td>7 새 main 스위트 + CHANGELOG</td><td><b>통과 (420 OK · EXIT=0)</b> + 두 파일 실재</td></tr>
+    </tbody>
+  </table>
+
+  <h2>대상 2 — PR#83, 트리가 다르니 트리를 미리 예측했다</h2>
+  <p>
+    PR#83(제23편 착지)의 착수 조건은 「PR#84 완료 뒤」로 순서가 고정돼 있었다 — main이 움직이기
+    때문이었다.<sup><a href="#f12">[12]</a></sup> 완결자는 PR#84의 완료 RPT를 확인한 뒤 착수했고,
+    브랜치 사용자 확인(워크트리 1곳·미커밋 0·미푸시 0)과 브랜치 head 전체 스위트를 돌렸다.
+    개수는 420이 아니라 <b>415</b>였는데, 이 브랜치가 #45 착지 이전의 main에서 갈라졌기 때문에
+    나온 정상값이었다 — 완결자는 이 사실을 미리 적어 두고 「병합 후 새 main에서는 420이 되어야
+    한다」고 예측했다.<sup><a href="#f13">[13]</a></sup>
+  </p>
+  <p>
+    봇 재관측에서는 재앵커 함정을 직접 실물로 만났다 — PR#83의 인라인 코멘트 5건을
+    <code>commit_id</code>(최신 push 시점 기준)로 세면 4건이 「신규」로 잡히지만,
+    <code>original_commit_id</code>로 다시 걸러 보면 5건 전부 옛 head(P2 4건 수정 전)에
+    귀속되고 새 head에는 신규 지적이 0건이었다. 완결자는 이 자리에 「<code>commit_id</code>로
+    셌으면 신규 4건이라는 오탐으로 착지를 막았을 자리다」라고 남겼다.<sup><a href="#f12">[12]</a></sup>
+  </p>
+  <p>
+    병합 검증은 PR#84와 다른 문제를 냈다. PR#84는 브랜치가 병합 시점 main에서 그대로 갈라진
+    상태였기 때문에 병합 결과 트리가 head 트리와 같았지만, PR#83은 브랜치 base(<code>17c8be2b</code>)와
+    병합 시점 main(<code>d31ce912</code>)이 달랐다 — squash 결과 트리가 head 트리와 <b>같을
+    수 없는</b> 경우였다. 그대로 대조했으면 「불일치」라는 오판이 나왔을 자리다. 완결자는
+    <b>병합 전에</b> <code>git merge-tree --write-tree</code>로 결과 트리를 미리 예측해
+    두고, 병합 후 실제 새 main의 트리와 대조해 <b>같음</b>을 확인했다 — 이 계보에서 base가
+    다른 채로 병합한 첫 사례가 예측 트리로 검증됐다.<sup><a href="#f14">[14]</a></sup> blob
+    단위로도 <code>outcome.py</code>의 해시가 병합 전후 동일함을 확인해, <b>이 병합이 PR#84를
+    되돌리지 않았다</b>는 것까지 별도 축으로 증명했다.
+  </p>
+
+  <table class="tbl">
+    <thead><tr><th>게이트</th><th>결과</th></tr></thead>
+    <tbody>
+      <tr><td>1 브랜치 사용자 확인</td><td>통과 (0명 · <code>?? .codex/</code>는 훅 디렉터리)</td></tr>
+      <tr><td>2 브랜치 스위트</td><td>통과 (<b>415</b> OK — 415인 이유 명시)</td></tr>
+      <tr><td>3 비밀 스캔</td><td>통과 (0건, 발화·과발화 따로 증명)</td></tr>
+      <tr><td>4 CLI squash + 트레일러 직접 삽입</td><td>통과 (trailer_count=2, 본문 실물 첨부)</td></tr>
+      <tr><td>5 <code>--match-head-commit</code> 전체 SHA 핀</td><td>통과</td></tr>
+      <tr><td>6 병합 성공 = 트리 실측</td><td>통과 (<b>예측 트리</b> 대조 + blob 3종)</td></tr>
+      <tr><td>7 새 main 스위트 + CHANGELOG</td><td>통과 (<b>420</b> OK) + 비대상 판단 기록</td></tr>
+    </tbody>
+  </table>
+  <p class="note">
+    §2의 예측대로 새 main에서 <b>420</b>이 나왔다 — 문서 전용 PR이 테스트를 잃지 않았고 #84가
+    더한 다섯이 이 병합을 지나서도 살아 있다는 것을 개수 하나가 동시에 답했다. CHANGELOG는
+    이 병합이 만들지 않았다 — 「연대기 기록 전용 PR이라 제품 동작을 바꾸지 않는다」는 판단
+    자체를 완결자가 기록으로 남겼다.<sup><a href="#f13">[13]</a></sup>
+  </p>
+
+  <h2>대상 3 — 정지 지시가 끝난 뒤에 도착했다</h2>
+  <p>
+    PR#83의 마지막 게이트(새 main 전체 스위트, 420 OK)가 끝난 직후 대표의 PC 재부팅 정지
+    지시가 도착했다. 통치자의 정지 지시 문안은 「끊긴 실행의 산출물은 무효, 재실행하라」였다
+    — 원칙 자체는 이 저장소가 이미 지켜 온 것이다(재실행 결과를 함부로 증거로 쓰지 않는다).
+    그런데 완결자는 <b>이 실행에는 그 원칙이 해당하지 않는다</b>고 반증했다 — 산출물과
+    독립된 성공 신호 둘로:
+  </p>
+  <ol style="font-size:17px; margin:0 0 18px; padding-left:22px">
+    <li>하네스가 백그라운드 작업을 <code>status=completed · exit code 0</code>으로 회수했다
+      — 파일이 아니라 프로세스 종료 자체가 낸 값이다.</li>
+    <li>출력 파일 마지막 줄의 <code>EXIT=0</code>은 래퍼가 <code>python … ; echo "EXIT=$?"</code>로
+      <b>명령이 반환한 뒤에만</b> 쓴다. 강제 종료됐다면 이 줄 자체가 없다.</li>
+  </ol>
+  <p>
+    즉 근거는 「초록 출력이 남아 있다」가 아니라 「스위트가 끝까지 돌고 0으로 반환했다」였다.<sup><a href="#f15">[15]</a></sup>
+    통치자는 이 반증을 그대로 수용했다 — 「내 정지 지시(<code>0013868e</code>)는 «끊긴 실행의
+    산출물 무효·재실행»이었으나, 완결자가 산출물과 독립된 성공 신호 둘로 «끊긴 실행이 아님»을
+    증명했다... 재실행 불요 판정. 내 정지 지시 문안은 «그때는 맞았던 줄»로 그대로
+    둔다(중간보고 시점엔 진행 중이었다).」<sup><a href="#f16">[16]</a></sup> 게이트 점검표가
+    묻는 「막을 근거가 있었는데 안 막았나」의 거울상 자리 — 이번엔 <b>무효로 볼 근거가 없었다.</b>
+  </p>
+  <p class="note">
+    두 착지 모두 완료 RPT가 회신됐다 — PR#84는 「게이트 전항 증거 + X 요구 실물(통치자 독립
+    열람) — PR#84/#45 사이클 종결」로, PR#83은 「게이트 전항 증거 + 게이트 7 독립 신호 둘로
+    «끊긴 실행 아님» — PR#83/제23편 사이클 종결」로 각각 통과 판정을 받았다.<sup><a href="#f17">[17]</a></sup><sup><a href="#f18">[18]</a></sup>
+  </p>
+
+  <div class="card">
+    <p style="margin:0 0 10px"><b>대신 무엇을 하지 않기로 했나 — 이 사이클의 값진 자리 넷</b></p>
+    <table class="tbl" style="margin-top:12px">
+      <tbody>
+        <tr>
+          <td>초록 재실행으로<br><span class="note">1회차 적색 지우기</span></td>
+          <td>3회차 로컬 420 OK를 얻고도 「1회차 적색이 없던 일이 됐다」로 쓰지 않았다 — 병합
+            커밋 본문에 적색을 그대로 새겼다.<sup><a href="#f4">[4]</a></sup><sup><a href="#f8">[8]</a></sup></td>
+        </tr>
+        <tr>
+          <td>S9 별건 이슈<br><span class="note">Z 선택지</span></td>
+          <td>대표가 응답하지 않아 「발행 없이 후보 등재 유지」로 남겼다 — 침묵을 거부로도
+            승인으로도 읽지 않고, 예고된 규칙대로만 처리했다.<sup><a href="#f7">[7]</a></sup></td>
+        </tr>
+        <tr>
+          <td>트레일러 되돌리기<br><span class="note">amend·force push</span></td>
+          <td>P1(트레일러 부재) 지적이 반증됐을 때도 이미 있는 커밋을 고치지 않고 새 커밋으로만
+            얹었다 — 되돌리기 어려운 git 조작을 피했다.</td>
+        </tr>
+        <tr>
+          <td>정지 이후 게이트 7<br><span class="note">재실행</span></td>
+          <td>이미 끝난 실행을 「끊겼으니 무효」로 버리지 않고, 독립 신호 둘로 유효성을
+            증명해 재실행 비용을 아꼈다.<sup><a href="#f15">[15]</a></sup><sup><a href="#f16">[16]</a></sup></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>질문 6 · 다음 담당에게 무엇을 위임하나</h2>
+  <p>
+    구현자에게 이슈 #48(정지 스냅숏에서 재개 — base를 새 main <code>bfaac895</code>로
+    재실측한 뒤 스위트를 새로 돌리고 PR을 낸다)이 넘어갔다. 대표에게는 릴리스 태그 BRF가
+    올라갔다 — <b>AC</b>(지금 발행 — README 실측 빚 상환 + semver 제안 + 태그 push 전 대표
+    최종 확인) 대 <b>AD</b>(#48 사이클 뒤로 보류) 중 선택.<sup><a href="#f24">[24]</a></sup>
+    README 실측 빚은 두 착지 문서 모두 「이번에도 미이행」이라고 스스로 적었다 — 완결자가
+    센 것은 7회차(PR#84)·그리고 같은 이월분(PR#83)이다.<sup><a href="#f22">[22]</a></sup><sup><a href="#f23">[23]</a></sup>
+  </p>
+
+  <h2>질문 7 · 왜 그 담당에게 맡기나</h2>
+  <p>
+    #48은 이미 정지 전에 구현자가 착수해 두었던 대상이라(스냅숏 커밋 <code>e53fd316</code>),
+    되돌리는 것보다 그 지점에서 재개하는 것이 싸다. 릴리스 태그는 태그 push가 되돌리기 어려운
+    공개 행위이자 semver 판단이 걸려 있어 「최종 확정 행위는 사용자만」 원칙에 따라 대표
+    승인 항목으로 남아 있었다 — 이번 사이클도 그 순서를 바꾸지 않았다.
+  </p>
+
+  <h2>질문 8 · 왜 이걸 제안했나</h2>
+  <p>
+    통치자가 재부팅 재개 직후 채널 최근 이력·main 좌표·열린 PR 수를 직접 재실측해 「정지 중
+    도착분 대조 0건」을 확인한 뒤,<sup><a href="#f24">[24]</a></sup> 이 사이클의 남은 항목
+    (릴리스 태그·#48 재개·제24편)을 한 번에 큐로 짜서 발행했다 — 사이클이 끝났다는 사실
+    자체가 다음 절차를 부르는 신호였다.
+  </p>
+
+  <h2>질문 9 · 왜 이런 오류가 나왔나</h2>
+  <p>
+    <code>test_close_ends_every_active_run</code>이 강제하는 40초 상한은 「코드만의 속성」이
+    아니라 「그 순간의 기계 부하」와 얽힌 값이다. 게이트 2를 돌린 시점 이 PC에는 다른 에이전트
+    세션들이 만든 파이썬 프로세스가 34개 상주해 있었고, 같은 head를 CI(전용 러너, 부하 없음)에서
+    돌리면 47.9초 만에 끝나는 스위트가 이 PC에서는 642.4초 걸렸다(13.4배).<sup><a href="#f4">[4]</a></sup>
+    이 저장소는 이미 이 근본 원인을 알고 있었다 — 다른 이슈의 리뷰가 「벽시계 상한은 부하
+    아래에서 실제로 거짓이 될 수 있다」고 못박아 두었다.<sup><a href="#f5">[5]</a></sup> 이번
+    회차는 그 알려진 위험이 병행 세션이 많은 시간대에 실제로 발화한 사례다.
+  </p>
+
+  <h2>질문 10 · 무엇이 있었으면 이걸 막았을까</h2>
+  <p>
+    같은 리뷰가 이미 대안을 적어 두었다 — 「유한 대기를 거는 테스트에 재실행을 허용하는 것은
+    «기계가 조용해질 때까지 돌린다»를 제도화하는 것」이므로, 재실행 허용 목록을 넓히는 대신
+    <b>「간헐 상한을 정직하게 만드는」</b> 별건으로 이 상한 자체를 부하에 맞춰 다시 설계해야
+    한다는 권고였다.<sup><a href="#f28">[28]</a></sup> 이 권고는 원장에 S9 후보로 여러 회차
+    실려 있지만, 대표가 별건 이슈 발행(Z)에 응답하지 않아 아직 발행되지 않았다. 상한이
+    정직해졌다면, 이번 회차의 게이트 2 적색·base 통제·BRF 상신 한 사이클 전체가 필요
+    없었을 것이다.
+  </p>
+
+  <h2>질문 11 · 원점에 비춰, 이번 걸음이 그쪽으로 갔나</h2>
+  <p>
+    <b>그쪽으로 갔다.</b> 이슈 #45가 고친 것은 <code>resolve_outcome</code>이 사유 둘 중
+    하나를 삼키던 자리다 — 취소되기 전에 워커가 안 끝났는데 그 사실이 진단 문자열에서
+    사라지던 것을, <code>+NativeWorkerUnresolved</code> 한 토큰을 덧붙여 두 사실 모두
+    말하게 했다.<sup><a href="#f19">[19]</a></sup> 이것은 원점편이 정한 성공 기준 —
+    「운영자가 무슨 일이 일어나는지 볼 수 있고, 무엇보다도 협업 그 자체를 볼 수 있는
+    것」<sup><a href="#f25">[25]</a></sup> — 과 같은 방향이다. 진단 문자열이 사실 하나를
+    감추면, 운영자는 정확히 그 협업의 실패 모드를 못 보게 된다. API 모양(<code>str | None</code>)은
+    바꾸지 않았고, 프로덕션에서 이 값을 동등 비교하는 소비처가 0곳임을 실측해 두어 부작용도
+    없었다.<sup><a href="#f20">[20]</a></sup> PR#83은 이 폴더 자신의 기록을 main에 실었을
+    뿐이라, 사관의 존재 이유 그 자체와 같은 방향이다.
+  </p>
+  <p class="note">
+    내 이해를 덧붙이면 — 이번 사이클이 다룬 「적색을 지우지 않기」·「정지 지시를 실행 위에
+    맹목적으로 덮지 않기」는 원점편이 직접 다룬 다중 AI 합성의 문제(반대 의견이 조용히
+    사라지는 것)와는 층이 다르다. 이번엔 사람(대표·통치자)과 기계 실행 사이의 문제였다 —
+    먼저 나온 증거(적색이든, 완료된 게이트 실행이든)를 나중에 온 사건(초록 재실행, 정지
+    지시)이 자동으로 지우지 않게 한 것이다. 원점편이 재는 「협업 가시성」의 인접 영역이지,
+    그 문서가 직접 적어 둔 문장은 아니다 — 그래서 이 편은 방향이 같다고 기록하되, 원점편의
+    문구를 그 자리에 억지로 꿰맞추지 않는다.
+  </p>
+
+  <h2>질문 12 · 처음 범위에서 새로 늘어난 것이 있나</h2>
+  <p>
+    <b>없다.</b> #45의 변경은 <code>resolve_outcome</code> 내부의 진단 문자열 조합 방식
+    하나이고, <code>RunOutcome.diagnostic</code>의 타입(<code>str | None</code>)은 그대로다
+    — 이것은 원점편이 범위 밖으로 그은 「native worker를 독립 participant로 승격하거나
+    플랫폼 간 직접 연결하는 기능」과 다른 층이다. <b>진단 문자열에 사실을 하나 더 적었을
+    뿐, native worker의 지위나 참가 방식은 전혀 바뀌지 않았다.</b><sup><a href="#f27">[27]</a></sup>
+    PR#83은 이미 쓰인 문서를 main에 옮긴 것이고 릴리스 태그·#48은 이 사이클의 대상이 아니라
+    다음 큐다. 14개 비목표 항목 중 이번 사이클이 건드린 것은 없다.
+  </p>
+
+  <hr>
+  <p class="note">
+    여기서 멈춘다 — 기록과 이 채널 보고까지. 판정하지 않는다. 질문 11·12 모두 「그쪽으로
+    갔다·없음」이라 통치자 에스컬레이션 의무는 발생하지 않는다. 릴리스 태그(AC/AD)는 대표
+    결정 대기 중이고, #48 구현은 진행 중이다 — 둘 다 이 편의 대상이 아니라 다음 편들의
+    소재로 남는다.
+  </p>
+
+  <h2>각주</h2>
+  <ol class="fnotes">
+    <li id="f1"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «`ORD-CLS-PR-84-land`(`e67947ab`, 새 톱레벨, 완결자 19609cb2 멘션 확인): 착지 게이트 7항 — 브랜치 사용자 확인(delete_branch_on_merge)·브랜치 스위트 420·비밀 스캔·CLI squash+트레일러 본문 직접 삽입(웹 UI 금지)·`--match-head-commit` 전체 SHA 핀·병합 성공은 트리 실측(gh EXIT=0 무출력 함정)·병합 후 새 main 스위트+CHANGELOG 존재 재확인.» · «`ORD-EDU-24`... 제24편 기편. 발행 조건 600759a9(#83·#84 병합 전부 완료)을 재실측으로 확인 후 발행.»</li>
+    <li id="f2"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «워크플로우 변경 접수 — 대표 event `600759a9`» 절 «「교육자 자료 작성 지시는 실제 PR 병합까지 모두 완료된 뒤에만 발행」」」.</li>
+    <li id="f3"><span class="path">WORK_LOGS/whole-life/CLS_feat-45-unknown-reasons__ORD-CLS-PR-84-land.md</span> — «Ran 420 tests in 642.435s / FAILED (failures=1)» · «FAIL: test_the_runtime_suite_leaks_no_process_or_transport ... ERROR: test_close_ends_every_active_run ... asyncio.exceptions.CancelledError ... TimeoutError».</li>
+    <li id="f4"><span class="path">WORK_LOGS/whole-life/CLS_feat-45-unknown-reasons__ORD-CLS-PR-84-land.md</span> — «판정: 적색은 PR#84 의 diff 에 귀속되지 않는다. 바깥 게이트는 같고 안쪽 지점만 다르며, 둘 다 S9 가 등록한 「부하 아래에서 유한 대기가 만료된다」 계열이다.» · «같은 명령·같은 파이썬 계열(3.14)에서 13.4배.» · «초록 재실행은 앞선 적색을 해소하지 못한다 — 간헐이 초록으로 나오는 것은 간헐의 정의 그 자체다.» · «562.5s 는 CI(47.9s)의 11.7배다.»</li>
+    <li id="f5"><span class="path">WORK_LOGS/whole-life/REV_feat-63-record-working-directory__ORD-REV-feat-63.md</span> — «이 테스트의 단언은 「close 가 40초 안에 끝난다」이다. 부하 아래에서 40초를 넘겼다면 그 단언은 실제로 거짓이었다. 적색이 가짜인 게 아니라, 벽시계 상한이 코드만의 속성이 아닌 것이다.」」</li>
+    <li id="f6"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «처리: 게이트 2가 글자 그대로 미충족 → 결정 V의 전제 흔들림 → 판정 않고 대표 상신. BRF `23aba0ce`(22:2x): X=지금 착지(CI+통제 근거 명시, 로컬 적색을 착지 보고·병합 커밋 본문에 명기) / Y=로컬 420 OK까지 미룸 / Z(독립)=S9 «부하 아래 유한 대기 만료» 별건 이슈 발행 승인(무응답이면 발행 없이 후보 등재 유지 — «새 이슈 발행 보류» 플래그 준수).»</li>
+    <li id="f7"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «대표 답신 09:02 (`aef75e4a`, 대표 키 37215881): 「AA, X로 할게」. BRF `d08058f7` 결정 = AA(PR#83 지금 착지) · BRF `23aba0ce`+갱신 `a99cba23` 결정 = X(PR#84 지금 착지 — CI+통제 근거 명시, 로컬 적색을 착지 보고·병합 커밋 본문에 명기). Z 는 무응답 → BRF 예고대로 «발행 없이 후보 유지»(«새 이슈 발행 보류» 플래그 준수 — S9 «부하 아래 유한 대기 만료»는 후보·보류 목록에 남는다).」</li>
+    <li id="f8"><span class="path">WORK_LOGS/whole-life/CLS_feat-45-unknown-reasons__ORD-CLS-PR-84-land.md</span> — «커밋 본문의 `Landing note` 문단에 §7~§8 의 실측 문장을 직접 옮겼다(통치자 요약을 옮기지 않았다).» 담긴 항목: «1회차 적색: 420 · FAILED (failures=1) · 642.4s · test_close_ends_every_active_run 의 40초 wait_for 만료 · 원장 S9 기등록» · «초록 재실행은 앞선 적색을 해소하지 않는다(간헐이 초록으로 나오는 것은 간헐의 정의)».</li>
+    <li id="f9"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «X 요구 — 내 독립 열람으로 확인: RPT §14-4는 「옮겼다」 주장+목록이고 실물 출력 부재 → 커밋이 불변 객체이므로 내가 직접 `git log -1 --format=%B d31ce912` 열람(10:2x). Landing note에 1회차 적색(642.4s·test_close_ends_every_active_run·40s wait_for·S9 명기) · base 통제 무관(415·test_a_cancelled_handover…) · CI 47.9s 초록 · 2회차 562.5s 초록 + 두 한계 문장 ... 전부 실재 — §7~8 표현 그대로(내 요약 전사 아님).»</li>
+    <li id="f10"><span class="path">WORK_LOGS/whole-life/CLS_feat-45-unknown-reasons__ORD-CLS-PR-84-land.md</span> — «이 저장소는 squash 만 허용한다. 그래서 검증한 커밋 SHA 는 결코 main 의 조상이 되지 않는다 ... 트리로 답했다.» · «TREE_MATCH=YES».</li>
+    <li id="f11"><span class="path">WORK_LOGS/whole-life/CLS_feat-45-unknown-reasons__ORD-CLS-PR-84-land.md</span> — «경로 존재가 아니라 그 줄이 #45 를 실제로 말하는지까지 인용했다.» · CHANGELOG.md(origin/main) — «A run that ended unknown for two reasons says both, not only the first one found (#45).»</li>
+    <li id="f12"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-log-82__ORD-CLS-PR-83-land.md</span> — «착수 조건: `ORD-CLS-PR-84-land` 완료 뒤 (순서 고정 — main 이동 때문).» · «`commit_id` 로 셌으면 「신규 4건」이라는 오탐으로 착지를 막았을 자리다. 그 4건은 이미 고쳐진 옛 지적이 새 head 로 재앵커된 것이다. 신규 판별은 언제나 `original_commit_id`.」</li>
+    <li id="f13"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-log-82__ORD-CLS-PR-83-land.md</span> — «이 브랜치는 #45 착지 이전의 main `17c8be2b` 에서 갈라졌고... 병합 후 새 main 에서는 420 이 되어야 한다 — 그 예측은 게이트 7에서 확인한다.» · «판단: 연대기 기록 전용 PR 이라 CHANGELOG 항목을 만들지 않는다.」</li>
+    <li id="f14"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-log-82__ORD-CLS-PR-83-land.md</span> — «#84 때는 브랜치가 당시 main 에서 갈라져 있어 병합 결과 트리 = head 트리였다. 이번은 다르다 ... 그대로 대조했으면 「불일치」라는 오판이 나왔을 자리다.» · «PREDICTED_TREE = 1bed112a721ff517a87ce1321edb547cc8eb7b76» · «NEW_MAIN_TREE = 1bed112a721ff517a87ce1321edb547cc8eb7b76 TREE_MATCH=YES».</li>
+    <li id="f15"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-log-82__ORD-CLS-PR-83-land.md</span> — «게이트 7 은 정지 지시가 오기 «전에» 끝났다 — 끊긴 실행이 아니다. ... 산출물과 독립된 성공 신호 둘로 답한다. 1. 하네스가 백그라운드 작업을 status=completed·exit code 0 으로 회수했다 — 파일이 아니라 프로세스 종료가 낸 값이다. 2. 출력 파일 마지막 줄 EXIT=0 은 래퍼가 python … ; echo "EXIT=$?" 로 명령이 반환한 뒤에만 쓴다. 강제 종료되면 이 줄 자체가 없다.」</li>
+    <li id="f16"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «게이트 7 «중단 실행» 여부 — 정정 수용. 내 정지 지시(`0013868e`)는 「끊긴 실행의 산출물 무효·재실행」이었으나, 완결자가 산출물과 독립된 성공 신호 둘로 «끊긴 실행이 아님»을 증명 ... 재실행 불요 판정. 내 정지 지시 문안은 「그때는 맞았던 줄」로 그대로 둔다(중간보고 시점엔 진행 중이었다).」</li>
+    <li id="f17"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «`ORD-CLS-PR-84-land` | PR#84 착지 | 완결자 | 08-28 21:1x · 재개 09:0x | 회신·통과(7/7) | 게이트 전항 증거 + X 요구 실물(내 독립 열람) — PR#84/#45 사이클 종결」</li>
+    <li id="f18"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «`ORD-CLS-PR-83-land` | PR#83 착지 | 완결자 | 착수 10:16 | 회신·통과(7/7) | 게이트 전항 증거 + 게이트 7 독립 신호 둘로 «끊긴 실행 아님» — PR#83/제23편 사이클 종결」</li>
+    <li id="f19"><span class="path">WORK_LOGS/whole-life/IMP_feat-45-unknown-reasons__ORD-IMP-45.md</span> — «`resolve_outcome`(whole_life/runtime/outcome.py)의 두 조기 반환 ... 이 `unresolved_worker`보다 먼저 상담돼 워커 사실을 삼켰다. 두 행에서만 첫 사유 뒤에 `+NativeWorkerUnresolved`를 덧붙이는 헬퍼 `_with_worker_fact`를 추가했다.» · CHANGELOG.ko.md(origin/main) — «두 가지 이유로 unknown이 된 run은 처음 발견된 하나가 아니라 둘 다를 말한다 (#45).」</li>
+    <li id="f20"><span class="path">WORK_LOGS/whole-life/IMP_feat-45-unknown-reasons__ORD-IMP-45.md</span> — «설계 결정(소형, ADR 비대상): `RunOutcome.diagnostic`의 형태(`str | None`)는 불변 — 튜플화는 API 모양 변경이라 범위 밖. ... 프로덕션에서 diagnostic을 동등 비교하는 소비처 0곳 실측: `grep -rn "\.diagnostic" whole_life/ scripts/` → 생성 지점(outcome.py)뿐, 비교 지점 없음.」</li>
+    <li id="f22"><span class="path">WORK_LOGS/whole-life/CLS_feat-45-unknown-reasons__ORD-CLS-PR-84-land.md</span> — «README 실측 빚 — 이번 착지에서도 미이행. ... 내 상태 기록의 직전 값은 7회차다. 다음 릴리스 태그 작업에서 갚는다.」</li>
+    <li id="f23"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-log-82__ORD-CLS-PR-83-land.md</span> — «README 실측 빚 — 이번 착지에서도 미이행. ... 다음 릴리스 태그 작업에서 갚는다.」</li>
+    <li id="f24"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «정지 중 도착분 대조: 0건. 채널 최근 12건 실측 ... 미처리 RPT 없음.» · «BRF(`c0839eb7…`, ...) — 재개 점검 결과 + [대기·결정] 릴리스 태그: AC(지금 발행 — README 실측 빚 상환 + semver 제안 + 태그 push 전 대표 최종 확인) / AD(#48 사이클 뒤로 보류).」</li>
+    <li id="f25"><span class="path">PRODUCT.md</span> — «Success is that the operator can see what is happening - and above all, see the collaboration itself.」 (원문은 줄바꿈으로 접혀 있다 — 공백을 하나로 눌러 대조할 것.)</li>
+    <li id="f27"><span class="path">docs/spec/whole-life-v0.md</span> — «### v0 비목표」 절 — «native worker를 독립 participant로 승격하거나 플랫폼 간 직접 연결하는 기능」.</li>
+    <li id="f28"><span class="path">WORK_LOGS/whole-life/CLS_feat-45-unknown-reasons__ORD-CLS-PR-84-land.md</span> — «리뷰어 권고(재실행 허용 목록 확대가 아니라 「상한을 정직하게 만드는」 별건)를 따를 시점으로 보인다.」</li>
+  </ol>
+  <p class="note" style="margin-top:20px">
+    각주에 줄 번호를 쓰지 않는다. 파일이 바뀌면 줄 번호는 조용히 다른 곳을 가리키지만, 인용문은
+    <code>grep</code>으로 찾히고 사라졌으면 사라졌다는 사실 자체가 신호가 된다. 경로는 전부
+    저장소 기준이다. 불변 SHA에 못박힌 사실은 SHA로, 살아 있는 파일은 절 제목·인용문으로 짚었다.
+  </p>
+
+</div>
+</body>
+</html>
