@@ -17,6 +17,15 @@ issue holds the acceptance criteria; the merge commit holds the reasoning.
 
 ### Added
 
+- **The Codex stream survives the `collab_tool_call` item a collaboration-enabled turn can
+  emit** (#51).
+  The wire item is real in the CLI's `exec_events` source but absent from its SDK typings,
+  so the closed item-type set read it as schema drift and failed every turn that produced
+  it. The item is now mapped to the tool-use activity events, behind an empty-set guard: a
+  call whose receivers and agent states are both empty passes through as tool use, while
+  one that names receivers or agent states — evidence of a worker the delegation counter
+  cannot count — still fails the stream closed, so the claim's scope stays the measured
+  scope.
 - **Conformance evidence that says "refuses an untrusted directory" only when that refusal
   was observed, from a probe that cannot outlive its bound** (#62).
   The Codex collector concluded "refuses" from a nonzero exit alone: the first stderr line
@@ -98,6 +107,15 @@ issue holds the acceptance criteria; the merge commit holds the reasoning.
 
 ### Changed
 
+- **A run that ended unknown for two reasons says both, not only the first one found** (#45).
+  A cancellation before the terminal event, or a process exit that was never observed, used
+  to be the whole diagnostic even when the run's native worker was also never resolved — and
+  the dropped fact was always the worker one, a worker that is billable and may still be
+  running. Those two rows now append `NativeWorkerUnresolved` to the first reason, and a
+  caller-supplied cancel diagnostic — the delegation-budget case — keeps its own wording as
+  the first component instead of being flattened into the generic cancellation wording. The
+  status is unchanged in every row, and rows where only one reason holds report exactly what
+  they always have.
 - Python CI runs on a Windows runner (#14 follow-up). The safety invariants this project
   enforces are Windows behaviours; verifying them on Linux would prove something else.
 

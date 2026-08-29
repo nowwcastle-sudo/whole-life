@@ -186,3 +186,99 @@ class CancelledAfterTerminalTests(unittest.TestCase):
     # holds — and writing an expectation for it would be specifying behaviour
     # for an unreachable input. The reachable pair is covered end to end in
     # tests/runtime/test_cancel.py, against real processes.
+
+
+class MultipleUnknownReasonsTests(unittest.TestCase):
+    """A run that ended unknown for two reasons says both — issue #45.
+
+    Two orderings used to drop the native-worker fact: a cancellation before
+    the terminal event, and an exit that was never observed. Both were
+    consulted before `unresolved_worker`, so the diagnostic carried only the
+    first reason — and the reason it dropped is the one naming a worker that
+    is billable and may still be running. The status was right in every row
+    and stays exactly as it was; only the diagnostic grows the second fact.
+    """
+
+    def test_a_cancel_before_terminal_over_an_unresolved_worker_names_both(self):
+        outcome = resolve_outcome(
+            TerminalEvent.NONE,
+            exit_code=None,
+            cancelled_before_terminal=True,
+            unresolved_worker=True,
+        )
+
+        self.assertEqual(RunStatus.UNKNOWN_OUTCOME, outcome.status)
+        self.assertEqual(
+            "CancelledBeforeTerminal+NativeWorkerUnresolved", outcome.diagnostic
+        )
+
+    def test_an_unobserved_exit_over_an_unresolved_worker_names_both(self):
+        for terminal in (TerminalEvent.NONE, TerminalEvent.COMPLETED):
+            with self.subTest(terminal=terminal):
+                outcome = resolve_outcome(
+                    terminal, exit_code=None, unresolved_worker=True
+                )
+
+                self.assertEqual(RunStatus.UNKNOWN_OUTCOME, outcome.status)
+                self.assertEqual(
+                    "ProcessExitUnobserved+NativeWorkerUnresolved",
+                    outcome.diagnostic,
+                )
+
+    def test_the_callers_cancel_diagnostic_is_kept_not_flattened(self):
+        """The delegation-budget case. Composing the two facts must not cost
+        the caller its wording — `DelegationBudgetExceeded` is the only reason
+        anyone could act on, and the generic cancellation wording is not it."""
+        outcome = resolve_outcome(
+            TerminalEvent.NONE,
+            exit_code=None,
+            cancelled_before_terminal=True,
+            cancel_diagnostic="DelegationBudgetExceeded",
+            unresolved_worker=True,
+        )
+
+        self.assertEqual(
+            "DelegationBudgetExceeded+NativeWorkerUnresolved", outcome.diagnostic
+        )
+
+    def test_single_reason_rows_do_not_grow_a_second_fact(self):
+        """The rest of the truth table, pinned exactly. A change which starts
+        appending the worker fact everywhere — or composing where only one
+        reason holds — fails here, not in production."""
+        rows = (
+            (
+                "cancelled, every worker settled",
+                resolve_outcome(
+                    TerminalEvent.NONE,
+                    exit_code=None,
+                    cancelled_before_terminal=True,
+                ),
+                "CancelledBeforeTerminal",
+            ),
+            (
+                "exit unobserved, every worker settled",
+                resolve_outcome(TerminalEvent.COMPLETED, exit_code=None),
+                "ProcessExitUnobserved",
+            ),
+            (
+                "worker unresolved, everything else ordinary",
+                resolve_outcome(
+                    TerminalEvent.COMPLETED, exit_code=0, unresolved_worker=True
+                ),
+                "NativeWorkerUnresolved",
+            ),
+            (
+                "worker unresolved behind a post-terminal cancel",
+                resolve_outcome(
+                    TerminalEvent.COMPLETED,
+                    exit_code=1,
+                    cancelled_after_terminal=True,
+                    unresolved_worker=True,
+                ),
+                "NativeWorkerUnresolved",
+            ),
+        )
+        for name, outcome, expected in rows:
+            with self.subTest(row=name):
+                self.assertEqual(RunStatus.UNKNOWN_OUTCOME, outcome.status)
+                self.assertEqual(expected, outcome.diagnostic)

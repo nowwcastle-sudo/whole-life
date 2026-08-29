@@ -30,6 +30,21 @@ class TerminalEvent(StrEnum):
     NONE = "none"
 
 
+def _with_worker_fact(diagnostic: str, unresolved_worker: bool) -> str:
+    """Append the unresolved-worker fact when it also holds — issue #45.
+
+    A run can end unknown for more than one reason at once, and the reason the
+    early returns used to drop is always the native-worker one. The first
+    reason keeps its exact wording — including a caller-supplied cancel
+    diagnostic — and the worker fact is joined with `+` so the diagnostic
+    stays one allowlisted-code token, not prose. Only the two dual-fact rows
+    compose; a row where one reason holds reports exactly what it always has.
+    """
+    if unresolved_worker:
+        return diagnostic + "+NativeWorkerUnresolved"
+    return diagnostic
+
+
 def resolve_outcome(
     terminal: TerminalEvent,
     *,
@@ -69,10 +84,17 @@ def resolve_outcome(
         # so those stay `CancelledBeforeTerminal`; a turn stopped for
         # overspending its delegation budget is a different fact, and
         # flattening it would lose the only reason anyone could act on.
+        #
+        # An unresolved worker is appended rather than dropped (issue #45):
+        # both are true statements about the run, and the one this branch used
+        # to swallow is the one naming a worker that is billable and may still
+        # be running. The caller's wording stays first and intact.
         return RunOutcome(
             status=RunStatus.UNKNOWN_OUTCOME,
             exit_code=exit_code,
-            diagnostic=cancel_diagnostic or "CancelledBeforeTerminal",
+            diagnostic=_with_worker_fact(
+                cancel_diagnostic or "CancelledBeforeTerminal", unresolved_worker
+            ),
         )
 
     if terminal is TerminalEvent.FAILED:
@@ -107,11 +129,13 @@ def resolve_outcome(
 
     if exit_code is None:
         # The process outcome was never observed. Half of the evidence is not
-        # most of the way to success.
+        # most of the way to success. The worker fact rides along here too
+        # (issue #45): this return used to be consulted before the
+        # `unresolved_worker` check below and silently outranked it.
         return RunOutcome(
             status=RunStatus.UNKNOWN_OUTCOME,
             exit_code=None,
-            diagnostic="ProcessExitUnobserved",
+            diagnostic=_with_worker_fact("ProcessExitUnobserved", unresolved_worker),
         )
 
     if exit_code != 0:

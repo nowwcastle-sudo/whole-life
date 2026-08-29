@@ -16,6 +16,14 @@
 
 ### 추가
 
+- **collaboration이 켜진 turn이 내는 `collab_tool_call` item에서 Codex stream이 살아남는다**
+  (#51).
+  이 wire item은 CLI의 `exec_events` 소스에는 실재하지만 SDK typings에는 없어서, 닫힌
+  item-type 집합이 그것을 schema drift로 읽고 그 item을 내는 모든 turn을 실패시켰다. 이제
+  이 item은 공집합 가드 뒤에서 tool-use activity 이벤트로 매핑된다: receivers와 agent
+  states가 모두 빈 호출은 tool use로 통과하고, receivers나 agent states를 담은 호출 —
+  delegation 카운터가 셀 수 없는 worker의 증거 — 은 여전히 stream을 fail-closed로
+  실패시켜서, 주장의 범위가 측정된 범위를 넘지 않는다.
 - **「신뢰되지 않는 디렉터리를 거부한다」를 그 거부가 실제로 관측됐을 때에만 적는 conformance
   증거, 그리고 시간 경계를 넘길 수 없는 probe** (#62).
   Codex 수집기는 0이 아닌 종료 코드 하나로 「거부한다」를 결론냈다: 첫 stderr 줄은 문서에
@@ -89,6 +97,14 @@
 
 ### 변경
 
+- **두 가지 이유로 unknown이 된 run은 처음 발견된 하나가 아니라 둘 다를 말한다** (#45).
+  terminal event 전의 취소, 또는 관측되지 못한 process 종료가, native worker 역시 끝을
+  알리지 못한 경우에도 diagnostic 전부를 차지했다 — 그리고 떨어져 나가는 사실은 언제나
+  worker 쪽이었는데, 그 worker는 과금되고 있고 아직 돌고 있을 수 있다. 이제 그 두 행은 첫
+  이유 뒤에 `NativeWorkerUnresolved`를 덧붙이고, 호출자가 준 cancel diagnostic —
+  delegation-budget 사례 — 는 일반 취소 문구로 평탄화되지 않고 자기 문구 그대로 첫 자리를
+  지킨다. status는 모든 행에서 그대로이고, 이유가 하나뿐인 행은 지금까지 보고하던 그대로를
+  보고한다.
 - Python CI가 Windows 러너에서 돈다 (#14 후속). 이 프로젝트가 지키는 안전 불변식은 Windows
   동작이라, Linux에서 검증하면 다른 것을 증명하게 된다.
 
