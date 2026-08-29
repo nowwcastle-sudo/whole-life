@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>제25편 — 준비는 승인됐고, 깃발은 없었다</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:       #282828;
+    --paper-2:     #32302f;
+    --zone:        #302e2c;
+    --ink:         #ebdbb2;
+    --muted:       #a89984;
+    --soft:        #928374;
+    --rule:        rgba(235,219,178,0.12);
+    --rule-solid:  #504945;
+    --accent:      #fe8019;
+    --accent-tint: rgba(254,128,25,0.12);
+    --link:        #83a598;
+    --green:       #b8bb26;
+    --red:         #fb4934;
+    --yellow:      #fabd2f;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--paper); color:var(--ink);
+       font-family:"Geist","Pretendard","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;
+       line-height:1.75; -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:880px; margin:0 auto; padding:64px 28px 120px}
+  .kicker{font-size:13px; letter-spacing:.14em; color:var(--soft); text-transform:uppercase;
+          font-family:"Geist Mono",ui-monospace,"Consolas",monospace}
+  h1{font-family:"Instrument Serif","Malgun Gothic",serif;
+     font-size:46px; line-height:1.22; margin:14px 0 10px; letter-spacing:-.01em; font-weight:400}
+  .sub{font-size:18px; color:var(--muted); margin:0 0 8px}
+  h2{font-family:"Instrument Serif","Malgun Gothic",serif;
+     font-size:30px; line-height:1.32; margin:56px 0 14px; font-weight:400; letter-spacing:-.01em}
+  h3{font-size:16px; letter-spacing:.06em; color:var(--ink); margin:34px 0 12px; font-weight:600}
+  p{font-size:17px; margin:0 0 18px}
+  .note{font-size:15px; color:var(--muted)}
+  hr{border:0; border-top:1px solid var(--rule); margin:44px 0}
+  code{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; font-size:.9em;
+       background:var(--zone); color:var(--ink); padding:1px 6px; border-radius:4px}
+  .card{background:var(--paper-2); border:1px solid var(--rule-solid); border-radius:8px;
+        padding:26px 28px; margin:26px 0}
+  .warn{border-color:var(--yellow)}
+  .warn .tag{color:var(--yellow); font-weight:600; font-size:13px; letter-spacing:.1em;
+             font-family:"Geist Mono",ui-monospace,monospace}
+  .rule-card{border-color:var(--accent)}
+  .rule-card .tag{color:var(--accent); font-weight:600; font-size:13px; letter-spacing:.1em;
+                  font-family:"Geist Mono",ui-monospace,monospace}
+  .tbl{width:100%; border-collapse:collapse; font-size:14.5px}
+  .tbl th{text-align:left; font-size:11.5px; letter-spacing:.08em; text-transform:uppercase;
+          color:var(--soft); font-weight:500; padding:0 12px 10px 0; border-bottom:1px solid var(--rule-solid);
+          font-family:"Geist Mono",ui-monospace,monospace}
+  .tbl td{padding:12px 12px 12px 0; border-bottom:1px solid var(--rule); vertical-align:top; line-height:1.6}
+  .tbl tr:last-child td{border-bottom:0}
+  .tbl td:first-child{white-space:nowrap; font-family:"Geist Mono",ui-monospace,"Consolas",monospace;
+       font-size:13px; color:var(--soft)}
+  figure{margin:34px 0; overflow-x:auto}
+  figcaption{font-size:14px; color:var(--muted); margin-top:12px; text-align:center; line-height:1.6}
+  svg{display:block; width:100%; height:auto; min-width:760px}
+  sup a{color:var(--link); text-decoration:none; font-size:12px; font-weight:600; padding:0 1px}
+  a{color:var(--link); text-underline-offset:3px; text-decoration-thickness:1px}
+  ol.plain{font-size:17px; margin:0 0 18px; padding-left:22px}
+  .fnotes{margin-top:64px; border-top:1px solid var(--rule-solid); padding-top:26px;
+          list-style:none; padding-left:0}
+  .fnotes li{font-size:14px; color:var(--muted); margin-bottom:11px; line-height:1.65}
+  .fnotes .path{font-family:"Geist Mono",ui-monospace,"Consolas",monospace; color:var(--ink); font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kicker">제 25 편 · 기편 · v0 릴리스 준비 게이트 · not ready 판정과 AK 종결 · 당대에 씀</div>
+  <h1>준비는 승인됐고, 깃발은 없었다</h1>
+  <p class="sub">대표의 AI는 「지금 태그를 달라」가 아니라 「지금 준비·판정을 시작하라」는 결정이었다.
+    그 판정은 한 번 되돌려졌다 — 사유는 사각지대 둘. 보완이 통과한 뒤 대표가 고른 것은 태그가 아니라
+    AK, 버전 릴리스 가지의 종결이었다. 태그·GitHub Release·push는 이 사이클 전체에서 한 번도 실행되지
+    않았다.</p>
+
+  <div class="card rule-card">
+    <div class="tag">읽기 전에 — 이 편이 묶는 범위</div>
+    <p style="margin:8px 0 12px">
+      통치자 지시(<code>ORD-EDU-25</code>, 이벤트 <code>df064707</code>)가 이 편을 「v0 릴리스 준비
+      게이트의 <code>not ready</code> 판정과 AK 종결」의 기편으로 명시했다. 대표 최종 결정(<code>13faad5a</code>,
+      2026-08-29 18:22 KST)까지 끝난 뒤 한 번만 발행됐다 — 이 사이클은 저장소 변경 PR의 착지 게이트가
+      아니라 <b>릴리스 준비·판정 게이트</b>이고, 기편이 일지편을 포함하므로 별도 일지편은 없다.</p>
+    <p style="margin:0" class="note">
+      각주는 문구의 «존재»만 보증한다. 줄 번호는 쓰지 않는다 — 파일이 바뀌면 조용히 다른 곳을
+      가리키므로, 인용문은 <code>grep</code>으로 대조한다. <b>병합은 이 편의 범위 밖이다</b> —
+      이 사이클은 tag·GitHub Release·push·PR 변경·병합을 하나도 만들지 않았다.</p>
+  </div>
+
+  <h2>질문 1 · 무슨 일이</h2>
+  <p>
+    완결자가 대기 창에 자발적으로 상환한 README 실측이 기존 릴리스 선택지(<code>AC/AD</code>)의
+    전제를 흔들었고, 통치자는 그 둘을 거두고 새 선택지 <b>AI(지금 준비 발행)</b>·<b>AJ(#48 뒤로
+    보류)</b>를 상신했다.<sup><a href="#f1">[1]</a></sup><sup><a href="#f2">[2]</a></sup> 대표는
+    <b>AI</b>를 골랐고, 이 결정은 <b>준비·판정의 시작</b>이었지 tag 생성·GitHub Release·push
+    자체를 승인한 것이 아니었다.<sup><a href="#f3">[3]</a></sup> 완결자의 판정 게이트(<code>ORD-CLS-v0-release-prep</code>)는
+    첫 회신에서 <b>「확정 blocker 2건」</b>·<b>「제안 태그 없음」</b>·<b>「not ready」</b>를
+    보고했지만, 통치자는 사각지대 둘로 <b>되돌림1</b>을 내렸다.<sup><a href="#f8">[8]</a></sup><sup><a href="#f9">[9]</a></sup>
+    보완이 두 사각지대를 모두 메운 뒤 보고 게이트는 통과했고,<sup><a href="#f10">[10]</a></sup><sup><a href="#f11">[11]</a></sup>
+    통치자는 대표에게 새 선택지 <b>AK</b>(수용·종결)·<b>AL</b>(비버전 좌표 표식)·<b>AM</b>(버전
+    계약 재설계)을 상신했다.<sup><a href="#f12">[12]</a></sup> 같은 처리 구간에서 전송 손상 사고가
+    한 번 있었고 정정됐다.<sup><a href="#f13">[13]</a></sup> 대표는 <b>AK</b>를 골랐다 — 버전
+    릴리스 가지는 <code>not ready</code>를 수용한 채 종결됐고, AL·AM은 거둬졌다.<sup><a href="#f15">[15]</a></sup><sup><a href="#f16">[16]</a></sup>
+  </p>
+
+  <h2>질문 2 · 어떤 흐름으로 진행됐나</h2>
+  <figure>
+    <svg viewBox="0 0 1000 660" role="img" aria-labelledby="ep25-timeline-title ep25-timeline-desc">
+      <title id="ep25-timeline-title">README 자발 실측부터 AK 종결과 제25편 발행까지, 2026-08-29 하루의 여덟 사건</title>
+      <desc id="ep25-timeline-desc">2026-08-29 낮 12시대 완결자의 자발적 README 실측 사후 수용과 릴리스 선택지 재상신부터, 대표의 AI 결정과 준비 게이트 발행, 첫 판정 보고에 대한 되돌림1, 보완 통과와 AK·AL·AM 상신, 같은 구간에서 있었던 PowerShell 전송 손상과 그 정정, 그리고 저녁 대표의 AK 결정과 제25편 기편 발행까지 여덟 사건을 순서대로 배치한 다이어그램. 가로축은 사건 순서이며 실제 경과 시간에 비례하지 않는다. 두 개의 강조 원은 대표의 AI 결정과 AK 결정을 가리킨다.</desc>
+      <defs>
+        <marker id="ep25-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="var(--muted)"/>
+        </marker>
+      </defs>
+      <rect width="100%" height="100%" fill="var(--paper)"/>
+
+      <text x="24" y="30" font-size="12" fill="var(--soft)" letter-spacing="0.08em"
+            font-family="'Geist Mono',ui-monospace,'Consolas',monospace">2026-08-29 12:3x → 18:2x KST · 가로축 = 순서(시간 비례 아님)</text>
+
+      <line x1="60" y1="380" x2="940" y2="380" stroke="var(--rule-solid)" stroke-width="1"/>
+
+      <!-- N0 above -->
+      <circle cx="90" cy="380" r="5" fill="var(--paper)" stroke="var(--muted)" stroke-width="1"/>
+      <line x1="90" y1="344" x2="90" y2="374" stroke="var(--muted)" stroke-width="1"/>
+      <text x="90" y="296" font-size="10" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">12:3x</text>
+      <text x="90" y="316" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">README 자발 실측</text>
+      <text x="90" y="332" font-size="9" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">c1e2356f · 사후 수용, RPT 아님</text>
+
+      <!-- N1 below -->
+      <circle cx="210" cy="380" r="6" fill="var(--link)"/>
+      <line x1="210" y1="386" x2="210" y2="416" stroke="var(--link)" stroke-width="1"/>
+      <text x="210" y="440" font-size="10" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">12:4x</text>
+      <text x="210" y="424" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">AC/AD 거둠 · AI/AJ 상신</text>
+      <text x="210" y="408" font-size="9" fill="var(--link)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">08675fb6 · 전제 이동</text>
+
+      <!-- N2 above, pivotal -->
+      <circle cx="330" cy="380" r="9" fill="var(--accent)"/>
+      <line x1="330" y1="344" x2="330" y2="371" stroke="var(--accent)" stroke-width="1.4"/>
+      <text x="330" y="292" font-size="10" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">13:5x</text>
+      <text x="330" y="312" font-size="12" font-weight="700" fill="var(--ink)" text-anchor="middle" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">대표 결정 AI</text>
+      <text x="330" y="328" font-size="9" fill="var(--accent)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">d86af2ff · 준비 게이트 발행 ff274e60</text>
+
+      <!-- N3 below -->
+      <circle cx="450" cy="380" r="6" fill="var(--red)"/>
+      <line x1="450" y1="386" x2="450" y2="416" stroke="var(--red)" stroke-width="1"/>
+      <text x="450" y="440" font-size="10" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">14:1x</text>
+      <text x="450" y="424" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">되돌림1</text>
+      <text x="450" y="408" font-size="9" fill="var(--red)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">cb6bf408 · gate3 말뭉치 + 사후 불변 미달</text>
+
+      <!-- N4 above -->
+      <circle cx="580" cy="380" r="6" fill="var(--green)"/>
+      <line x1="580" y1="344" x2="580" y2="374" stroke="var(--green)" stroke-width="1"/>
+      <text x="580" y="296" font-size="10" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">14:3x</text>
+      <text x="580" y="316" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">보완 통과 · AK/AL/AM 상신</text>
+      <text x="580" y="332" font-size="9" fill="var(--green)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">f3ca26fe · e4c7e207</text>
+
+      <!-- N5 below -->
+      <circle cx="700" cy="380" r="6" fill="var(--yellow)"/>
+      <line x1="700" y1="386" x2="700" y2="416" stroke="var(--yellow)" stroke-width="1"/>
+      <text x="700" y="440" font-size="10" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">같은 턴</text>
+      <text x="700" y="424" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">전송 정정</text>
+      <text x="700" y="408" font-size="9" fill="var(--yellow)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">624b213f·cdb7efed 무효 → 유효 재확인</text>
+
+      <!-- N6 above, pivotal -->
+      <circle cx="820" cy="380" r="9" fill="var(--accent)"/>
+      <line x1="820" y1="344" x2="820" y2="371" stroke="var(--accent)" stroke-width="1.4"/>
+      <text x="820" y="292" font-size="10" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">18:2x</text>
+      <text x="820" y="312" font-size="12" font-weight="700" fill="var(--ink)" text-anchor="middle" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">대표 결정 AK</text>
+      <text x="820" y="328" font-size="9" fill="var(--accent)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">13faad5a · 릴리스 가지 종결</text>
+
+      <!-- N7 below -->
+      <circle cx="920" cy="380" r="6" fill="var(--green)"/>
+      <line x1="920" y1="386" x2="920" y2="416" stroke="var(--green)" stroke-width="1"/>
+      <text x="920" y="446" font-size="10" fill="var(--soft)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">18:2x</text>
+      <text x="920" y="424" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">ORD-EDU-25 발행</text>
+      <text x="920" y="408" font-size="9" fill="var(--green)" text-anchor="middle" font-family="'Geist Mono',ui-monospace,monospace">df064707 · 기편 1회, 병합 범위 밖</text>
+
+      <!-- connecting arrows -->
+      <line x1="97" y1="380" x2="203" y2="380" stroke="var(--muted)" stroke-width="1" marker-end="url(#ep25-arrow)"/>
+      <line x1="217" y1="380" x2="320" y2="380" stroke="var(--muted)" stroke-width="1" marker-end="url(#ep25-arrow)"/>
+      <line x1="340" y1="380" x2="443" y2="380" stroke="var(--muted)" stroke-width="1" marker-end="url(#ep25-arrow)"/>
+      <line x1="457" y1="380" x2="573" y2="380" stroke="var(--muted)" stroke-width="1" marker-end="url(#ep25-arrow)"/>
+      <line x1="587" y1="380" x2="693" y2="380" stroke="var(--muted)" stroke-width="1" marker-end="url(#ep25-arrow)"/>
+      <line x1="707" y1="380" x2="810" y2="380" stroke="var(--muted)" stroke-width="1" marker-end="url(#ep25-arrow)"/>
+      <line x1="830" y1="380" x2="913" y2="380" stroke="var(--muted)" stroke-width="1" marker-end="url(#ep25-arrow)"/>
+
+      <!-- legend -->
+      <line x1="24" y1="486" x2="940" y2="486" stroke="var(--rule)" stroke-width="1"/>
+      <text x="24" y="514" font-size="12" fill="var(--soft)" letter-spacing="0.14em"
+            font-family="'Geist Mono',ui-monospace,monospace">범례</text>
+      <circle cx="108" cy="542" r="5" fill="var(--paper)" stroke="var(--muted)" stroke-width="1"/>
+      <text x="124" y="546" font-size="11" fill="var(--muted)" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">절차성 사건</text>
+      <circle cx="248" cy="542" r="6" fill="var(--link)"/>
+      <text x="260" y="546" font-size="11" fill="var(--muted)" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">전제 이동 · 상신</text>
+      <circle cx="408" cy="542" r="6" fill="var(--red)"/>
+      <text x="420" y="546" font-size="11" fill="var(--muted)" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">게이트 미충족</text>
+      <circle cx="548" cy="542" r="6" fill="var(--yellow)"/>
+      <text x="560" y="546" font-size="11" fill="var(--muted)" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">특이사항 → 해소</text>
+      <circle cx="700" cy="542" r="6" fill="var(--green)"/>
+      <text x="712" y="546" font-size="11" fill="var(--muted)" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">통과·완료</text>
+      <circle cx="828" cy="542" r="9" fill="var(--accent)"/>
+      <text x="844" y="546" font-size="11" fill="var(--muted)" font-family="'Geist','Pretendard','Malgun Gothic',sans-serif">대표의 결정 — 이 편의 초점</text>
+    </svg>
+    <figcaption>
+      <b>두 강조 원(N2·N6)이 이 편의 유일한 되돌릴 수 없는 결정 지점이다</b> — 그런데 둘 다
+      <b>되돌릴 수 없는 실행을 승인하지 않았다.</b> N2(AI)는 판정을 «시작하라»였고, N6(AK)는
+      그 판정의 결론(<code>not ready</code>)을 «수용하고 가지를 닫으라»였다. tag·push는 이
+      타임라인의 어느 지점에도 없다.
+    </figcaption>
+  </figure>
+
+  <h2>대상 1 — blocker 둘과 gate 2, 같은 자리가 아니었다</h2>
+  <p>
+    완결자의 판정은 「제안 태그 없음 · 확정 blocker 2건」이었다.<sup><a href="#f4">[4]</a></sup>
+    blocker ①은 실행 가능한 broker·설치물이 없다는 것 — <code>README.md</code> 13행이 스스로
+    「설치 가능한 애플리케이션이 아직 없다」고 적고 있고, 지금 태그를 달면 <b>태그 자체가 그
+    문장과 정면으로 어긋난다.</b><sup><a href="#f5">[5]</a></sup> blocker ②는 CHANGELOG의
+    <code>Unreleased</code> 계약 — 항목을 그대로 두고 태그를 달면 태그와 문서가 서로를 반박하고,
+    <code>[0.1.0]</code>으로 옮기면 「v0가 나왔다」는 주장이 되어 blocker ①이 다시 반박한다.
+    그래서 이 계약을 고치는 것 자체가 <b>대표 결정</b>이지 릴리스 절차의 기계적 한 단계가
+    아니다.<sup><a href="#f6">[6]</a></sup>
+  </p>
+  <p>
+    gate 2(실제 usage 귀속 smoke test)는 이 둘과 <b>같은 자리에 놓이지 않았다.</b> 완결자의 판정은
+    「gate 2는 그 자체로 태그 blocker가 아니다」였다 — 그 절이 막는 것은 저장소 문서가 과금 동작을
+    단정하는 것과 public 전환이지, 「버전 태그 금지」가 아니기 때문이다. 다만 <b>gate 2가 열린
+    채 v0 태그가 붙는 상태는 성립하지 않는다</b>는 별도 문장이 붙었다.<sup><a href="#f7">[7]</a></sup>
+    통치자도 같은 구분을 지켰다 — 저장소 visibility(이미 공개 상태)와 버전 tag/release를 같은
+    명제로 접지 않았다.<sup><a href="#f22">[22]</a></sup>
+  </p>
+
+  <table class="tbl">
+    <thead><tr><th>항목</th><th>판정</th><th>태그 blocker?</th></tr></thead>
+    <tbody>
+      <tr><td>blocker ① 실행물 부재</td><td>확정 — README:13이 스스로 부재를 적음</td><td><b>그렇다</b></td></tr>
+      <tr><td>blocker ② CHANGELOG 계약</td><td>확정 — Unreleased 문구가 양쪽을 다 막음</td><td><b>그렇다</b>(대표 결정 필요)</td></tr>
+      <tr><td>gate 2 usage 귀속 smoke test</td><td>Designed, not executed — 실행 불가(testbed 없음)</td><td>단독으로는 아니다(비차단)</td></tr>
+      <tr><td>gate 3 secret scan(오늘 재측정)</td><td>full history 466 blob 재스캔 — 비밀값 0건</td><td>아니다(clean)</td></tr>
+    </tbody>
+  </table>
+
+  <h2>대상 2 — 되돌림1, 사각지대 둘과 그 보완</h2>
+  <p>
+    첫 회신은 「확정 blocker 2건」을 냈지만 통치자는 <b>보고 게이트</b>에서 되돌렸다 — 결론
+    자체가 반증된 것이 아니라, 그 결론을 받치는 증거 두 축이 미달이었다.<sup><a href="#f9">[9]</a></sup>
+  </p>
+  <p>
+    <b>사유 1</b>은 gate 3의 말뭉치였다. 정본 문서의 gate 3은 「Git history · full history의
+    모든 커밋의 모든 blob」을 대상으로 하는데, 첫 보고는 추적 파일 110개의 <b>현재 worktree</b>만
+    스캔했다.<sup><a href="#f8">[8]</a></sup> 보완에서 완결자는 원격의 독립 mirror clone을 새로
+    떠 <b>235커밋·466blob·1,284객체</b> 전체를 13개 arm으로 재스캔했다 — hit 12건은 전부 저장소
+    자신이 스캔 정규식을 문서화한 한 줄이었고, 그 밖은 0건이었다. arm 13개는 별도 throwaway
+    저장소에서 각각 정확히 1건씩 발화해 죽은 arm이 없음을 확인했다.<sup><a href="#f10">[10]</a></sup>
+  </p>
+  <p>
+    <b>이 보완의 핵심은 숫자가 아니라, 말뭉치가 «오늘의 좌표»에서 다시 닫혔다는 것이다.</b>
+    정본 문서의 「Verified 2026-08-22」 문구는 그날에 대해서는 여전히 참이다 — 다만 오늘 도달
+    가능한 235커밋 중 190개는 그 스캔 이후에 생긴 것이고, 게다가 히스토리 재작성이 있어 당시
+    태그(<code>pre-rebase/11·12</code>)는 오늘의 main의 조상도 아니다. 「현재 worktree 0건」은
+    그 간극을 대신 메우지 못했다. 보완이 답한 것은 <b>「오늘의 history가 깨끗한가」</b>이지
+    「2026-08-22의 원 증거가 옳았는가」가 아니다 — 그 기준 커밋은 지금도 unknown으로 남아
+    있고, 어떤 ref에서도 도달 불가가 된 blob은 이번에도 말뭉치 밖이다.
+  </p>
+  <p>
+    <b>사유 2</b>는 작업 후 외부 상태 불변 증거였다 — 채널 말미의 「아무것도 바꾸지 않았다」에
+    명령·출력·종료코드·시각이 없었다.<sup><a href="#f9">[9]</a></sup> 보완은 원격 main·로컬/원격
+    tag·GitHub Release·PR#85·#86의 head와 state·공용 checkout의 branch/HEAD/local main·격리
+    worktree clean을 한 묶음으로 재측정해 붙였다. PR 두 건의 <code>updatedAt</code>이 이 ORD
+    시작보다 앞선다는 사실 자체가, 이 구간에 두 PR에 아무 일도 없었다는 <b>독립 신호</b>로
+    쓰였다.<sup><a href="#f11">[11]</a></sup>
+  </p>
+  <p class="note">
+    보완이 바꾼 것은 판정이 아니라 <b>증거의 시제</b>다 — <code>not ready</code>·제안 태그 없음·
+    확정 blocker 2건은 그대로였고, gate 3만 「2026-08-22에 참이었다」에서 「오늘 다시 참으로
+    확인됐다」로 갱신됐다.
+  </p>
+
+  <h2>질문 6 · 다음 담당에게 무엇을 위임하나</h2>
+  <p>
+    사람에게 넘긴 새 작업은 없다. AK는 <b>가지를 닫는 결정</b>이라, 다음으로 넘어가는 것은
+    담당자가 아니라 <b>재개 조건 셋</b>이다 — 실행 가능한 broker와 설치 경로, gate 2
+    usage-attribution smoke test의 실제 통과, CHANGELOG <code>Unreleased</code> 계약의
+    개정.<sup><a href="#f15">[15]</a></sup> 이 셋이 충족되거나 대표가 새로 결정하기 전까지
+    누구도 이 가지에서 tag·Release·push 작업을 받지 않는다. <code>ORD-IMP-48</code>(이슈
+    #48·PR#85)은 이 판정과 무관하게 독립적으로 계속 진행 중이다.<sup><a href="#f17">[17]</a></sup>
+  </p>
+
+  <h2>질문 7 · 왜 그 담당에게 맡기나</h2>
+  <p>
+    되돌릴 수 없는 실행(<code>git push origin &lt;TAG&gt;</code> 이후, <code>gh release
+    create</code>)은 로컬 태그 생성과 달리 원격·캐시·구독자에게 나간다.<sup><a href="#f23">[23]</a></sup>
+    「최종 확정 행위는 사용자만」 원칙에 따라 이 판단은 처음부터 대표 확인 항목으로 잠겨
+    있었고, 이번 사이클도 그 순서를 바꾸지 않았다 — 완결자가 「제안이 아니다」로 스스로
+    한계를 그은 좌표 표식(<code>pre-rebase/11·12</code>와 같은 형태)조차 「대표 결정이고
+    이 ORD 범위 밖이라 이름을 짓지 않는다」로 남겼다.
+  </p>
+
+  <h2>질문 8 · 왜 이걸 제안했나</h2>
+  <p>
+    통치자가 이 판정 게이트를 이 시점에 연 것은, 완결자가 대기 창에 자발적으로 상환한 README
+    실측이 기존 <code>AC/AD</code> 선택지의 전제(「README 실측 빚 상환」)를 먼저 충족시켜
+    옛 문안이 stale해졌기 때문이다.<sup><a href="#f2">[2]</a></sup> 그 자발 작업은 정식 RPT로
+    분류되지 않고 「독립 근거로 사후 수용 + 규약 이탈 기록」으로 처리됐다 — 저장소·branch·main을
+    바꾸지 않는 읽기 전용 작업이라 되돌릴 조작은 없었지만, 「다음 사람을 멘션한 뒤 새 일을
+    스스로 시작하지 않는다」는 규약과는 어긋났고, 통치자는 다음부터의 자발 착수를 금지했다.<sup><a href="#f1">[1]</a></sup>
+  </p>
+
+  <div class="card">
+    <p style="margin:0 0 10px"><b>대신 무엇을 하지 않기로 했나 — AK가 버린 것과 지킨 것</b></p>
+    <table class="tbl" style="margin-top:12px">
+      <tbody>
+        <tr>
+          <td>AL<br><span class="note">비버전 좌표 표식</span></td>
+          <td>이번엔 별도로 상신하지 않고 거뒀다. 저장소에 이미 선례(<code>pre-rebase/11·12</code>)가
+            있어 blocker 어디에도 걸리지 않는 형태였지만, 대표는 이번 결정에서 다루지 않았다.
+            다시 열려면 새 대표 결정이 필요하다.<sup><a href="#f16">[16]</a></sup></td>
+        </tr>
+        <tr>
+          <td>AM<br><span class="note">버전 계약 재설계</span></td>
+          <td>README·CHANGELOG의 버전 의미 자체를 지금 다시 쓰지 않기로 했다 — 「실행물 없는
+            저장소에서 계약을 먼저 재설계」하는 것은 이번 결정의 범위가 아니었다.</td>
+        </tr>
+        <tr>
+          <td>기존 420 스위트·docs-ci<br><span class="note">되돌림1 재요구</span></td>
+          <td>보완 회차에서 통치자는 이미 통과한 420 스위트·docs-ci 재실행을 다시 요구하지
+            않았다 — 미달은 gate 3 말뭉치와 사후 불변 증거였지, 스위트 결과 자체가 아니었다.</td>
+        </tr>
+        <tr>
+          <td>손상된 이벤트<br><span class="note">624b213f·cdb7efed</span></td>
+          <td>근거·결정 요청으로 쓰지 않고 무효 처리했다 — 조용히 덮지 않고 무효 ID와 정정 ID를
+            원장에 나란히 남겼다.<sup><a href="#f13">[13]</a></sup></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>부록 — 전송 정정, 판정 근거와 섞지 않는다</h2>
+  <p>
+    되돌림1 보완 통과와 같은 턴에, 완결자의 첫 통과 회신(<code>624b213f</code>)과 첫 대표
+    BRF(<code>cdb7efed</code>)가 PowerShell 파이프로 UTF-8 원문을 native CLI stdin에 넘기며
+    한글을 <code>?</code>로 손상시켰다.<sup><a href="#f14">[14]</a></sup> 두 이벤트는 <code>accepted:true</code>와
+    정상 mention recipient를 반환했지만, 본문 UTF-8 보존까지는 증명하지 못했다 — 채널
+    재읽기에서 한글이 전부 물음표였다.<sup><a href="#f13">[13]</a></sup> 원문 파일을 Git Bash의
+    raw stdin redirect로 다시 보내 유효 이벤트(회신 <code>f3ca26fe</code>·BRF <code>e4c7e207</code>)를
+    확보했고, 이 편의 각주는 전부 그 유효 이벤트를 가리킨다.
+  </p>
+  <p class="note">
+    <b>이 사고와 §10의 「못 한 것」 1항(PowerShell에서 전체 스위트를 다시 돌리지 않았다)은 같은
+    문제가 아니다.</b> 하나는 <b>테스트 실행 셸</b>의 문제이고(README가 명령을 powershell 펜스로
+    싣는데, 실행 자체는 bash에서만 했다는 범위 제한), 다른 하나는 <b>메시지 전달 파이프라인</b>의
+    문제다(PowerShell object pipeline이 UTF-8 바이트를 조용히 깎는다). 겹치는 낱말(PowerShell)이
+    같은 근본 원인을 뜻하지 않는다.
+  </p>
+
+  <h3>못 한 것 — 정본에서 그대로 센 9항목</h3>
+  <ol class="plain">
+    <li>PowerShell에서 전체 스위트를 다시 돌리지 않았다(여전히 bash).</li>
+    <li>다른 기계에서 재현하지 않았다.</li>
+    <li>타입체크·빌드를 돌리지 않았다(존재하지 않기 때문).</li>
+    <li>스위트에 변이 증명(mutation proof)을 걸지 않았다.</li>
+    <li>gate 2 smoke test를 실행하지 않았다(testbed 부재, 이 ORD 범위도 아님).</li>
+    <li><code>check-markdown-links.sh</code>는 연대기 HTML 링크를 보지 않는다(기존 사각지대).</li>
+    <li><code>check-approved-baseline.sh</code>는 설계상 작업트리를 보지 않는다(결함 아닌 사각지대).</li>
+    <li>2026-08-22 원 증거의 말뭉치 경계(기준 커밋)를 확정하지 못했다.</li>
+    <li>force-push로 덮여 어떤 ref에서도 도달 불가가 된 blob은 말뭉치 밖이다.</li>
+  </ol>
+  <p class="note">1~7은 첫 회신부터, 8·9는 되돌림1 보완에서 추가됐다.<sup><a href="#f19">[19]</a></sup></p>
+
+  <h3>곁가지 — README 실측이 먼저 갚은 빚</h3>
+  <p>
+    이 게이트가 열리기 전, 완결자의 자발 실측은 「README가 신규 사용자에게 약속하는 것은 전부
+    실제로 작동한다」— clone부터 <code>Ran 420 tests / OK / EXIT=0</code>까지 막힘이
+    없었다.<sup><a href="#f20">[20]</a></sup> 그 실측이 찾은 구멍 셋은 전부 비차단이었다.
+  </p>
+  <table class="tbl">
+    <thead><tr><th>구멍</th><th>왜 비차단인가</th></tr></thead>
+    <tbody>
+      <tr><td>Python 3.14를 구하는 법이 없음</td><td>서술 오류가 아니라 누락 — 이 PC엔 이미 있어 막히지 않았다</td></tr>
+      <tr><td>기대 테스트 개수·소요 시간 없음</td><td>명령 자체는 작동했다(420 OK)</td></tr>
+      <tr><td>Getting started에 <code>git clone</code> 단계 없음</td><td>실측에서 clone은 EXIT=0으로 성공</td></tr>
+    </tbody>
+  </table>
+
+  <h2>질문 9 · 왜 이런 오류가 나왔나</h2>
+  <p>
+    되돌림1은 정본 문서의 gate 3 문언(「Git history 전체」)과 첫 보고의 실측 범위(「현재
+    worktree」) 사이의 간극에서 나왔다. 원인은 <code>docs/project-context.md</code> 자신이
+    2026-08-22 증거에 <b>기준 커밋을 적어 두지 않았다</b>는 데 있다 — 날짜만 있고 그 날짜가
+    가리키는 정확한 좌표가 없으니, 「그 뒤로 늘어난 190커밋과 그사이의 히스토리 재작성」이
+    보고서 밖에 남을 여지가 생겼다. 작업 후 불변 증거 미달은, 「아무것도 바꾸지 않았다」는
+    주장 문장은 있었지만 그 주장을 재현 가능하게 만드는 명령·출력·종료코드·시각의 <b>세트</b>가
+    처음 ORD 문안에 못박혀 있지 않았기 때문이다.
+  </p>
+
+  <h2>질문 10 · 무엇이 있었으면 이걸 막았을까</h2>
+  <p>
+    gate 3 정본 문장에 검증 시점의 기준 커밋을 처음부터 적어 두었다면, 「현재 worktree만
+    보면 되는가 전체를 다시 봐야 하는가」를 되돌림 없이 바로 답할 수 있었다. 작업 후 불변
+    확인의 요구 형식(명령·출력·종료코드·시각을 한 묶음으로)을 ORD 발행 시점에 미리 못박아
+    두었다면, 첫 회신이 그 형식을 갖췄을 가능성이 높다. 두 개선 모두 <b>다음 릴리스 판정
+    ORD의 문안</b>에 반영될 수 있는 자리로 남는다 — 이 편은 그 반영 여부를 판정하지 않는다.
+  </p>
+
+  <h2>질문 11 · 원점에 비춰, 이번 걸음이 그쪽으로 갔나</h2>
+  <p>
+    <b>그쪽으로 갔다.</b> 원점편이 「즉시 public 공개」를 버린 길로 적어 두면서 함께 남긴
+    뒤집는 조건은 <b>「최신 공식 문서 또는 서면 답변, 실제 usage 귀속 smoke test, secret
+    scan이 모두 통과할 때」</b>였다 — 그리고 push·공개는 되돌리기 비용이 크다는 이유가
+    같이 적혀 있었다.<sup><a href="#f21">[21]</a></sup> 이번 사이클이 다룬 두 축 — gate
+    2(실제 usage 귀속 smoke test, 여전히 미실행)와 gate 3(secret scan, 이번에 전체
+    재스캔해 0건) — 는 정확히 그 조건의 언어로 다뤄졌다. 저장소는 그 조건들이 아직 다
+    차지 않았다고 스스로 판정했고, 대표는 그 판정을 뒤집지 않고 <code>not ready</code>를
+    수용했다 — 이는 원점편이 세워 둔 「push·공개의 되돌릴 수 없는 비용을 조건 미충족
+    상태로 지지 않는다」는 자와 같은 방향이다.
+  </p>
+  <p class="note">
+    내 이해를 덧붙이면 — 원점편의 그 조건 표는 <b>public 전환</b>을 겨눈 것이지 버전
+    tag/release 자체를 직접 겨눈 것은 아니다. 저장소 visibility는 이미 공개(VIS-B)로
+    별개로 유지되고 있고, 완결자·통치자 둘 다 이 둘을 같은 명제로 접지 않았다.<sup><a href="#f22">[22]</a></sup>
+    그래서 이 편은 「방향이 같다」고 기록하되, 원점편의 조건표를 tag 판정의 직접 근거로
+    억지로 꿰맞추지 않는다 — 완결자의 판정 문서 자신이 두 명제를 분리해 둔 것을 그대로 따른다.
+  </p>
+
+  <h2>질문 12 · 처음 범위에서 새로 늘어난 것이 있나</h2>
+  <p>
+    <b>없다.</b> 이 사이클이 실제로 만든 것은 판정 보고서 한 편과 그 보완뿐이다 — tag·Release·push·PR
+    생성/수정·병합은 0건이다. AL(비버전 좌표 표식)과 AM(버전 계약 재설계)이 상신됐지만
+    둘 다 선택되지 않고 거둬졌으므로, 「구조를 늘리는 것도 범위 밖」이라는 원점편의 규칙에
+    걸릴 만한 것 자체가 생기지 않았다. 14개 비목표 항목 중 이번 사이클이 건드린 것은 없다.
+    재개 조건 셋도 기존 §3·§4 blocker 조건을 재정리한 것이지 새 구조가 아니다.
+  </p>
+
+  <hr>
+  <p class="note">
+    여기서 멈춘다 — 기록과 이 채널 보고까지. 판정하지 않는다. 질문 11·12 모두 「그쪽으로
+    갔다·없음」이라 통치자 에스컬레이션 의무는 발생하지 않는다. <code>ORD-IMP-48</code>(PR#85)·PR#86
+    AG/AH·공용 checkout AE/AF는 이 편의 대상이 아니라 각자 독립된 가지로 남는다.
+  </p>
+
+  <h2>각주</h2>
+  <ol class="fnotes">
+    <li id="f1"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «완결자 메시지 `c1e2356f`와 정본 ... 를 대조했다. **받은 ORD가 없는 자발 작업**이므로 RPT 통과·게이트 완료로 분류하지 않는다.» · «**판정 이름표**: 나는 clone·스위트·스캔을 재실행하지 않았다. 보고서에 증거가 붙었음을 보고, `bfaac895` 한 기기·bash 범위의 독립 참고 근거로만 사후 수용했다.» · «**다음부터 대기 창에는 새 ORD 없이 착수하지 말라**고 명시했다.»(「2026-08-29 12:4x KST」 절)</li>
+    <li id="f2"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «기존 BRF `c0839eb7`의 **AC**에는 「README 실측 빚 상환」이 포함돼 있었다. 그 빚이 `bfaac895`에서 먼저 상환돼 승인 대기 텍스트의 전제가 움직였다. 옛 AC/AD로 답하게 하지 않기 위해 **AC/AD를 둘 다 명시적으로 거두고**, 대표 BRF `08675fb6`으로 새 선택지를 상신했다.» · «**AI**: 릴리스 준비를 지금 발행 ... **AJ**: #48 사이클 뒤로 보류»(「2026-08-29 12:4x KST」 절)</li>
+    <li id="f3"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «**대표 결정**: nowwcastle 대표 키 `37215881…`의 이벤트 `d86af2ff` — 「AI로」. BRF `08675fb6`의 **AI(릴리스 준비를 지금 발행)**를 선택한 것으로 수용. AJ는 거둠. 이 결정은 준비·판정 시작을 승인하며 tag 생성·GitHub Release·push 자체를 승인하지 않는다.»(「2026-08-29 13:5x KST」 절)</li>
+    <li id="f4"><span class="path">WORK_LOGS/whole-life/CLS_v0-release-prep__ORD-CLS-v0-release-prep.md</span> — front-matter «verdict: "not ready — 제안 태그 없음. blocker 2건(실행 가능한 broker 부재 · CHANGELOG Unreleased 계약), gate 2 는 그 자체로는 태그 blocker 아님"» · 「## 0. 한눈에」 표 «blocker | **확정 2건** — ① 실행 가능한 broker·설치물 부재 ② CHANGELOG `Unreleased` 계약. **미측정 blocker 는 없다**»</li>
+    <li id="f5"><span class="path">WORK_LOGS/whole-life/CLS_v0-release-prep__ORD-CLS-v0-release-prep.md</span> — 「### blocker ① 실행 가능한 broker·설치물이 없다」 «왜 blocker 인가: `v0.*` 라는 이름은 저장소가 v0 라고 부르는 **그 실행물**이 존재한다는 주장이다. 지금 태그를 달면 태그 자체가 README 13행과 정면으로 어긋난다.»</li>
+    <li id="f6"><span class="path">WORK_LOGS/whole-life/CLS_v0-release-prep__ORD-CLS-v0-release-prep.md</span> — 「### blocker ② CHANGELOG `Unreleased` 계약」 «즉 지금 태그를 달려면 **문서 계약을 고쳐야 하고, 그것은 대표 결정**이지 릴리스 절차의 기계적 한 단계가 아니다.»</li>
+    <li id="f7"><span class="path">WORK_LOGS/whole-life/CLS_v0-release-prep__ORD-CLS-v0-release-prep.md</span> — 「### 비차단 — public-release gate 2」 «**판정: gate 2 는 그 자체로 태그 blocker 가 아니다.**» · «gate 2 단독으로는 태그를 막지 않지만, **gate 2 가 열린 채 v0 태그가 붙는 상태는 성립하지 않는다.**»</li>
+    <li id="f8"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «정본 `docs/project-context.md` 「Public-release gate」의 gate 3은 `Git history`·`Every blob in every commit of the full history`가 대상이다. RPT §7-3은 추적 파일 110개의 **현재 worktree**만 스캔했다. ... 「blocker 2건」을 전수처럼 닫을 수 없다.»(「2026-08-29 14:1x KST」 절)</li>
+    <li id="f9"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «**작업 후 불변 증거 미달**: 채널 말미의 tag 2/release 0/PR heads/shared checkout/worktree clean 사후 확인에는 명령·출력·종료코드·시각이 없고, 파일은 작업 전 지도만 싣는다.»(「2026-08-29 14:1x KST」 절)</li>
+    <li id="f10"><span class="path">WORK_LOGS/whole-life/CLS_v0-release-prep__ORD-CLS-v0-release-prep.md</span> — 「#### 스캔 — 13개 arm, blob 전수」 «**말뭉치 = 466 blob.**» · «**hit 12건 전부 판정 — 비밀값 0건.**» · 「#### arm 별 독립 발화 통제 — 13/13」 «**13개 arm 전부 정확히 1건씩 발화했고 교차 발화는 없다.**»</li>
+    <li id="f11"><span class="path">WORK_LOGS/whole-life/CLS_v0-release-prep__ORD-CLS-v0-release-prep.md</span> — 「**④ PR#85 · #86 — head 와 state**」 «그리고 **`updatedAt` 이 둘 다 02:xx Z 로 이 ORD 시작(05:11Z)보다 앞선다** — 이 ORD 구간에 두 PR 에 아무 변경도 일어나지 않았다는 독립 신호다.»</li>
+    <li id="f12"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «대표 BRF `e4c7e207`로 새 선택지 상신: **AK** not-ready 수용·버전 릴리스 가지 종결 / **AL** 비버전 좌표 표식 태그 사양을 별도 재상신 / **AM** 실행물 없는 현재 저장소에서 버전 의미와 README·CHANGELOG 계약을 먼저 재설계. 어느 선택도 즉시 tag/push를 승인하지 않는다.»(「2026-08-29 14:3x KST」 절)</li>
+    <li id="f13"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — 「### 전송 정정 (같은 턴)」 «첫 통과 회신 `624b213f`와 첫 대표 BRF `cdb7efed`는 PowerShell 파이프가 UTF-8 원문을 native CLI stdin으로 넘기며 한글을 `?`로 손상시켰다. **두 이벤트는 근거·결정 요청으로 사용하지 않는다.** ... 유효 통과 회신: `f3ca26fe` ... 유효 대표 BRF: `e4c7e207`»</li>
+    <li id="f14"><span class="path">GUIDES/whole-life/도구_함정.md</span> — «⚠️ **PowerShell object pipeline으로 multiline UTF-8을 `buzz ... --content -`에 넘기면 accepted여도 한글이 `?`로 손상될 수 있다**(2026-08-29, 통치자 실측). ... **`accepted`는 이벤트 접수 증거이지 content bytes 보존 증거가 아니다.**»</li>
+    <li id="f15"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «대표 키 `37215881…`의 이벤트 `13faad5a` — 「AK」. 유효 BRF `e4c7e207`의 **AK(`not ready` 수용, 버전 릴리스 가지 종결)**를 선택한 것으로 수용했다.» · «재개 조건은 세 가지로 고정: 실행 가능한 broker+설치 경로 / Gate 2 usage-attribution smoke test 실제 통과 / CHANGELOG `Unreleased` 계약 개정.»(「2026-08-29 18:2x KST」 절)</li>
+    <li id="f16"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «**AL**(비버전 좌표 표식 재상신)과 **AM**(버전 의미·문서 계약 재설계)은 거뒀다. 다시 열려면 새 대표 결정이 필요하다.» · «이 결정은 준비 RPT의 `not ready`를 수용해 **아무 tag도 만들지 않는 결정**이다. ... AI가 승인했던 것은 준비·판정 시작이었고, 되돌릴 수 없는 실행은 끝까지 승인되지 않았다.»(「2026-08-29 18:2x KST」 절)</li>
+    <li id="f17"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «`ORD-IMP-48` 정본 mtime은 11:13 그대로이고 완료 RPT 없음. PR#86 AG/AH, 공용 checkout AE/AF도 기존 미결 상태. AK는 어느 독립 가지도 막거나 진행시키지 않는다.»(「2026-08-29 18:2x KST」 절)</li>
+    <li id="f19"><span class="path">WORK_LOGS/whole-life/CLS_v0-release-prep__ORD-CLS-v0-release-prep.md</span> — 「## 10. 못 한 것 · 남는 것 (조용히 빼지 않는다) — **9항목**」 «되돌림1 보완에서 ⑧·⑨ 가 추가됐다(§12-1 의 「덮지 못하는 것」). 1~7 은 그대로다.»</li>
+    <li id="f20"><span class="path">WORK_LOGS/whole-life/CLS_readme-measurement__main-bfaac895.md</span> — 「## 0. 결론」 «**README 가 신규 사용자에게 약속하는 것은 전부 실제로 작동한다.** clone → Python 3.14 → 스위트가 막힘 없이 이어졌고 `Ran 420 tests / OK / EXIT=0` 이었다.»</li>
+    <li id="f21"><span class="path">docs/adr/0001-local-subscription-v0.md</span> — «**왜**: 기술적 subprocess 실행 가능성과 provider 정책상 공개 제품 허용은 다른 명제이고, push·공개는 되돌리기 비용이 크다.» · «**뒤집는 조건**: 최신 공식 문서 또는 서면 답변, 실제 usage 귀속 smoke test, secret scan이 모두 통과할 때 public 전환 ADR을 새로 쓴다.»</li>
+    <li id="f22"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «저장소 visibility는 VIS-B로 별도 공개 유지 중이므로 visibility와 tag/release를 같은 명제로 접지 않음.»(「2026-08-29 13:5x KST」 절)</li>
+    <li id="f23"><span class="path">WORK_LOGS/whole-life/CLS_v0-release-prep__ORD-CLS-v0-release-prep.md</span> — 「## 9. 되돌릴 수 없는 다음 행동」 «**되돌릴 수 없음의 정도** — `git tag` 로컬 생성은 되돌릴 수 있다(`git tag -d`). **`push origin <TAG>` 부터 되돌릴 수 없다**(원격·캐시·구독자에게 나간다). `gh release create` 는 그보다 더 나간다.»</li>
+  </ol>
+  <p class="note" style="margin-top:20px">
+    각주에 줄 번호를 쓰지 않는다. 파일이 바뀌면 줄 번호는 조용히 다른 곳을 가리키지만, 인용문은
+    <code>grep</code>으로 찾히고 사라졌으면 사라졌다는 사실 자체가 신호가 된다. 경로는 전부
+    저장소·워크스페이스 기준이다. 불변 이벤트·commit SHA에 못박힌 사실은 해시로, 살아 있는
+    파일은 절 제목·인용문으로 짚었다.
+  </p>
+
+</div>
+</body>
+</html>
