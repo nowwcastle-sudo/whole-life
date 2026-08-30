@@ -93,11 +93,22 @@ async def terminate_process_tree(
 ) -> bool:
     """End the process and its descendants, and report whether it ended.
 
-    Returns True only when the process is confirmed reaped. Issuing the kill is
-    not the outcome: a nonzero `taskkill`, or a process still alive after the
-    bounded wait, both mean descendants may still be running. That is reported
-    as False rather than raised, because the caller's next move is to record
+    Three ways out, and only two of them are return values. True only when
+    the process is confirmed reaped. Issuing the kill is not the outcome: a
+    nonzero `taskkill`, or a process still alive after the bounded wait, both
+    mean descendants may still be running. That is reported as False rather
+    than raised, because the caller's next move is to record
     `unknown_outcome` — the ambiguity is the finding, not an exception.
+
+    The third way out does not return: `LifecycleFailure`, from resolving the
+    killer, when it cannot be located at all. That one is raised before any
+    kill has been issued — nothing was tried, so there is no ambiguity to
+    report, and folding it into False would let a caller record
+    `unknown_outcome` for a tree nothing attempted to end. A caller with a
+    finding of its own to protect catches it and records the cleanup fact
+    alongside, as both current call sites do (#34); a caller that lets it
+    propagate has chosen loud failure, which is the safe default. After #48
+    a caller that omits the guard has ignored this contract, not followed it.
     """
     if process.returncode is not None:
         return True

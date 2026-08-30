@@ -107,6 +107,18 @@ issue holds the acceptance criteria; the merge commit holds the reasoning.
 
 ### Changed
 
+- **The tree-termination contract names the ending that raises, not only the ones it
+  reports** (#48).
+  `terminate_process_tree` documented two endings — confirmed reaped, and issued but
+  unconfirmed, both return values — in a sentence shaped like the complete set. The third
+  ending has different control flow: when the killer cannot be located, `LifecycleFailure`
+  is raised before any kill is issued, and the two call sites #34 fixed guard it only
+  because that failure was once found the hard way. The behaviour is deliberately
+  unchanged — raising before anything was tried is the ending that fails loud, and moving
+  it into the return value would make an unguarded caller silently correct. Instead the
+  contract now names all three endings, one test goes red if it stops naming the raise,
+  and another goes red if the reported endings ever become raises. A caller that omits
+  the guard is now ignoring the contract rather than following it.
 - **A run that ended unknown for two reasons says both, not only the first one found** (#45).
   A cancellation before the terminal event, or a process exit that was never observed, used
   to be the whole diagnostic even when the run's native worker was also never resolved — and

@@ -246,5 +246,53 @@ class TerminationWiringTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(["close", "wait"], process.journal)
 
 
+class _NeverReapedProcess:
+    """A child whose exit is never reported, so the bounded wait must expire."""
+
+    def __init__(self):
+        self.returncode = None
+        self.pid = 0
+
+    async def wait(self):
+        await asyncio.sleep(3600)
+
+
+class TerminationContractTests(unittest.IsolatedAsyncioTestCase):
+    """Issue #48: the contract names every way termination can end.
+
+    #34 guarded both call sites by hand after the failure was found; nothing in
+    the contract asked for the guard, and the next caller who took its
+    enumeration as exhaustive would have omitted it. These tests make the
+    enumeration load-bearing from both sides: the ending that raises must stay
+    named, and the endings that report must stay reports.
+    """
+
+    def test_the_contract_names_the_ending_that_raises(self):
+        """No reader should have to find the third ending in `system_taskkill`.
+
+        A docstring is prose, and prose is exactly where #48 found the defect:
+        a true sentence shaped like an exhaustive enumeration, missing the one
+        ending with different control flow. No test can read intent, but this
+        one refuses a contract that stops naming the exception a caller has to
+        decide about.
+        """
+        self.assertIn("LifecycleFailure", terminate_process_tree.__doc__)
+
+    async def test_an_expired_bounded_wait_is_reported_not_raised(self):
+        """The two documented endings stay return values.
+
+        The contract's split is deliberate: an ambiguous tree is the caller's
+        finding to record as `unknown_outcome`, while a killer that cannot be
+        located is raised before anything has been issued. A helper that
+        raised here too would collapse that split, and both #34 call sites
+        would file "cleanup never ran" for a tree something did try to end.
+        """
+        ended = await terminate_process_tree(
+            _NeverReapedProcess(), forced_wait=0.05
+        )
+
+        self.assertFalse(ended)
+
+
 if __name__ == "__main__":
     unittest.main()
