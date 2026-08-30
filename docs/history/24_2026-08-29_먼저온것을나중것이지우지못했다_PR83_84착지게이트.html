@@ -305,7 +305,7 @@
     수 없는</b> 경우였다. 그대로 대조했으면 「불일치」라는 오판이 나왔을 자리다. 완결자는
     <b>병합 전에</b> <code>git merge-tree --write-tree</code>로 결과 트리를 미리 예측해
     두고, 병합 후 실제 새 main의 트리와 대조해 <b>같음</b>을 확인했다 — 이 계보에서 base가
-    다른 채로 병합한 사례가 예측 트리로 검증됐다.<sup><a href="#f14">[14]</a></sup> blob
+    다른 채로 병합한 첫 사례가 예측 트리로 검증됐다.<sup><a href="#f14">[14]</a></sup> blob
     단위로도 <code>outcome.py</code>의 해시가 병합 전후 동일함을 확인해, <b>이 병합이 PR#84를
     되돌리지 않았다</b>는 것까지 별도 축으로 증명했다.
   </p>
@@ -480,7 +480,7 @@
     <li id="f1"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «`ORD-CLS-PR-84-land`(`e67947ab`, 새 톱레벨, 완결자 19609cb2 멘션 확인): 착지 게이트 7항 — 브랜치 사용자 확인(delete_branch_on_merge)·브랜치 스위트 420·비밀 스캔·CLI squash+트레일러 본문 직접 삽입(웹 UI 금지)·`--match-head-commit` 전체 SHA 핀·병합 성공은 트리 실측(gh EXIT=0 무출력 함정)·병합 후 새 main 스위트+CHANGELOG 존재 재확인.» · «`ORD-EDU-24`... 제24편 기편. 발행 조건 600759a9(#83·#84 병합 전부 완료)을 재실측으로 확인 후 발행.»</li>
     <li id="f2"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «워크플로우 변경 접수 — 대표 event `600759a9`» 절 «「교육자 자료 작성 지시는 실제 PR 병합까지 모두 완료된 뒤에만 발행」」」.</li>
     <li id="f3"><span class="path">WORK_LOGS/whole-life/CLS_feat-45-unknown-reasons__ORD-CLS-PR-84-land.md</span> — «Ran 420 tests in 642.435s / FAILED (failures=1)» · «FAIL: test_the_runtime_suite_leaks_no_process_or_transport ... ERROR: test_close_ends_every_active_run ... asyncio.exceptions.CancelledError ... TimeoutError».</li>
-    <li id="f4"><span class="path">WORK_LOGS/whole-life/CLS_feat-45-unknown-reasons__ORD-CLS-PR-84-land.md</span> — «판정: 적색은 PR#84 의 diff 에 귀속되지 않는다. 바깥 게이트는 같고 안쪽 지점만 다르며, 둘 다 S9 가 등록한 「부하 아래에서 유한 대기가 만료된다」 계열이다.» · «같은 명령·같은 파이썬 계열(3.14)에서 13.4배.» · «초록 재실행은 앞선 초록도 앞선 적색도 해소하지 못한다 — 간헐이 초록으로 나오는 것은 간헐의 정의 그 자체다.» · «562.5s 로 CI(47.9s)의 11.7배다.»</li>
+    <li id="f4"><span class="path">WORK_LOGS/whole-life/CLS_feat-45-unknown-reasons__ORD-CLS-PR-84-land.md</span> — «판정: 적색은 PR#84 의 diff 에 귀속되지 않는다. 바깥 게이트는 같고 안쪽 지점만 다르며, 둘 다 S9 가 등록한 「부하 아래에서 유한 대기가 만료된다」 계열이다.» · «같은 명령·같은 파이썬 계열(3.14)에서 13.4배.» · «초록 재실행은 앞선 적색을 해소하지 못한다 — 간헐이 초록으로 나오는 것은 간헐의 정의 그 자체다.» · «562.5s 는 CI(47.9s)의 11.7배다.»</li>
     <li id="f5"><span class="path">WORK_LOGS/whole-life/REV_feat-63-record-working-directory__ORD-REV-feat-63.md</span> — «이 테스트의 단언은 「close 가 40초 안에 끝난다」이다. 부하 아래에서 40초를 넘겼다면 그 단언은 실제로 거짓이었다. 적색이 가짜인 게 아니라, 벽시계 상한이 코드만의 속성이 아닌 것이다.」」</li>
     <li id="f6"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «처리: 게이트 2가 글자 그대로 미충족 → 결정 V의 전제 흔들림 → 판정 않고 대표 상신. BRF `23aba0ce`(22:2x): X=지금 착지(CI+통제 근거 명시, 로컬 적색을 착지 보고·병합 커밋 본문에 명기) / Y=로컬 420 OK까지 미룸 / Z(독립)=S9 «부하 아래 유한 대기 만료» 별건 이슈 발행 승인(무응답이면 발행 없이 후보 등재 유지 — «새 이슈 발행 보류» 플래그 준수).»</li>
     <li id="f7"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «대표 답신 09:02 (`aef75e4a`, 대표 키 37215881): 「AA, X로 할게」. BRF `d08058f7` 결정 = AA(PR#83 지금 착지) · BRF `23aba0ce`+갱신 `a99cba23` 결정 = X(PR#84 지금 착지 — CI+통제 근거 명시, 로컬 적색을 착지 보고·병합 커밋 본문에 명기). Z 는 무응답 → BRF 예고대로 «발행 없이 후보 유지»(«새 이슈 발행 보류» 플래그 준수 — S9 «부하 아래 유한 대기 만료»는 후보·보류 목록에 남는다).」</li>
@@ -489,7 +489,7 @@
     <li id="f10"><span class="path">WORK_LOGS/whole-life/CLS_feat-45-unknown-reasons__ORD-CLS-PR-84-land.md</span> — «이 저장소는 squash 만 허용한다. 그래서 검증한 커밋 SHA 는 결코 main 의 조상이 되지 않는다 ... 트리로 답했다.» · «TREE_MATCH=YES».</li>
     <li id="f11"><span class="path">WORK_LOGS/whole-life/CLS_feat-45-unknown-reasons__ORD-CLS-PR-84-land.md</span> — «경로 존재가 아니라 그 줄이 #45 를 실제로 말하는지까지 인용했다.» · CHANGELOG.md(origin/main) — «A run that ended unknown for two reasons says both, not only the first one found (#45).»</li>
     <li id="f12"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-log-82__ORD-CLS-PR-83-land.md</span> — «착수 조건: `ORD-CLS-PR-84-land` 완료 뒤 (순서 고정 — main 이동 때문).» · «`commit_id` 로 셌으면 「신규 4건」이라는 오탐으로 착지를 막았을 자리다. 그 4건은 이미 고쳐진 옛 지적이 새 head 로 재앵커된 것이다. 신규 판별은 언제나 `original_commit_id`.」</li>
-    <li id="f13"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-log-82__ORD-CLS-PR-83-land.md</span> — «이 브랜치는 #45 착지 이전의 main `17c8be2b` 에서 갈라졌고... 병합 후 새 main 에서 420 이 되어야 한다 — 그 예측은 게이트 7에서 확인한다.» · «판단: 연대기 기록 전용 PR 이라 CHANGELOG 항목을 만들지 않는다.」</li>
+    <li id="f13"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-log-82__ORD-CLS-PR-83-land.md</span> — «이 브랜치는 #45 착지 이전의 main `17c8be2b` 에서 갈라졌고... 병합 후 새 main 에서는 420 이 되어야 한다 — 그 예측은 게이트 7에서 확인한다.» · «판단: 연대기 기록 전용 PR 이라 CHANGELOG 항목을 만들지 않는다.」</li>
     <li id="f14"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-log-82__ORD-CLS-PR-83-land.md</span> — «#84 때는 브랜치가 당시 main 에서 갈라져 있어 병합 결과 트리 = head 트리였다. 이번은 다르다 ... 그대로 대조했으면 「불일치」라는 오판이 나왔을 자리다.» · «PREDICTED_TREE = 1bed112a721ff517a87ce1321edb547cc8eb7b76» · «NEW_MAIN_TREE = 1bed112a721ff517a87ce1321edb547cc8eb7b76 TREE_MATCH=YES».</li>
     <li id="f15"><span class="path">WORK_LOGS/whole-life/CLS_docs-history-log-82__ORD-CLS-PR-83-land.md</span> — «게이트 7 은 정지 지시가 오기 «전에» 끝났다 — 끊긴 실행이 아니다. ... 산출물과 독립된 성공 신호 둘로 답한다. 1. 하네스가 백그라운드 작업을 status=completed·exit code 0 으로 회수했다 — 파일이 아니라 프로세스 종료가 낸 값이다. 2. 출력 파일 마지막 줄 EXIT=0 은 래퍼가 python … ; echo "EXIT=$?" 로 명령이 반환한 뒤에만 쓴다. 강제 종료되면 이 줄 자체가 없다.」</li>
     <li id="f16"><span class="path">WORK_LOGS/whole-life/GOV_LEDGER.md</span> — «게이트 7 «중단 실행» 여부 — 정정 수용. 내 정지 지시(`0013868e`)는 「끊긴 실행의 산출물 무효·재실행」이었으나, 완결자가 산출물과 독립된 성공 신호 둘로 «끊긴 실행이 아님»을 증명 ... 재실행 불요 판정. 내 정지 지시 문안은 「그때는 맞았던 줄」로 그대로 둔다(중간보고 시점엔 진행 중이었다).」</li>
